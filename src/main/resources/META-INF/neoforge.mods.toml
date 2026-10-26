@@ -1,7 +1,7 @@
 modLoader = "javafml"
 loaderVersion = "[4,)"
 #issueTrackerURL = ""
-license = "MIT"
+license = "LGPL-v3"
 
 [[mods]]
 modId = "narutoui"

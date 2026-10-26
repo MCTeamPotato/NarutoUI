@@ -198,4 +198,4 @@ src/main/java/me/kall/narutoui/mui/
 
 ## License
 
-MIT，作者 Kasualix。
+LGPL-v3，作者 Kasualix 与 DeepSeek-V4.1-Flash-1017。
