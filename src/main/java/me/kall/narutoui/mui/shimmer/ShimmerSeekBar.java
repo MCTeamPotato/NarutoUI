@@ -1,0 +1,81 @@
+package me.kall.narutoui.mui.shimmer;
+
+import icyllis.modernui.core.Context;
+import icyllis.modernui.util.ColorStateList;
+import icyllis.modernui.view.View;
+import icyllis.modernui.widget.SeekBar;
+import org.jetbrains.annotations.NotNull;
+
+/**
+ * A seek bar whose progress line and thumb follow the API shimmer.
+ */
+public final class ShimmerSeekBar extends SeekBar implements ShimmerTarget {
+    private int baseColor = 0xFFFFFFFF;
+    private boolean bound;
+    private final MuiShimmerProfile profile;
+
+    /**
+     * Creates a shimmer seek bar.
+     *
+     * @param context the screen context
+     */
+    public ShimmerSeekBar(@NotNull Context context) {
+        super(context);
+        this.profile = MuiShimmerProfile.current();
+    }
+
+    /**
+     * Binds the base progress color.
+     *
+     * @param baseColor base ARGB color
+     */
+    public void bind(int baseColor) {
+        this.baseColor = baseColor;
+        this.bound = true;
+        if (isAttachedToWindow()) MuiShimmer.attach(this);
+    }
+
+    @Override
+    public int shimmerBaseColor() {
+        return this.baseColor;
+    }
+
+    @Override
+    public void applyShimmerColor(int color) {
+        setProgressTintList(ColorStateList.valueOf(color));
+        setThumbTintList(ColorStateList.valueOf(color));
+    }
+
+    @Override
+    public void applyBaseColor() {
+        applyShimmerColor(this.baseColor);
+    }
+
+    @Override
+    public boolean shimmerEnabled() {
+        return this.bound && isEnabled() && this.profile.config().text()
+                && this.profile.config().controls();
+    }
+
+    @Override
+    public @NotNull MuiShimmerProfile shimmerProfile() {
+        return this.profile;
+    }
+
+    @Override
+    public @NotNull View shimmerHost() {
+        return this;
+    }
+
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        if (this.bound) MuiShimmer.attach(this);
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        MuiShimmer.detach(this);
+        super.onDetachedFromWindow();
+    }
+}
