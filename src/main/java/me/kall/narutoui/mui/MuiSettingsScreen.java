@@ -20,6 +20,9 @@ import java.util.function.Function;
  * padding by hand. A page callback receives a {@link MuiSettingsPage}; each section callback
  * receives a {@link MuiSettingsSection} with ready-made fields.
  *
+ * <p>Use {@link Builder#singlePage()} to omit the left navigation rail and render one page as a
+ * single form. Use {@link Builder#topNavigation()} to move the navigation above the content.</p>
+ *
  * <pre>{@code
  * Screen screen = MuiSettingsScreen.builder("My Mod")
  *         .page("General", page -> page
@@ -55,6 +58,10 @@ public final class MuiSettingsScreen {
         private String subtitle = "";
         /** Optional rail footer text. */
         private String footer = "";
+        /** {@code true} to remove the navigation rail and render one page only. */
+        private boolean singlePage;
+        /** Navigation placement for multi-page screens. */
+        private MuiNavigation navigation = MuiNavigation.LEFT;
         /** Optional theme override. */
         private MuiTheme theme;
         /** Per-screen widget factory. */
@@ -89,6 +96,46 @@ public final class MuiSettingsScreen {
         public @NotNull Builder subtitle(@NotNull String subtitle) {
             this.subtitle = subtitle;
             return this;
+        }
+
+        /**
+         * Enables single-page mode: no left navigation rail, exactly one page. This is useful for
+         * small settings panels that should feel like a single form.
+         *
+         * @return this builder
+         */
+        public @NotNull Builder singlePage() {
+            this.singlePage = true;
+            return this;
+        }
+
+        /**
+         * Sets where the navigation is rendered. Single-page mode ignores this setting.
+         *
+         * @param navigation navigation placement
+         * @return this builder
+         */
+        public @NotNull Builder navigation(@NotNull MuiNavigation navigation) {
+            this.navigation = Objects.requireNonNull(navigation, "navigation");
+            return this;
+        }
+
+        /**
+         * Places navigation in a horizontal bar above the content.
+         *
+         * @return this builder
+         */
+        public @NotNull Builder topNavigation() {
+            return navigation(MuiNavigation.TOP);
+        }
+
+        /**
+         * Places navigation in a vertical rail on the left.
+         *
+         * @return this builder
+         */
+        public @NotNull Builder leftNavigation() {
+            return navigation(MuiNavigation.LEFT);
         }
 
         /**
@@ -279,11 +326,13 @@ public final class MuiSettingsScreen {
                     .contentWidth(this.contentWidth)
                     .background(this.background)
                     .initialPage(this.initialPage)
+                    .navigation(this.navigation)
                     .railHeader(this.railHeader)
                     .railFooter(this.railFooter)
                     .onCreated(this.onCreated)
                     .onDestroyed(this.onDestroyed);
 
+            if (this.singlePage) delegate.singlePage();
             if (this.theme != null) delegate.theme(this.theme);
 
             for (PageDefinition page : this.pages) {

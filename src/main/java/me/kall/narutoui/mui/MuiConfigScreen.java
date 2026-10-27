@@ -34,6 +34,8 @@ import java.util.function.Function;
  * optional footer. Pages are built when the screen is created and retained while it is open.
  * Custom pages can supply their own root view with {@link Builder#customPage}; rail header/footer
  * factories and lifecycle callbacks cover the advanced shell cases.
+ * Single-page mode removes the rail entirely and lets the caller fill one page. For multi-page
+ * screens, {@link Builder#navigation(MuiNavigation)} places the navigation on the left or top.
  * All widgets use the supplied {@link MuiTheme}, which defaults to
  * {@link MuiTheme#modern(icyllis.modernui.core.Context)}.
  */
@@ -62,6 +64,10 @@ public final class MuiConfigScreen {
         private String subtitle = "";
         /** Optional rail footer text. */
         private String footer = "";
+        /** {@code true} to remove the navigation rail and render one page only. */
+        private boolean singlePage;
+        /** Navigation placement for multi-page screens. */
+        private MuiNavigation navigation = MuiNavigation.LEFT;
         /** Optional theme override. */
         private MuiTheme theme;
         /** Per-screen widget factory. */
@@ -96,6 +102,49 @@ public final class MuiConfigScreen {
         public @NotNull Builder subtitle(@NotNull String subtitle) {
             this.subtitle = subtitle;
             return this;
+        }
+
+        /**
+         * Enables single-page mode: the left navigation rail is omitted and exactly one page is
+         * rendered directly in the content area. Add one page with {@link #page} or
+         * {@link #customPage}.
+         *
+         * @return this builder
+         */
+        public @NotNull Builder singlePage() {
+            this.singlePage = true;
+            return this;
+        }
+
+        /**
+         * Sets where the navigation is rendered. {@link MuiNavigation#LEFT} is a vertical rail;
+         * {@link MuiNavigation#TOP} is a horizontal bar above the content. Single-page mode ignores
+         * this setting.
+         *
+         * @param navigation navigation placement
+         * @return this builder
+         */
+        public @NotNull Builder navigation(@NotNull MuiNavigation navigation) {
+            this.navigation = Objects.requireNonNull(navigation, "navigation");
+            return this;
+        }
+
+        /**
+         * Places navigation in a horizontal bar above the content.
+         *
+         * @return this builder
+         */
+        public @NotNull Builder topNavigation() {
+            return navigation(MuiNavigation.TOP);
+        }
+
+        /**
+         * Places navigation in a vertical rail on the left.
+         *
+         * @return this builder
+         */
+        public @NotNull Builder leftNavigation() {
+            return navigation(MuiNavigation.LEFT);
         }
 
         /**
@@ -282,10 +331,14 @@ public final class MuiConfigScreen {
             if (this.pages.isEmpty()) {
                 throw new IllegalStateException("A MuiConfigScreen needs at least one page");
             }
+            if (this.singlePage && this.pages.size() != 1) {
+                throw new IllegalStateException("Single-page mode needs exactly one page");
+            }
 
-            return new Model(this.title, this.subtitle, this.footer, this.theme, this.widgetFactory,
-                    this.shimmerProfile, this.contentWidth, this.background, List.copyOf(this.pages),
-                    this.initialPage, this.railHeader, this.railFooter, this.onCreated, this.onDestroyed);
+            return new Model(this.title, this.subtitle, this.footer, this.singlePage, this.navigation,
+                    this.theme, this.widgetFactory, this.shimmerProfile, this.contentWidth,
+                    this.background, List.copyOf(this.pages), this.initialPage, this.railHeader,
+                    this.railFooter, this.onCreated, this.onDestroyed);
         }
     }
 
@@ -349,6 +402,8 @@ public final class MuiConfigScreen {
      * @param title       rail title
      * @param subtitle    rail subtitle
      * @param footer      rail footer text
+     * @param singlePage  {@code true} to omit the navigation
+     * @param navigation  navigation placement
      * @param theme       optional theme override
      * @param widgetFactory per-screen widget factory
      * @param shimmerProfile per-screen shimmer profile
@@ -361,7 +416,8 @@ public final class MuiConfigScreen {
      * @param onCreated   optional creation callback
      * @param onDestroyed optional destruction callback
      */
-    record Model(String title, String subtitle, String footer, @Nullable MuiTheme theme,
+    record Model(String title, String subtitle, String footer, boolean singlePage,
+                 MuiNavigation navigation, @Nullable MuiTheme theme,
                  MuiWidgetFactory widgetFactory, MuiShimmerProfile shimmerProfile, int contentWidth,
                  MuiBackground background, List<PageSpec> pages,
                  int initialPage, @Nullable Function<Context, View> railHeader,

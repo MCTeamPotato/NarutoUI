@@ -46,6 +46,53 @@ public final class MyConfigScreen {
 
 页面的 header、卡片、字段行、分隔线和控件样式都由 API 生成。
 
+### 单页模式
+
+如果配置内容很少，不需要左侧页面导航，可以启用单页模式：
+
+```java
+Screen screen = MuiSettingsScreen.builder("Example Mod")
+        .singlePage()
+        .page("General", page -> page
+                .section("Rendering", section -> section
+                        .toggle("Enable HUD", MyConfig::enabled, MyConfig::setEnabled)
+                        .slider("Scale", 50, 200,
+                                MyConfig::scale, MyConfig::setScale,
+                                value -> value + "%")))
+        .create(parent);
+```
+
+单页模式下：
+
+- 不创建左侧导航栏
+- 只允许添加一个页面
+- 页面直接占满内容区
+- `railHeader` / `railFooter` / `subtitle` / `footer` 不再显示
+- 页面可以通过 `.page("", ...)` 省略标题
+
+如果添加了多个页面，构建时会抛出 `IllegalStateException`。
+
+### 顶部导航
+
+多页界面默认使用左侧竖向导航，也可以改成顶部横向导航：
+
+```java
+MuiSettingsScreen.builder("Example Mod")
+        .topNavigation()
+        .page("General", page -> ...)
+        .page("About", page -> ...)
+        .create(parent);
+```
+
+也可以显式指定：
+
+```java
+.navigation(MuiNavigation.TOP)
+.navigation(MuiNavigation.LEFT)
+```
+
+顶部导航会显示标题、副标题和横向排列的页面项；页面较多时导航区域可以横向滚动。
+
 ## 页面与字段
 
 ```java

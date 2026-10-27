@@ -11,6 +11,7 @@ import icyllis.modernui.view.View;
 import icyllis.modernui.view.ViewGroup;
 import icyllis.modernui.widget.Button;
 import icyllis.modernui.widget.FrameLayout;
+import icyllis.modernui.widget.HorizontalScrollView;
 import icyllis.modernui.widget.LinearLayout;
 import icyllis.modernui.widget.TextView;
 import me.kall.narutoui.mui.shimmer.MuiShimmerProfile;
@@ -23,7 +24,8 @@ import java.util.List;
 
 /**
  * Host fragment for a {@link MuiConfigScreen}. The shell is deliberately small: a left navigation
- * rail, a content frame, and a set of retained scrollable pages.
+ * rail, a content frame, and a set of retained scrollable pages. In single-page mode the rail is
+ * omitted and the one page fills the content area.
  * <p>
  * The fragment has a public no-arg constructor and resolves its model from
  * {@link MuiConfigFragment#ARG_MODEL}. This makes it safe for a FragmentManager to recreate.
@@ -100,17 +102,35 @@ public final class MuiConfigFragment extends Fragment {
         this.root = root;
         this.model.background().attach(root);
 
-        LinearLayout shell = new LinearLayout(context);
-        shell.setOrientation(LinearLayout.HORIZONTAL);
-        root.addView(shell, new FrameLayout.LayoutParams(MuiControls.MATCH, MuiControls.MATCH));
+        LinearLayout shell = null;
+        if (!this.model.singlePage()) {
+            if (this.model.navigation() == MuiNavigation.TOP) {
+                shell = new LinearLayout(context);
+                shell.setOrientation(LinearLayout.VERTICAL);
+                root.addView(shell, new FrameLayout.LayoutParams(MuiControls.MATCH, MuiControls.MATCH));
 
-        shell.addView(MuiShimmerProfile.withCurrent(this.model.shimmerProfile(),
-                () -> MuiControls.withFactory(this.model.widgetFactory(),
-                        () -> this.buildRail(context, this.theme))),
-                new LinearLayout.LayoutParams(MuiControls.dp(context, RAIL_WIDTH), MuiControls.MATCH));
+                View topBar = MuiShimmerProfile.withCurrent(this.model.shimmerProfile(),
+                        () -> MuiControls.withFactory(this.model.widgetFactory(),
+                                () -> this.buildTopBar(context, this.theme)));
+                shell.addView(topBar, new LinearLayout.LayoutParams(MuiControls.MATCH, MuiControls.WRAP));
+            } else {
+                shell = new LinearLayout(context);
+                shell.setOrientation(LinearLayout.HORIZONTAL);
+                root.addView(shell, new FrameLayout.LayoutParams(MuiControls.MATCH, MuiControls.MATCH));
+
+                shell.addView(MuiShimmerProfile.withCurrent(this.model.shimmerProfile(),
+                        () -> MuiControls.withFactory(this.model.widgetFactory(),
+                                () -> this.buildRail(context, this.theme))),
+                        new LinearLayout.LayoutParams(MuiControls.dp(context, RAIL_WIDTH), MuiControls.MATCH));
+            }
+        }
 
         this.content = new FrameLayout(context);
-        shell.addView(this.content, new LinearLayout.LayoutParams(0, MuiControls.MATCH, 1.0F));
+        if (shell == null) {
+            root.addView(this.content, new FrameLayout.LayoutParams(MuiControls.MATCH, MuiControls.MATCH));
+        } else {
+            shell.addView(this.content, new LinearLayout.LayoutParams(0, MuiControls.MATCH, 1.0F));
+        }
 
         for (MuiConfigScreen.PageSpec spec : this.model.pages()) {
             this.pages.add(this.createPage(context, spec));
@@ -250,18 +270,11 @@ public final class MuiConfigFragment extends Fragment {
 
         for (int i = 0; i < this.model.pages().size(); i++) {
             MuiConfigScreen.PageSpec spec = this.model.pages().get(i);
-            TextView item = MuiControls.text(context, theme, spec.navLabel(), 13, theme.onSurfaceVariant());
-            item.setGravity(Gravity.CENTER_VERTICAL);
-            item.setPadding(MuiControls.dp(context, 10), MuiControls.dp(context, 9),
-                    MuiControls.dp(context, 10), MuiControls.dp(context, 9));
-
-            int index = i;
-            item.setOnClickListener(view -> this.showPage(index));
+            TextView item = this.createNavItem(context, theme, spec, i, false);
 
             LinearLayout.LayoutParams params = MuiControls.fill();
             params.topMargin = MuiControls.dp(context, 4);
             rail.addView(item, params);
-            this.navItems.add(item);
         }
 
         View spacer = new View(context);
@@ -277,6 +290,101 @@ public final class MuiConfigFragment extends Fragment {
 
         this.refreshNav();
         return rail;
+    }
+
+    /**
+     * Builds the horizontal navigation bar used by {@link MuiNavigation#TOP}.
+     *
+     * @param context the screen context
+     * @param theme   active theme
+     * @return the top bar
+     */
+    private @NotNull LinearLayout buildTopBar(@NotNull Context context, @NotNull MuiTheme theme) {
+        LinearLayout bar = MuiControls.row(context);
+        bar.setGravity(Gravity.CENTER_VERTICAL);
+        bar.setPadding(MuiControls.dp(context, 12), MuiControls.dp(context, 8),
+                MuiControls.dp(context, 12), MuiControls.dp(context, 8));
+        bar.setBackground(new ColorDrawable(MuiControls.alpha(theme.surface(), 0.96F)));
+
+        if (this.model.railHeader() != null) {
+            View header = this.model.railHeader().apply(context);
+            if (header != null) bar.addView(header, MuiControls.wrap());
+        } else {
+            LinearLayout titleBlock = MuiControls.column(context);
+            titleBlock.addView(MuiControls.heading(context, theme, this.model.title(), 16,
+                    theme.onSurface()), MuiControls.fill());
+
+            if (!this.model.subtitle().isBlank()) {
+                TextView subtitle = MuiControls.text(context, theme, this.model.subtitle(), 10,
+                        theme.onSurfaceVariant());
+                LinearLayout.LayoutParams params = MuiControls.fill();
+                params.topMargin = MuiControls.dp(context, 2);
+                titleBlock.addView(subtitle, params);
+            }
+
+            bar.addView(titleBlock, MuiControls.wrap());
+        }
+
+        View gap = new View(context);
+        bar.addView(gap, new LinearLayout.LayoutParams(MuiControls.dp(context, 16),
+                MuiControls.dp(context, 1)));
+
+        HorizontalScrollView scroll = new HorizontalScrollView(context);
+        scroll.setHorizontalScrollBarEnabled(false);
+        scroll.setFillViewport(false);
+
+        LinearLayout navRow = MuiControls.row(context);
+        navRow.setGravity(Gravity.CENTER_VERTICAL);
+        for (int i = 0; i < this.model.pages().size(); i++) {
+            MuiConfigScreen.PageSpec spec = this.model.pages().get(i);
+            TextView item = this.createNavItem(context, theme, spec, i, true);
+            LinearLayout.LayoutParams params = MuiControls.wrap();
+            params.setMargins(0, 0, MuiControls.dp(context, 4), 0);
+            navRow.addView(item, params);
+        }
+
+        scroll.addView(navRow, new FrameLayout.LayoutParams(MuiControls.WRAP, MuiControls.WRAP));
+        bar.addView(scroll, new LinearLayout.LayoutParams(0, MuiControls.WRAP, 1.0F));
+
+        if (this.model.railFooter() != null) {
+            View footer = this.model.railFooter().apply(context);
+            if (footer != null) {
+                LinearLayout.LayoutParams params = MuiControls.wrap();
+                params.leftMargin = MuiControls.dp(context, 8);
+                bar.addView(footer, params);
+            }
+        } else if (!this.model.footer().isBlank()) {
+            TextView footer = MuiControls.text(context, theme, this.model.footer(), 10,
+                    theme.onSurfaceVariant());
+            LinearLayout.LayoutParams params = MuiControls.wrap();
+            params.leftMargin = MuiControls.dp(context, 8);
+            bar.addView(footer, params);
+        }
+
+        this.refreshNav();
+        return bar;
+    }
+
+    /**
+     * Creates one navigation item and registers it for selection styling.
+     *
+     * @param context the screen context
+     * @param theme   active theme
+     * @param spec    page spec
+     * @param index   page index
+     * @param top     {@code true} for the horizontal top bar
+     * @return the navigation item
+     */
+    private @NotNull TextView createNavItem(@NotNull Context context, @NotNull MuiTheme theme,
+                                            @NotNull MuiConfigScreen.PageSpec spec, int index,
+                                            boolean top) {
+        TextView item = MuiControls.text(context, theme, spec.navLabel(), 13, theme.onSurfaceVariant());
+        item.setGravity(top ? Gravity.CENTER : Gravity.CENTER_VERTICAL);
+        item.setPadding(MuiControls.dp(context, top ? 12 : 10), MuiControls.dp(context, top ? 7 : 9),
+                MuiControls.dp(context, top ? 12 : 10), MuiControls.dp(context, top ? 7 : 9));
+        item.setOnClickListener(view -> this.showPage(index));
+        this.navItems.add(item);
+        return item;
     }
 
     /**
