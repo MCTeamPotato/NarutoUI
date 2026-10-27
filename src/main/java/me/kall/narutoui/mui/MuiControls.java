@@ -8,22 +8,14 @@ import icyllis.modernui.util.ColorStateList;
 import icyllis.modernui.view.Gravity;
 import icyllis.modernui.view.View;
 import icyllis.modernui.view.ViewGroup;
-import icyllis.modernui.widget.Button;
-import icyllis.modernui.widget.LinearLayout;
-import icyllis.modernui.widget.SeekBar;
-import icyllis.modernui.widget.Switch;
-import icyllis.modernui.widget.TextView;
+import icyllis.modernui.widget.*;
+import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.function.BooleanSupplier;
-import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
-import java.util.function.IntConsumer;
-import java.util.function.IntFunction;
-import java.util.function.IntSupplier;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 /**
  * Theme-aware Modern UI widgets for configuration screens.

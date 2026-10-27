@@ -93,6 +93,29 @@ MuiSettingsScreen.builder("Example Mod")
 
 顶部导航会显示标题、副标题和横向排列的页面项；页面较多时导航区域可以横向滚动。
 
+### Shimmer 控件
+
+API 自带一套 shimmer 控件工厂：
+
+```java
+MuiSettingsScreen.builder("Example Mod")
+        .widgetFactory(MuiWidgetFactory.shimmer())
+        .theme(MuiTheme.modern(context)
+                .withPrimary(0xFFE0A64A)
+                .withOnPrimary(0xFF000000))
+        .page("General", page -> ...)
+        .create(parent);
+```
+
+它会统一创建：
+
+- `ShimmerTextView`
+- `ShimmerSwitch`
+- `ShimmerSeekBar`
+- `ShimmerButton`
+
+实心按钮默认使用 `theme.onPrimary()`，文字不参与流光；描边按钮文字继续流光。调用方只需要提供主题颜色，不需要自己创建这些控件。
+
 ## 页面与字段
 
 ```java

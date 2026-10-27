@@ -20,7 +20,7 @@ import org.jetbrains.annotations.NotNull;
  * consumer can substitute animated or otherwise custom controls without the API depending on it.
  * <p>
  * Install a factory through {@link MuiControls#setWidgetFactory(MuiWidgetFactory)}. The default is
- * {@link #modern()}.
+ * {@link #modern()}; use {@link #shimmer()} for the API's animated controls.
  */
 public interface MuiWidgetFactory {
     /**
@@ -74,6 +74,15 @@ public interface MuiWidgetFactory {
      */
     static @NotNull MuiWidgetFactory modern() {
         return Modern.INSTANCE;
+    }
+
+    /**
+     * Returns the shimmer-enabled widget factory.
+     *
+     * @return the shimmer factory
+     */
+    static @NotNull MuiWidgetFactory shimmer() {
+        return MuiShimmerWidgetFactory.instance();
     }
 
     /**

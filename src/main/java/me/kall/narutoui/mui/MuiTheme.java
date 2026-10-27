@@ -72,6 +72,18 @@ public record MuiTheme(
     }
 
     /**
+     * Returns a copy with a different content color on primary-filled controls.
+     *
+     * @param color the replacement on-primary color
+     * @return a new theme instance
+     */
+    public @NotNull MuiTheme withOnPrimary(int color) {
+        return new MuiTheme(this.primary, color, this.surface, this.surfaceLow, this.surfaceHigh,
+                this.onSurface, this.onSurfaceVariant, this.outline, this.error,
+                this.cornerRadius, this.spacing);
+    }
+
+    /**
      * Returns a copy with a different page content spacing.
      *
      * @param spacing spacing in density-independent pixels
