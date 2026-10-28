@@ -378,6 +378,63 @@ public final class MyBackground implements MuiBackground {
 
 如果背景没有额外状态，只实现 `create` 即可。
 
+### 7.1 可配置背景（`MuiConfigurableBackground`）
+
+固定图片或轮播用上面的预设即可。如果希望玩家在配置界面里选择图片/文件夹、裁剪、调整轮播参数，可以用 `MuiConfigurableBackground`。它把文件选择、裁剪、轮播和持久化组合起来，但不直接依赖任何模组的配置类：
+
+```java
+MuiBackgroundFiles files = new MuiBackgroundFiles(FMLPaths.GAMEDIR.get(), "mymod-config-bg");
+
+MuiConfigurableBackground background = new MuiConfigurableBackground(
+        new MyBackgroundSettings(),
+        new MuiBackgroundLabels(
+                "选择背景图片", "图片文件", "无法打开图片选择器",
+                "选择背景文件夹", "无法打开文件夹选择器",
+                "无法读取或保存图片", "背景已保存",
+                new MuiCropOverlay.Labels("裁剪背景", "拖动选择可见区域", "应用", "取消")),
+        files);
+
+Screen screen = MuiSettingsScreen.builder("My Mod")
+        .background(background)
+        .page("外观", page -> page
+                .section("背景", section -> section
+                        .button("选择背景图片", background::chooseBackgroundImage)
+                        .button("选择背景文件夹", background::chooseBackgroundFolder)))
+        .create(parent);
+```
+
+`MuiConfigurableBackground` 实现两个接口：
+
+- `MuiBackground`：`create` / `attach` / `detach`，由 `MuiConfigFragment` 自动调用；
+- `MuiBackgroundActions`：选择/清除背景、设置间隔/淡入/调暗，以及读取 `state()` 和 `images()`（当前设置与文件夹中的图片列表）。
+
+持久化由 `MuiBackgroundSettings` 负责，这样 API 不绑定 Forge 配置：
+
+```java
+public final class MyBackgroundSettings implements MuiBackgroundSettings {
+    @Override
+    public MuiBackgroundState load() {
+        return new MuiBackgroundState(image, folder, order, interval, fade, dim, crop);
+    }
+
+    @Override
+    public void save(MuiBackgroundState state) {
+        // 写回配置并标记 dirty
+    }
+}
+```
+
+裁剪浮层默认使用 `MuiTheme.modern(context)`。需要自定义主题、强调色或控件工厂时，传入 `MuiCropOverlayFactory`：
+
+```java
+new MuiConfigurableBackground(settings, labels, files,
+        (context, image, w, h, aspect, cropLabels, listener) ->
+                new MuiCropOverlay(context, MuiTheme.modern(context).withPrimary(0xFFFFC42E),
+                        image, w, h, aspect, cropLabels, listener));
+```
+
+`MuiConfigFragment` 在 attach 时会把自身作为 `MuiScreenHost` 传给背景；自定义背景如果需要宿主服务，重写 `attach(MuiScreenHost, FrameLayout)` 即可。`MuiConfigFragment` 本身实现了 `MuiScreenHost`，所以 `onCreated` 拿到的 fragment 可以直接当宿主使用。
+
 ---
 
 ## 8 本地化
@@ -762,6 +819,11 @@ MuiBackground.scrim()
 MuiBackground.image(path, dim)
 MuiBackground.image(path, cropX, cropY, cropWidth, cropHeight, dim)
 MuiBackground.slideshow(files, interval, fade, dim)
+MuiConfigurableBackground(settings, labels, files)
+MuiBackgroundSettings.load() / save(state)
+MuiBackgroundLabels(...)
+MuiBackgroundFiles(gameDir, baseName)
+MuiScreenHost（MuiConfigFragment 实现）
 ```
 
 ### 恢复

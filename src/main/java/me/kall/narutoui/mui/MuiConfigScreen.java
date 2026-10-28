@@ -248,8 +248,8 @@ public final class MuiConfigScreen {
         }
 
         /**
-         * Called after the shell has been created. Useful for receiving the fragment host so a
-         * caller can show overlays or reload a page.
+         * Called after the shell has been created. The argument implements {@link MuiScreenHost}, so
+         * it can be handed to background controllers or used to show overlays and reload a page.
          *
          * @param callback creation callback, or {@code null}
          * @return this builder

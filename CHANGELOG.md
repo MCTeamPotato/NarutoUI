@@ -6,3 +6,6 @@
 # 1.2.0
 - Provide shimmer-enabled text, switch, slider, and button controls through `MuiWidgetFactory.shimmer()`. 
 - Add `MuiTheme.withOnPrimary()` for customizing filled-button text color and document the new factory.
+# 1.3.0
+- Add a configurable background controller with image and folder pickers, slideshow settings, crop support, and pluggable persistence.
+- Expose screen-host services for overlays and page refreshes, and document the new API.

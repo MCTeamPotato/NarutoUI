@@ -238,7 +238,8 @@ public final class MuiSettingsScreen {
         }
 
         /**
-         * Receives the shell fragment after its view is created.
+         * Receives the shell fragment after its view is created. The fragment implements
+         * {@link MuiScreenHost}.
          *
          * @param callback creation callback, or {@code null}
          * @return this builder

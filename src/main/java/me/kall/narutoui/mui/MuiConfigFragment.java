@@ -29,8 +29,11 @@ import java.util.List;
  * <p>
  * The fragment has a public no-arg constructor and resolves its model from
  * {@link MuiConfigFragment#ARG_MODEL}. This makes it safe for a FragmentManager to recreate.
+ * <p>
+ * It implements {@link MuiScreenHost}, so background controllers and other shell collaborators can
+ * depend on the narrow host contract instead of the concrete fragment.
  */
-public final class MuiConfigFragment extends Fragment {
+public final class MuiConfigFragment extends Fragment implements MuiScreenHost {
     /** Fragment argument containing the registry key. */
     public static final String ARG_MODEL = "mui:model";
     private static final String ARG_SELECTED_PAGE = "mui:selected_page";
@@ -100,7 +103,7 @@ public final class MuiConfigFragment extends Fragment {
 
         FrameLayout root = new FrameLayout(context);
         this.root = root;
-        this.model.background().attach(root);
+        this.model.background().attach(this, root);
 
         LinearLayout shell = null;
         if (!this.model.singlePage()) {
@@ -208,6 +211,7 @@ public final class MuiConfigFragment extends Fragment {
      * Rebuilds the currently visible page from its original factory/body. Custom pages can use
      * this after a theme change or a config-dependent layout change.
      */
+    @Override
     public void reloadCurrentPage() {
         if (this.model == null || this.selected < 0 || this.selected >= this.pages.size()) return;
 
@@ -221,6 +225,7 @@ public final class MuiConfigFragment extends Fragment {
      *
      * @param overlay the overlay view
      */
+    @Override
     public void showOverlay(@NotNull View overlay) {
         if (this.root == null) return;
         this.root.addView(overlay, new FrameLayout.LayoutParams(MuiControls.MATCH, MuiControls.MATCH));
@@ -231,6 +236,7 @@ public final class MuiConfigFragment extends Fragment {
      *
      * @param overlay the overlay view
      */
+    @Override
     public void removeOverlay(@NotNull View overlay) {
         if (this.root == null) return;
         this.root.removeView(overlay);

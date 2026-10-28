@@ -19,7 +19,9 @@ import java.util.function.Function;
  * gradient, or any other Modern UI drawable without the screen shell knowing about it.
  * <p>
  * Override {@link #attach(FrameLayout)} when the background owns a slideshow or other state that
- * needs the root view; override {@link #detach()} to stop it when the screen is destroyed.
+ * needs the root view; override {@link #attach(MuiScreenHost, FrameLayout)} when it additionally
+ * needs shell services such as overlays or page refreshes. Override {@link #detach()} to stop it
+ * when the screen is destroyed.
  */
 @FunctionalInterface
 public interface MuiBackground {
@@ -40,6 +42,20 @@ public interface MuiBackground {
      */
     default void attach(@NotNull FrameLayout root) {
         root.setBackground(this.create(root.getContext()));
+    }
+
+    /**
+     * Applies the background to the screen root and supplies the screen host.
+     * <p>
+     * Stateful backgrounds that need to show overlays or reload a page can override this overload.
+     * The default implementation ignores the host and delegates to {@link #attach(FrameLayout)}, so
+     * existing backgrounds keep working unchanged.
+     *
+     * @param host the screen host
+     * @param root the screen root layout
+     */
+    default void attach(@NotNull MuiScreenHost host, @NotNull FrameLayout root) {
+        this.attach(root);
     }
 
     /**
