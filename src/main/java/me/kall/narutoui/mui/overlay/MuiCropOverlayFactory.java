@@ -1,9 +1,9 @@
-package me.kall.narutoui.mui.background;
+package me.kall.narutoui.mui.overlay;
 
 import icyllis.modernui.core.Context;
 import icyllis.modernui.graphics.Image;
-import me.kall.narutoui.mui.MuiTheme;
-import me.kall.narutoui.mui.widget.MuiCropOverlay;
+import me.kall.narutoui.mui.background.MuiConfigurableBackground;
+import me.kall.narutoui.mui.theme.MuiTheme;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -27,10 +27,7 @@ public interface MuiCropOverlayFactory {
      * @param listener     crop callback
      * @return the overlay view
      */
-    @NotNull MuiCropOverlay create(@NotNull Context context, @NotNull Image image,
-                                   int imageWidth, int imageHeight, float targetAspect,
-                                   @NotNull MuiCropOverlay.Labels labels,
-                                   @NotNull MuiCropOverlay.Listener listener);
+    @NotNull MuiCropOverlay create(@NotNull Context context, @NotNull Image image, int imageWidth, int imageHeight, float targetAspect, @NotNull MuiCropOverlay.Labels labels, @NotNull MuiCropOverlay.Listener listener);
 
     /**
      * Creates the default overlay with the standard Modern UI theme.
@@ -38,8 +35,6 @@ public interface MuiCropOverlayFactory {
      * @return the default factory
      */
     static @NotNull MuiCropOverlayFactory modern() {
-        return (context, image, imageWidth, imageHeight, targetAspect, labels, listener) ->
-                new MuiCropOverlay(context, MuiTheme.modern(context), image, imageWidth, imageHeight,
-                        targetAspect, labels, listener);
+        return (context, image, imageWidth, imageHeight, targetAspect, labels, listener) -> new MuiCropOverlay(context, MuiTheme.modern(context), image, imageWidth, imageHeight, targetAspect, labels, listener);
     }
 }

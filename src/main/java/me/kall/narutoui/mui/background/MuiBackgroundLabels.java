@@ -1,7 +1,7 @@
 package me.kall.narutoui.mui.background;
 
-import me.kall.narutoui.mui.MuiLocalization;
-import me.kall.narutoui.mui.widget.MuiCropOverlay;
+import me.kall.narutoui.mui.overlay.MuiCropOverlay;
+import me.kall.narutoui.mui.util.MuiLocalization;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -19,10 +19,7 @@ import org.jetbrains.annotations.NotNull;
  * @param saved              message shown after a picture was stored
  * @param crop               labels of the crop overlay
  */
-public record MuiBackgroundLabels(@NotNull String pickerTitle, @NotNull String imageFilter,
-                                  @NotNull String pickerFailed, @NotNull String folderPickerTitle,
-                                  @NotNull String folderPickerFailed, @NotNull String failed,
-                                  @NotNull String saved, @NotNull MuiCropOverlay.Labels crop) {
+public record MuiBackgroundLabels(@NotNull String pickerTitle, @NotNull String imageFilter, @NotNull String pickerFailed, @NotNull String folderPickerTitle, @NotNull String folderPickerFailed, @NotNull String failed, @NotNull String saved, @NotNull MuiCropOverlay.Labels crop) {
     public MuiBackgroundLabels {
         pickerTitle = MuiLocalization.resolve(pickerTitle);
         imageFilter = MuiLocalization.resolve(imageFilter);

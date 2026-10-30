@@ -65,8 +65,7 @@ public final class ShimmerTextView extends TextView implements ShimmerTarget {
 
     @Override
     public boolean shimmerEnabled() {
-        return this.shimmer && isEnabled() && this.profile.config().text()
-                && this.profile.config().configText();
+        return this.shimmer && isEnabled() && this.profile.config().text() && this.profile.config().configText();
     }
 
     @Override

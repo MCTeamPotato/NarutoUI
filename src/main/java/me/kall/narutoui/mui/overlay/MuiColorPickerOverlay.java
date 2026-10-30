@@ -1,18 +1,15 @@
-package me.kall.narutoui.mui.widget;
+package me.kall.narutoui.mui.overlay;
 
 import icyllis.modernui.animation.Animator;
 import icyllis.modernui.animation.AnimatorListener;
-import icyllis.modernui.core.Context;
 import icyllis.modernui.animation.MotionEasingUtils;
 import icyllis.modernui.animation.ValueAnimator;
-
+import icyllis.modernui.core.Context;
+import icyllis.modernui.graphics.*;
 import icyllis.modernui.graphics.Canvas;
-import icyllis.modernui.graphics.LinearGradient;
-import icyllis.modernui.graphics.Paint;
-import icyllis.modernui.graphics.RadialGradient;
-import icyllis.modernui.graphics.Shader;
 import icyllis.modernui.graphics.drawable.ColorDrawable;
 import icyllis.modernui.graphics.drawable.ShapeDrawable;
+import icyllis.modernui.graphics.Paint;
 import icyllis.modernui.util.ColorStateList;
 import icyllis.modernui.view.Gravity;
 import icyllis.modernui.view.MotionEvent;
@@ -21,8 +18,8 @@ import icyllis.modernui.view.ViewGroup;
 import icyllis.modernui.widget.FrameLayout;
 import icyllis.modernui.widget.LinearLayout;
 import icyllis.modernui.widget.TextView;
-import me.kall.narutoui.mui.MuiControls;
-import me.kall.narutoui.mui.MuiTheme;
+import me.kall.narutoui.mui.theme.MuiTheme;
+import me.kall.narutoui.mui.widget.MuiControls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -42,8 +39,7 @@ public final class MuiColorPickerOverlay extends FrameLayout {
      * @param apply      apply button
      * @param cancel     cancel button
      */
-    public record Labels(CharSequence title, CharSequence brightness, CharSequence alpha,
-                         CharSequence apply, CharSequence cancel) {}
+    public record Labels(CharSequence title, CharSequence brightness, CharSequence alpha, CharSequence apply, CharSequence cancel) {}
 
     /**
      * Receives the selected color.
@@ -62,7 +58,6 @@ public final class MuiColorPickerOverlay extends FrameLayout {
     private static final int HUE_SLICES = 180;
 
     private final MuiTheme theme;
-    private final Labels labels;
     private final Listener listener;
 
     private final WheelView wheel;
@@ -85,11 +80,9 @@ public final class MuiColorPickerOverlay extends FrameLayout {
      * @param labels   localized labels
      * @param listener pick callback
      */
-    public MuiColorPickerOverlay(@NotNull Context context, @NotNull MuiTheme theme, int argb,
-                                 @NotNull Labels labels, @NotNull Listener listener) {
+    public MuiColorPickerOverlay(@NotNull Context context, @NotNull MuiTheme theme, int argb, @NotNull Labels labels, @NotNull Listener listener) {
         super(context);
         this.theme = theme;
-        this.labels = labels;
         this.listener = listener;
 
         this.alpha = (argb >>> 24) & 0xFF;
@@ -107,8 +100,7 @@ public final class MuiColorPickerOverlay extends FrameLayout {
         column.setPadding(padding, padding, padding, padding);
         addView(column, new FrameLayout.LayoutParams(MuiControls.MATCH, MuiControls.MATCH));
 
-        column.addView(MuiControls.heading(context, this.theme, this.labels.title(), 18,
-                this.theme.onSurface()), MuiControls.wrap());
+        column.addView(MuiControls.heading(context, this.theme, labels.title(), 18, this.theme.onSurface()), MuiControls.wrap());
 
         this.wheel = new WheelView(context);
         this.wheel.setListener((h, s) -> {
@@ -120,7 +112,7 @@ public final class MuiColorPickerOverlay extends FrameLayout {
         wheelParams.topMargin = MuiControls.dp(context, 12);
         column.addView(this.wheel, wheelParams);
 
-        column.addView(caption(this.labels.brightness()), captionParams());
+        column.addView(caption(labels.brightness()), captionParams());
         this.brightnessBar = new GradientBar(context);
         this.brightnessBar.setListener(fraction -> {
             this.value = 1.0F - fraction;
@@ -128,7 +120,7 @@ public final class MuiColorPickerOverlay extends FrameLayout {
         });
         column.addView(this.brightnessBar, barParams(18));
 
-        column.addView(caption(this.labels.alpha()), captionParams());
+        column.addView(caption(labels.alpha()), captionParams());
         this.alphaBar = new GradientBar(context);
         this.alphaBar.setListener(fraction -> {
             this.alpha = Math.round(fraction * 255.0F);
@@ -155,10 +147,8 @@ public final class MuiColorPickerOverlay extends FrameLayout {
 
         LinearLayout.LayoutParams cancelParams = MuiControls.wrap();
         cancelParams.setMargins(0, 0, MuiControls.dp(context, 8), 0);
-        buttons.addView(MuiControls.button(context, this.theme, this.labels.cancel(), true,
-                view -> dismiss()), cancelParams);
-        buttons.addView(MuiControls.button(context, this.theme, this.labels.apply(), false,
-                view -> confirm()), MuiControls.wrap());
+        buttons.addView(MuiControls.button(context, this.theme, labels.cancel(), true, view -> dismiss()), cancelParams);
+        buttons.addView(MuiControls.button(context, this.theme, labels.apply(), false, view -> confirm()), MuiControls.wrap());
 
         refresh();
         slideIn();
@@ -171,8 +161,7 @@ public final class MuiColorPickerOverlay extends FrameLayout {
             ValueAnimator animator = ValueAnimator.ofFloat(0.0F, 1.0F);
             animator.setDuration(160L);
             animator.setInterpolator(MotionEasingUtils.MOTION_EASING_STANDARD_DECELERATE);
-            animator.addUpdateListener(animation -> setTranslationY(
-                    offset * (1.0F - (Float) animation.getAnimatedValue())));
+            animator.addUpdateListener(animation -> setTranslationY(offset * (1.0F - (Float) animation.getAnimatedValue())));
             animator.addListener(new AnimatorListener() {
                 @Override
                 public void onAnimationEnd(@NotNull Animator animation) {
@@ -395,8 +384,7 @@ public final class MuiColorPickerOverlay extends FrameLayout {
         }
 
         private void ensureShader(int width) {
-            if (this.shader != null && width == this.shaderWidth
-                    && this.startColor == this.shaderStart && this.endColor == this.shaderEnd) {
+            if (this.shader != null && width == this.shaderWidth && this.startColor == this.shaderStart && this.endColor == this.shaderEnd) {
                 return;
             }
             this.shaderWidth = width;

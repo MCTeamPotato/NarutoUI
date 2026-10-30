@@ -1,10 +1,13 @@
-package me.kall.narutoui.mui;
+package me.kall.narutoui.mui.screen;
 
 import icyllis.modernui.core.Context;
 import icyllis.modernui.view.View;
 import icyllis.modernui.widget.LinearLayout;
 import icyllis.modernui.widget.TextView;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
+import me.kall.narutoui.mui.theme.MuiTheme;
+import me.kall.narutoui.mui.widget.MuiControls;
+import me.kall.narutoui.mui.widget.MuiLayout;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -17,7 +20,8 @@ import java.util.function.IntSupplier;
  * Per-page builder context handed to {@link MuiConfigScreen} page bodies.
  * <p>
  * The context exposes the page's content column and a few common composition helpers. Anything
- * else can be assembled with {@link MuiControls} and added to {@link #content()}.
+ * else can be assembled with {@link MuiControls} and added to {@link #content()}, or built
+ * fluently on {@link #contentLayout()}.
  */
 public final class MuiPageContext {
     /** Screen context used for density conversion and widget construction. */
@@ -25,7 +29,7 @@ public final class MuiPageContext {
     /** Active visual tokens. */
     private final MuiTheme theme;
     /** Vertical content column that receives page children. */
-    private final LinearLayout content;
+    private final MuiLayout content;
 
     /**
      * Creates a page context. Called by {@link MuiPage}.
@@ -34,7 +38,7 @@ public final class MuiPageContext {
      * @param theme   active theme
      * @param content the page content column
      */
-    MuiPageContext(@NotNull Context context, @NotNull MuiTheme theme, @NotNull LinearLayout content) {
+    MuiPageContext(@NotNull Context context, @NotNull MuiTheme theme, @NotNull MuiLayout content) {
         this.context = context;
         this.theme = theme;
         this.content = content;
@@ -68,6 +72,15 @@ public final class MuiPageContext {
     }
 
     /**
+     * Returns the vertical content column as a fluent layout wrapper.
+     *
+     * @return the content column
+     */
+    public @NotNull MuiLayout contentLayout() {
+        return this.content;
+    }
+
+    /**
      * Adds a page header.
      *
      * @param title    page title
@@ -78,8 +91,7 @@ public final class MuiPageContext {
         this.content.addView(titleView, MuiControls.wrap());
 
         if (subtitle != null && !subtitle.isEmpty()) {
-            TextView subtitleView = MuiControls.text(this.context, this.theme, subtitle, 12,
-                    this.theme.onSurfaceVariant());
+            TextView subtitleView = MuiControls.text(this.context, this.theme, subtitle, 12, this.theme.onSurfaceVariant());
             LinearLayout.LayoutParams params = MuiControls.fill();
             params.topMargin = MuiControls.dp(this.context, 6);
             this.content.addView(subtitleView, params);
@@ -93,12 +105,22 @@ public final class MuiPageContext {
      * @return the card's vertical body
      */
     public @NotNull LinearLayout section(@NotNull CharSequence title) {
+        return sectionLayout(title);
+    }
+
+    /**
+     * Adds a section heading followed by a card and returns the fluent card body.
+     *
+     * @param title section title
+     * @return the card's vertical body
+     */
+    public @NotNull MuiLayout sectionLayout(@NotNull CharSequence title) {
         TextView titleView = MuiControls.heading(this.context, this.theme, title, 16, this.theme.primary());
         LinearLayout.LayoutParams params = MuiControls.wrap();
         params.setMargins(0, MuiControls.dp(this.context, 28), 0, MuiControls.dp(this.context, 8));
         this.content.addView(titleView, params);
 
-        LinearLayout card = MuiControls.card(this.context, this.theme);
+        MuiLayout card = MuiLayout.card(this.context, this.theme);
         this.content.addView(card, MuiControls.fill());
         return card;
     }
@@ -121,10 +143,7 @@ public final class MuiPageContext {
      * @param onChange    state callback
      * @return the composed row
      */
-    public @NotNull LinearLayout switchRow(@NotNull CharSequence title,
-                                            @Nullable CharSequence description,
-                                            boolean value,
-                                            @NotNull BooleanConsumer onChange) {
+    public @NotNull LinearLayout switchRow(@NotNull CharSequence title, @Nullable CharSequence description, boolean value, @NotNull BooleanConsumer onChange) {
         return MuiControls.switchRow(this.context, this.theme, title, description, value, onChange);
     }
 
@@ -137,10 +156,7 @@ public final class MuiPageContext {
      * @param onChange    state callback
      * @return the composed row
      */
-    public @NotNull LinearLayout switchRow(@NotNull CharSequence title,
-                                            @Nullable CharSequence description,
-                                            @NotNull BooleanSupplier value,
-                                            @NotNull BooleanConsumer onChange) {
+    public @NotNull LinearLayout switchRow(@NotNull CharSequence title, @Nullable CharSequence description, @NotNull BooleanSupplier value, @NotNull BooleanConsumer onChange) {
         return MuiControls.switchRow(this.context, this.theme, title, description, value, onChange);
     }
 
@@ -174,9 +190,7 @@ public final class MuiPageContext {
      * @param value  live integer supplier
      * @return the composed row
      */
-    public @NotNull LinearLayout valueRow(@NotNull CharSequence title,
-                                           @NotNull IntFunction<CharSequence> format,
-                                           @NotNull IntSupplier value) {
+    public @NotNull LinearLayout valueRow(@NotNull CharSequence title, @NotNull IntFunction<CharSequence> format, @NotNull IntSupplier value) {
         return MuiControls.valueRow(this.context, this.theme, title, format, value);
     }
 
@@ -190,10 +204,7 @@ public final class MuiPageContext {
      * @param onChange progress callback
      * @return the composed row
      */
-    public @NotNull LinearLayout sliderRow(@NotNull CharSequence title,
-                                            @NotNull CharSequence value,
-                                            int max, int progress,
-                                            @NotNull IntConsumer onChange) {
+    public @NotNull LinearLayout sliderRow(@NotNull CharSequence title, @NotNull CharSequence value, int max, int progress, @NotNull IntConsumer onChange) {
         return MuiControls.sliderRow(this.context, this.theme, title, value, max, progress, onChange);
     }
 
@@ -207,11 +218,7 @@ public final class MuiPageContext {
      * @param onChange progress callback
      * @return the composed row
      */
-    public @NotNull LinearLayout sliderRow(@NotNull CharSequence title,
-                                            @NotNull IntFunction<CharSequence> format,
-                                            int max,
-                                            @NotNull IntSupplier value,
-                                            @NotNull IntConsumer onChange) {
+    public @NotNull LinearLayout sliderRow(@NotNull CharSequence title, @NotNull IntFunction<CharSequence> format, int max, @NotNull IntSupplier value, @NotNull IntConsumer onChange) {
         return MuiControls.sliderRow(this.context, this.theme, title, format, max, value, onChange);
     }
 }

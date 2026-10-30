@@ -2,30 +2,30 @@ package me.kall.narutoui.mui.background;
 
 import icyllis.modernui.core.Context;
 import icyllis.modernui.graphics.Bitmap;
-import icyllis.modernui.graphics.Image;
 import icyllis.modernui.graphics.drawable.ColorDrawable;
 import icyllis.modernui.graphics.drawable.Drawable;
+import icyllis.modernui.graphics.Image;
 import icyllis.modernui.mc.MuiModApi;
 import icyllis.modernui.widget.FrameLayout;
 import icyllis.modernui.widget.Toast;
-import me.kall.narutoui.mui.MuiBackground;
-import me.kall.narutoui.mui.MuiBackgroundActions;
-import me.kall.narutoui.mui.MuiFilePicker;
-import me.kall.narutoui.mui.MuiScreenHost;
-import me.kall.narutoui.mui.widget.MuiCropOverlay;
+import me.kall.narutoui.mui.overlay.MuiCropOverlay;
+import me.kall.narutoui.mui.screen.MuiConfigScreen;
+import me.kall.narutoui.mui.screen.MuiScreenHost;
+import me.kall.narutoui.mui.util.MuiFilePicker;
 import net.minecraft.client.Minecraft;
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.List;
+import me.kall.narutoui.mui.overlay.MuiCropOverlayFactory;
 
 /**
- * Turnkey configurable background for a {@link me.kall.narutoui.mui.MuiConfigScreen}.
+ * Turnkey configurable background for a {@link me.kall.narutoui.mui.screen.MuiConfigScreen}.
  * <p>
  * It combines the existing image and slideshow presets with folder/image pickers, cropping, and
  * settings persistence. Persistence is delegated to {@link MuiBackgroundSettings}, so the class
@@ -58,9 +58,7 @@ public final class MuiConfigurableBackground implements MuiBackground, MuiBackgr
      * @param labels   localized labels
      * @param files    file helper rooted at the game directory
      */
-    public MuiConfigurableBackground(@NotNull MuiBackgroundSettings settings,
-                                     @NotNull MuiBackgroundLabels labels,
-                                     @NotNull MuiBackgroundFiles files) {
+    public MuiConfigurableBackground(@NotNull MuiBackgroundSettings settings, @NotNull MuiBackgroundLabels labels, @NotNull MuiBackgroundFiles files) {
         this(settings, labels, files, MuiCropOverlayFactory.modern());
     }
 
@@ -72,10 +70,7 @@ public final class MuiConfigurableBackground implements MuiBackground, MuiBackgr
      * @param files       file helper rooted at the game directory
      * @param cropFactory crop overlay factory
      */
-    public MuiConfigurableBackground(@NotNull MuiBackgroundSettings settings,
-                                     @NotNull MuiBackgroundLabels labels,
-                                     @NotNull MuiBackgroundFiles files,
-                                     @NotNull MuiCropOverlayFactory cropFactory) {
+    public MuiConfigurableBackground(@NotNull MuiBackgroundSettings settings, @NotNull MuiBackgroundLabels labels, @NotNull MuiBackgroundFiles files, @NotNull MuiCropOverlayFactory cropFactory) {
         this.settings = settings;
         this.labels = labels;
         this.files = files;
@@ -323,13 +318,11 @@ public final class MuiConfigurableBackground implements MuiBackground, MuiBackgr
             }
         };
 
-        holder[0] = this.cropFactory.create(context, preview, imageWidth, imageHeight, target,
-                this.labels.crop(), listener);
+        holder[0] = this.cropFactory.create(context, preview, imageWidth, imageHeight, target, this.labels.crop(), listener);
         current.showOverlay(holder[0]);
     }
 
-    private void saveBackground(@NotNull Path path, int imageWidth, int imageHeight,
-                                int x, int y, int width, int height) {
+    private void saveBackground(@NotNull Path path, int imageWidth, int imageHeight, int x, int y, int width, int height) {
         CompletableFuture.supplyAsync(() -> {
             try {
                 return this.files.copyInto(path);

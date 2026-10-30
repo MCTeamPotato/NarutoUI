@@ -53,8 +53,7 @@ public final class ShimmerSeekBar extends SeekBar implements ShimmerTarget {
 
     @Override
     public boolean shimmerEnabled() {
-        return this.bound && isEnabled() && this.profile.config().text()
-                && this.profile.config().controls();
+        return this.bound && isEnabled() && this.profile.config().text() && this.profile.config().controls();
     }
 
     @Override

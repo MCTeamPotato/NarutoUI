@@ -1,8 +1,8 @@
 package me.kall.narutoui.mui.shimmer;
 
-import icyllis.modernui.R;
 import icyllis.modernui.core.Context;
 import icyllis.modernui.graphics.drawable.ShapeDrawable;
+import icyllis.modernui.R;
 import icyllis.modernui.util.ColorStateList;
 import icyllis.modernui.util.StateSet;
 import icyllis.modernui.view.View;
@@ -86,8 +86,7 @@ public final class ShimmerSwitch extends Switch implements ShimmerTarget {
 
     @Override
     public boolean shimmerEnabled() {
-        return this.bound && isEnabled() && this.profile.config().text()
-                && this.profile.config().controls();
+        return this.bound && isEnabled() && this.profile.config().text() && this.profile.config().controls();
     }
 
     @Override

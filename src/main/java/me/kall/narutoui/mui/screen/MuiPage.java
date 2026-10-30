@@ -1,11 +1,13 @@
-package me.kall.narutoui.mui;
+package me.kall.narutoui.mui.screen;
 
 import icyllis.modernui.core.Context;
 import icyllis.modernui.view.MeasureSpec;
 import icyllis.modernui.view.View;
 import icyllis.modernui.widget.FrameLayout;
-import icyllis.modernui.widget.LinearLayout;
 import icyllis.modernui.widget.ScrollView;
+import me.kall.narutoui.mui.theme.MuiTheme;
+import me.kall.narutoui.mui.widget.MuiControls;
+import me.kall.narutoui.mui.widget.MuiLayout;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -32,15 +34,12 @@ final class MuiPage {
      * @param subtitle     optional subtitle shown below the title
      * @param body         page content callback
      */
-    MuiPage(@NotNull Context context, @NotNull MuiTheme theme, int contentWidth,
-            @Nullable CharSequence title, @Nullable CharSequence subtitle,
-            @NotNull Consumer<MuiPageContext> body) {
+    MuiPage(@NotNull Context context, @NotNull MuiTheme theme, int contentWidth, @Nullable CharSequence title, @Nullable CharSequence subtitle, @NotNull Consumer<MuiPageContext> body) {
         int maxWidth = contentWidth <= 0 ? 0 : MuiControls.dp(context, contentWidth);
         this.root = new CenteredScrollView(context, maxWidth);
         this.root.setClipToPadding(false);
 
-        LinearLayout content = new LinearLayout(context);
-        content.setOrientation(LinearLayout.VERTICAL);
+        MuiLayout content = MuiLayout.column(context, theme);
         content.setClipToPadding(false);
         int padding = MuiControls.dp(context, theme.spacing());
         content.setPadding(padding, padding, padding, MuiControls.dp(context, 48));
@@ -87,9 +86,7 @@ final class MuiPage {
          */
         @Override
         protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-            if (this.maxWidth > 0
-                    && MeasureSpec.getMode(widthMeasureSpec) != MeasureSpec.UNSPECIFIED
-                    && MeasureSpec.getSize(widthMeasureSpec) > this.maxWidth) {
+            if (this.maxWidth > 0 && MeasureSpec.getMode(widthMeasureSpec) != MeasureSpec.UNSPECIFIED && MeasureSpec.getSize(widthMeasureSpec) > this.maxWidth) {
                 widthMeasureSpec = MeasureSpec.makeMeasureSpec(this.maxWidth, MeasureSpec.EXACTLY);
             }
             super.onMeasure(widthMeasureSpec, heightMeasureSpec);

@@ -1,4 +1,4 @@
-package me.kall.narutoui.mui;
+package me.kall.narutoui.mui.screen;
 
 import icyllis.modernui.fragment.Fragment;
 import icyllis.modernui.fragment.FragmentFactory;
@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
  * {@link MuiConfigFragment} already has a public no-arg constructor, so this is not required for
  * the standard {@code MuiModApi.createScreen} path.
  */
+@SuppressWarnings("UnstableApiUsage")
 public final class MuiConfigFragmentFactory extends FragmentFactory {
     /**
      * Creates the fragment factory.

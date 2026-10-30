@@ -1,5 +1,8 @@
 package me.kall.narutoui.mui.shimmer;
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+
 /**
  * Settings and color ramp consumed by the generic shimmer engine.
  * <p>
@@ -97,7 +100,8 @@ public interface MuiShimmerConfig {
      *
      * @return the default config
      */
-    static MuiShimmerConfig defaults() {
+    @Contract(value = " -> new", pure = true)
+    static @NotNull MuiShimmerConfig defaults() {
         return new MuiShimmerConfig() {
             @Override
             public boolean text() {

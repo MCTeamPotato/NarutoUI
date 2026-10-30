@@ -1,7 +1,7 @@
-package me.kall.narutoui.mui;
+package me.kall.narutoui.mui.theme;
 
-import icyllis.modernui.R;
 import icyllis.modernui.core.Context;
+import icyllis.modernui.R;
 import icyllis.modernui.resources.TypedValue;
 import org.jetbrains.annotations.NotNull;
 
@@ -66,9 +66,7 @@ public record MuiTheme(
      * @return a new theme instance
      */
     public @NotNull MuiTheme withPrimary(int color) {
-        return new MuiTheme(color, this.onPrimary, this.surface, this.surfaceLow, this.surfaceHigh,
-                this.onSurface, this.onSurfaceVariant, this.outline, this.error,
-                this.cornerRadius, this.spacing);
+        return new MuiTheme(color, this.onPrimary, this.surface, this.surfaceLow, this.surfaceHigh, this.onSurface, this.onSurfaceVariant, this.outline, this.error, this.cornerRadius, this.spacing);
     }
 
     /**
@@ -78,9 +76,7 @@ public record MuiTheme(
      * @return a new theme instance
      */
     public @NotNull MuiTheme withOnPrimary(int color) {
-        return new MuiTheme(this.primary, color, this.surface, this.surfaceLow, this.surfaceHigh,
-                this.onSurface, this.onSurfaceVariant, this.outline, this.error,
-                this.cornerRadius, this.spacing);
+        return new MuiTheme(this.primary, color, this.surface, this.surfaceLow, this.surfaceHigh, this.onSurface, this.onSurfaceVariant, this.outline, this.error, this.cornerRadius, this.spacing);
     }
 
     /**
@@ -90,9 +86,7 @@ public record MuiTheme(
      * @return a new theme instance
      */
     public @NotNull MuiTheme withSpacing(int spacing) {
-        return new MuiTheme(this.primary, this.onPrimary, this.surface, this.surfaceLow, this.surfaceHigh,
-                this.onSurface, this.onSurfaceVariant, this.outline, this.error,
-                this.cornerRadius, spacing);
+        return new MuiTheme(this.primary, this.onPrimary, this.surface, this.surfaceLow, this.surfaceHigh, this.onSurface, this.onSurfaceVariant, this.outline, this.error, this.cornerRadius, spacing);
     }
 
     /**
@@ -102,9 +96,7 @@ public record MuiTheme(
      * @return a new theme instance
      */
     public @NotNull MuiTheme withCornerRadius(int cornerRadius) {
-        return new MuiTheme(this.primary, this.onPrimary, this.surface, this.surfaceLow, this.surfaceHigh,
-                this.onSurface, this.onSurfaceVariant, this.outline, this.error,
-                cornerRadius, this.spacing);
+        return new MuiTheme(this.primary, this.onPrimary, this.surface, this.surfaceLow, this.surfaceHigh, this.onSurface, this.onSurfaceVariant, this.outline, this.error, cornerRadius, this.spacing);
     }
 
     /**
@@ -115,6 +107,7 @@ public record MuiTheme(
      * @param fallback fallback ARGB value
      * @return the resolved color
      */
+    @SuppressWarnings("UnstableApiUsage")
     private static int attr(@NotNull Context context, @NotNull String name, int fallback) {
         TypedValue value = new TypedValue();
         return context.getTheme().resolveAttribute(R.ns, name, value, true) ? value.data : fallback;

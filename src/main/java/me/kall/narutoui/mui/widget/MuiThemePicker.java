@@ -1,4 +1,4 @@
-package me.kall.narutoui.mui;
+package me.kall.narutoui.mui.widget;
 
 import icyllis.modernui.core.Context;
 import icyllis.modernui.graphics.drawable.ShapeDrawable;
@@ -6,6 +6,8 @@ import icyllis.modernui.view.Gravity;
 import icyllis.modernui.view.View;
 import icyllis.modernui.widget.LinearLayout;
 import icyllis.modernui.widget.TextView;
+import me.kall.narutoui.mui.screen.MuiSettingsPage;
+import me.kall.narutoui.mui.theme.MuiTheme;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -85,8 +87,7 @@ public final class MuiThemePicker {
      * @param options      selectable options
      * @param changed      callback invoked after an option is selected
      */
-    public static void add(@NotNull MuiSettingsPage page, @NotNull CharSequence sectionTitle,
-                           @NotNull List<? extends Option> options, @NotNull Runnable changed) {
+    public static void add(@NotNull MuiSettingsPage page, @NotNull CharSequence sectionTitle, @NotNull List<? extends Option> options, @NotNull Runnable changed) {
         add(page, sectionTitle, options, "In use", changed);
     }
 
@@ -99,9 +100,7 @@ public final class MuiThemePicker {
      * @param inUse        label shown on the selected option
      * @param changed      callback invoked after an option is selected
      */
-    public static void add(@NotNull MuiSettingsPage page, @NotNull CharSequence sectionTitle,
-                           @NotNull List<? extends Option> options, @NotNull String inUse,
-                           @NotNull Runnable changed) {
+    public static void add(@NotNull MuiSettingsPage page, @NotNull CharSequence sectionTitle, @NotNull List<? extends Option> options, @NotNull String inUse, @NotNull Runnable changed) {
         page.section(sectionTitle, section -> section.custom(card -> {
             Context context = section.page().context();
             MuiTheme theme = section.page().theme();
@@ -134,18 +133,14 @@ public final class MuiThemePicker {
      * @param changed selection callback
      * @return the tile view
      */
-    private static @NotNull View tile(@NotNull Context context, @NotNull MuiTheme theme,
-                                      @NotNull Option option, @NotNull String inUse,
-                                      @NotNull Runnable changed) {
+    private static @NotNull View tile(@NotNull Context context, @NotNull MuiTheme theme, @NotNull Option option, @NotNull String inUse, @NotNull Runnable changed) {
         LinearLayout tile = MuiControls.column(context);
-        tile.setPadding(MuiControls.dp(context, 10), MuiControls.dp(context, 10),
-                MuiControls.dp(context, 10), MuiControls.dp(context, 10));
+        tile.setPadding(MuiControls.dp(context, 10), MuiControls.dp(context, 10), MuiControls.dp(context, 10), MuiControls.dp(context, 10));
 
         ShapeDrawable background = new ShapeDrawable();
         background.setCornerRadius(MuiControls.dp(context, theme.cornerRadius()));
         background.setColor(theme.surfaceHigh());
-        background.setStroke(Math.max(1, MuiControls.dp(context, 1)),
-                option.selected() ? theme.primary() : theme.outline());
+        background.setStroke(Math.max(1, MuiControls.dp(context, 1)), option.selected() ? theme.primary() : theme.outline());
         tile.setBackground(background);
 
         LinearLayout previewBox = MuiControls.column(context);
@@ -159,24 +154,21 @@ public final class MuiThemePicker {
             accentBackground.setCornerRadius(MuiControls.dp(context, 3));
             accentBackground.setColor(option.accent());
             accent.setBackground(accentBackground);
-            previewBox.addView(accent, new LinearLayout.LayoutParams(
-                    MuiControls.MATCH, MuiControls.dp(context, 8)));
+            previewBox.addView(accent, new LinearLayout.LayoutParams(MuiControls.MATCH, MuiControls.dp(context, 8)));
 
             View body = new View(context);
             ShapeDrawable bodyBackground = new ShapeDrawable();
             bodyBackground.setCornerRadius(MuiControls.dp(context, 5));
             bodyBackground.setColor(option.surface());
             body.setBackground(bodyBackground);
-            LinearLayout.LayoutParams bodyParams = new LinearLayout.LayoutParams(
-                    MuiControls.MATCH, MuiControls.dp(context, 42));
+            LinearLayout.LayoutParams bodyParams = new LinearLayout.LayoutParams(MuiControls.MATCH, MuiControls.dp(context, 42));
             bodyParams.topMargin = MuiControls.dp(context, 4);
             previewBox.addView(body, bodyParams);
         }
 
         tile.addView(previewBox, MuiControls.fill());
 
-        TextView title = MuiControls.text(context, theme, option.title(), 13,
-                option.selected() ? theme.primary() : theme.onSurface());
+        TextView title = MuiControls.text(context, theme, option.title(), 13, option.selected() ? theme.primary() : theme.onSurface());
         LinearLayout.LayoutParams titleParams = MuiControls.fill();
         titleParams.topMargin = MuiControls.dp(context, 8);
         tile.addView(title, titleParams);

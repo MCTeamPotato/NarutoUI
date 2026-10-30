@@ -1,4 +1,4 @@
-package me.kall.narutoui.mui;
+package me.kall.narutoui.mui.util;
 
 import net.minecraft.client.resources.language.I18n;
 import org.jetbrains.annotations.NotNull;

@@ -26,7 +26,6 @@ loom {
             if (hasMixin) it.mixinConfig("${archives_name}.mixins.json")
             
             if (hasAccessTransformer) it.accessTransformer(file("src/main/resources/META-INF/accesstransformer.cfg"))
-            
         }
     }
 }

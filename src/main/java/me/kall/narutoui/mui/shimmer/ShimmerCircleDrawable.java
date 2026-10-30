@@ -57,8 +57,7 @@ public final class ShimmerCircleDrawable extends ShapeDrawable implements Shimme
 
     @Override
     public boolean shimmerEnabled() {
-        return this.host.isAttachedToWindow() && this.profile.config().text()
-                && this.profile.config().controls();
+        return this.host.isAttachedToWindow() && this.profile.config().text() && this.profile.config().controls();
     }
 
     @Override

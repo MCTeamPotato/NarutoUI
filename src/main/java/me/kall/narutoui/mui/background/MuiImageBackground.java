@@ -1,16 +1,14 @@
 package me.kall.narutoui.mui.background;
 
 import icyllis.modernui.core.Context;
-import icyllis.modernui.graphics.Bitmap;
 import icyllis.modernui.graphics.BitmapFactory;
-import icyllis.modernui.graphics.Image;
 import icyllis.modernui.graphics.drawable.ColorDrawable;
 import icyllis.modernui.graphics.drawable.Drawable;
+import icyllis.modernui.graphics.Image;
 import icyllis.modernui.mc.MuiModApi;
 import icyllis.modernui.widget.FrameLayout;
-import me.kall.narutoui.mui.MuiBackground;
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -56,8 +54,7 @@ public final class MuiImageBackground implements MuiBackground {
      * @param cropHeight crop height in {@code 0..1}
      * @param dim        dim overlay in {@code 0..1}
      */
-    public MuiImageBackground(@NotNull Path path, double cropX, double cropY, double cropWidth,
-                              double cropHeight, double dim) {
+    public MuiImageBackground(@NotNull Path path, double cropX, double cropY, double cropWidth, double cropHeight, double dim) {
         this.path = path;
         this.cropX = cropX;
         this.cropY = cropY;
@@ -108,8 +105,7 @@ public final class MuiImageBackground implements MuiBackground {
 
             this.closeImage();
             this.image = created;
-            this.root.setBackground(new MuiImageDrawable(created, this.cropX, this.cropY,
-                    this.cropWidth, this.cropHeight, this.dim));
+            this.root.setBackground(new MuiImageDrawable(created, this.cropX, this.cropY, this.cropWidth, this.cropHeight, this.dim));
         }));
     }
 

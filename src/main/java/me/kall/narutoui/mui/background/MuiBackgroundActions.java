@@ -1,6 +1,5 @@
-package me.kall.narutoui.mui;
+package me.kall.narutoui.mui.background;
 
-import me.kall.narutoui.mui.background.MuiBackgroundState;
 import org.jetbrains.annotations.NotNull;
 
 import java.nio.file.Path;

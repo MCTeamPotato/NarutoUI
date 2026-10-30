@@ -29,8 +29,7 @@ public final class ShimmerButton extends Button implements ShimmerTarget {
      * @param attrs        optional attribute set
      * @param defStyleAttr optional default style
      */
-    public ShimmerButton(@NotNull Context context, @Nullable AttributeSet attrs,
-                         @Nullable ResourceId defStyleAttr) {
+    public ShimmerButton(@NotNull Context context, @Nullable AttributeSet attrs, @Nullable ResourceId defStyleAttr) {
         super(context, attrs, defStyleAttr);
         this.profile = MuiShimmerProfile.current();
     }
@@ -97,6 +96,7 @@ public final class ShimmerButton extends Button implements ShimmerTarget {
         this.applyBackground(this.backgroundBaseColor);
     }
 
+    @SuppressWarnings("SameParameterValue")
     private static int blend(int from, int to, float amount) {
         int a = (int) (((from >>> 24) & 0xFF) + (((to >>> 24) & 0xFF) - ((from >>> 24) & 0xFF)) * amount);
         int r = (int) (((from >> 16) & 0xFF) + (((to >> 16) & 0xFF) - ((from >> 16) & 0xFF)) * amount);
@@ -107,8 +107,7 @@ public final class ShimmerButton extends Button implements ShimmerTarget {
 
     @Override
     public boolean shimmerEnabled() {
-        return isAttachedToWindow() && this.profile.config().text()
-                && this.profile.config().configText();
+        return isAttachedToWindow() && this.profile.config().text() && this.profile.config().configText();
     }
 
     @Override

@@ -1,6 +1,7 @@
-package me.kall.narutoui.mui;
+package me.kall.narutoui.mui.screen;
 
-import icyllis.modernui.widget.LinearLayout;
+import me.kall.narutoui.mui.widget.MuiControls;
+import me.kall.narutoui.mui.widget.MuiLayout;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Consumer;
@@ -24,9 +25,8 @@ public final class MuiSettingsPage {
      * @param body  section field callback
      * @return this page, for chaining
      */
-    public @NotNull MuiSettingsPage section(@NotNull CharSequence title,
-                                            @NotNull Consumer<MuiSettingsSection> body) {
-        LinearLayout card = this.context.section(title);
+    public @NotNull MuiSettingsPage section(@NotNull CharSequence title, @NotNull Consumer<MuiSettingsSection> body) {
+        MuiLayout card = this.context.sectionLayout(title);
         body.accept(new MuiSettingsSection(this.context, card));
         return this;
     }
@@ -38,8 +38,7 @@ public final class MuiSettingsPage {
      * @return this page, for chaining
      */
     public @NotNull MuiSettingsPage text(@NotNull CharSequence text) {
-        this.context.add(MuiControls.text(this.context.context(), this.context.theme(), text, 12,
-                this.context.theme().onSurfaceVariant()));
+        this.context.add(MuiControls.text(this.context.context(), this.context.theme(), text, 12, this.context.theme().onSurfaceVariant()));
         return this;
     }
 

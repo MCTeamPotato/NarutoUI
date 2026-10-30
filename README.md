@@ -4,9 +4,14 @@ NarutoUI 是一个面向 Minecraft 客户端模组的 **Modern UI 配置界面�
 
 它不提供某一套固定的配置内容，而是提供一整套界面骨架：导航栏、页面、分区、字段、主题、背景、本地化、流光、文件选择、颜色选择和图片裁剪。其他模组只需要声明“要显示哪些页面、每个页面有哪些字段”，不需要重复编写布局和控件代码。
 
+> 第一次使用？建议先读 [EASY_START.md](EASY_START.md)，它按“接入 → 最小界面 → 自定义布局 → 背景/流光”的顺序讲解。完整 API 参考见 [API-TUTOR.md](API-TUTOR.md)。
+
 ## 特性
 
 - 声明式页面 / 分区 / 字段 DSL
+- 可链式构建的 `MuiLayout`（`LinearLayout` 子类）
+- 可折叠卡片 `MuiCollapsibleCard`（加号/减号展开，带动画）
+- 通用控件 `MuiNumberField` / `MuiChip` / `MuiTextAction` / `MuiLogo` / `MuiHintBadge` / `MuiColorField` / `MuiDescriptionRow`
 - 可滚动、居中、限制宽度的页面
 - 自动生成 section 卡片、行布局和分隔线
 - switch、slider、value row、button、text 等常用字段
@@ -23,7 +28,7 @@ NarutoUI 是一个面向 Minecraft 客户端模组的 **Modern UI 配置界面�
 ## 快速开始
 
 ```java
-import me.kall.narutoui.mui.MuiSettingsScreen;
+import me.kall.narutoui.mui.screen.MuiSettingsScreen;
 import net.minecraft.client.gui.screens.Screen;
 
 public final class MyConfigScreen {
@@ -138,6 +143,102 @@ MuiSettingsScreen.builder("Example Mod")
 - `text(CharSequence)`
 - `custom(View / Consumer<LinearLayout>)`
 
+## 链式布局
+
+`MuiLayout` 是 `LinearLayout` 的链式封装。它本身仍然是 `LinearLayout`，可以直接传给任何接受 `View` 或 `LinearLayout` 的 API；所有配置方法都返回自身：
+
+```java
+MuiLayout card = MuiLayout.card(context, theme)
+        .margin(0, 12, 0, 0)
+        .spacing(8)
+        .heading("Appearance")
+        .text("Changes apply immediately.")
+        .button("Reset", MyConfig::reset);
+```
+
+可用的构建方法：
+
+- `column(Context, MuiTheme)` / `row(Context, MuiTheme)` / `card(Context, MuiTheme)`
+- `horizontal()` / `vertical()` / `gravity(int)` / `center()` / `centerVertical()`
+- `padding(dp)` / `padding(left, top, right, bottom)`
+- `margin(dp)` / `margin(left, top, right, bottom)`（在加入父容器后仍然生效）
+- `spacing(dp)`（使用布局的 divider 槽位实现子项间距）
+- `minHeight(dp)` / `background(color / Drawable)`
+- `add(View)` / `add(View, LayoutParams)` / `addWeighted(View, weight)` / `addAll(View...)`
+- `space(dp)` / `flexibleSpace()`
+- `text(...)` / `heading(...)` / `divider()` / `button(...)`
+
+低层页面已经提供了对应的入口：
+
+```java
+page.custom(ui -> {
+    ui.contentLayout()
+            .spacing(8)
+            .add(ui.switchRow("Enable HUD", null, true, value -> {}));
+
+    MuiLayout card = ui.sectionLayout("Rendering")
+            .add(ui.valueRow("Version", "1.0.0"));
+});
+```
+
+`MuiSettingsSection` 还提供 `cardLayout()` 和 `customLayout(Consumer<MuiLayout>)`：
+
+```java
+.section("Rendering", section -> section
+        .toggle("Enable HUD", MyConfig::enabled, MyConfig::setEnabled)
+        .customLayout(row -> row
+                .spacing(6)
+                .add(section.page().valueRow("Version", "1.0.0"))))
+```
+
+## 可折叠卡片
+
+`MuiCollapsibleCard` 把“常驻标题栏 + 可展开内容”封装成一个卡片。标题栏左侧是 `+` / `-`，点击标题栏会以动画展开或收起 body：
+
+```java
+// enabledSwitch 是你自己的开关控件，例如 MuiControls.switchControl(...)
+MuiCollapsibleCard.card(context, theme, "FPS", "1 / 4 字段 · (10, 5)", false)
+        .trailing(enabledSwitch)
+        .summary("1 / 4 字段 · (10, 5)")
+        .body(body -> body
+                .add(MuiControls.text(context, theme, "Content", 12, theme.onSurfaceVariant())));
+```
+
+## 通用控件
+
+卡片、输入框、chip 和文本操作是彼此独立的组件，可以像 `MuiLayout` 一样自由组合：
+
+```java
+MuiLayout.row(context, theme)
+        .spacing(6)
+        .add(MuiNumberField.create(context, theme, 10)
+                .bounds(0, 100)
+                .width(64)
+                .onChange(value -> { }))
+        .add(MuiChip.create(context, theme, "Label", true)
+                .onChanged(checked -> { }))
+        .add(MuiTextAction.create(context, theme, "Reset", () -> { }));
+```
+
+- `MuiNumberField`：只接受数字、支持范围 clamp、`onChange` 回调和链式 `value` / `bounds` / `width` / `gravity`
+- `MuiChip`：背景参与 shimmer 的小开关 chip，文字固定黑色；支持 `checked` / `isChecked` / `onChanged`
+- `MuiTextAction`：紧凑的 primary 文本操作
+- `MuiLogo`：带圆形 shimmer 背景的 rail / header 标志；自动管理 shimmer 注册
+- `MuiHintBadge`：带 shimmer 描边的提示胶囊；文字和描边都可参与流光
+- `MuiColorField`：色块 + 标签 + pick 按钮，适合边框色 / 强调色
+- `MuiDescriptionRow`：标题 + 可选说明，适合用法提示和只读说明行
+
+```java
+MuiLogo.create(context, theme, "N").color(accent).textColor(onAccent);
+MuiHintBadge.create(context, theme, "ESC").color(accent);
+MuiColorField.create(context, theme, "Border color", argb)
+        .buttonLabel("Pick")
+        .onPick(() -> { });
+MuiDescriptionRow.create(context, theme, "Drag", "Drag a card to move it.");
+```
+
+> `MuiCardEditor` 已从 API 中移除，原来的 `Model` / `Field` 适配层不再需要。卡片直接组合 `MuiCollapsibleCard` + 这些通用控件；NarutoOverlay 的 Cards 页面就是这样实现的。
+
 ## 主题与背景
 
 ```java
@@ -244,17 +345,13 @@ build/libs/narutoui-xxx-xxx.jar
 
 ```text
 src/main/java/me/kall/narutoui/mui/
-├── MuiConfigScreen.java
-├── MuiSettingsScreen.java
-├── MuiSettingsPage.java
-├── MuiSettingsSection.java
-├── MuiTheme.java
-├── MuiWidgetFactory.java
-├── MuiLocalization.java
-├── MuiFilePicker.java
-├── background/
-├── shimmer/
-└── widget/
+├── screen/       入口、Fragment、页面、section、MuiScreenHost
+├── widget/       链式布局与通用控件
+├── theme/        MuiTheme、控件工厂
+├── background/   静态/图片/幻灯片背景、可配置背景
+├── shimmer/      流光 profile、绘制原语、流光控件
+├── overlay/      颜色选择、裁剪浮层
+└── util/         本地化、文件/文件夹选择
 ```
 
 ## 限制

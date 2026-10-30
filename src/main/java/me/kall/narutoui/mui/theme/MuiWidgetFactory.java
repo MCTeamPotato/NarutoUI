@@ -1,9 +1,9 @@
-package me.kall.narutoui.mui;
+package me.kall.narutoui.mui.theme;
 
-import icyllis.modernui.R;
 import icyllis.modernui.core.Context;
 import icyllis.modernui.graphics.drawable.RippleDrawable;
 import icyllis.modernui.graphics.drawable.ShapeDrawable;
+import icyllis.modernui.R;
 import icyllis.modernui.util.ColorStateList;
 import icyllis.modernui.util.StateSet;
 import icyllis.modernui.view.Gravity;
@@ -12,6 +12,7 @@ import icyllis.modernui.widget.Button;
 import icyllis.modernui.widget.SeekBar;
 import icyllis.modernui.widget.Switch;
 import icyllis.modernui.widget.TextView;
+import me.kall.narutoui.mui.widget.MuiControls;
 import org.jetbrains.annotations.NotNull;
 
 /**

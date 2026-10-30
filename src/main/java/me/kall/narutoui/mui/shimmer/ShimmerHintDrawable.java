@@ -3,7 +3,7 @@ package me.kall.narutoui.mui.shimmer;
 import icyllis.modernui.graphics.drawable.ShapeDrawable;
 import icyllis.modernui.util.ColorStateList;
 import icyllis.modernui.view.View;
-import me.kall.narutoui.mui.MuiControls;
+import me.kall.narutoui.mui.widget.MuiControls;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -66,8 +66,7 @@ public final class ShimmerHintDrawable extends ShapeDrawable implements ShimmerT
 
     @Override
     public boolean shimmerEnabled() {
-        return this.host.isAttachedToWindow() && this.profile.config().text()
-                && this.profile.config().controls();
+        return this.host.isAttachedToWindow() && this.profile.config().text() && this.profile.config().controls();
     }
 
     @Override

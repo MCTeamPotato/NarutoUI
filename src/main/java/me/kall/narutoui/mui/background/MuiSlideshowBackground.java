@@ -6,21 +6,19 @@ import icyllis.modernui.animation.MotionEasingUtils;
 import icyllis.modernui.animation.ValueAnimator;
 import icyllis.modernui.core.Context;
 import icyllis.modernui.graphics.BitmapFactory;
-import icyllis.modernui.graphics.Image;
 import icyllis.modernui.graphics.drawable.ColorDrawable;
 import icyllis.modernui.graphics.drawable.Drawable;
+import icyllis.modernui.graphics.Image;
 import icyllis.modernui.mc.MuiModApi;
-import icyllis.modernui.view.View;
 import icyllis.modernui.widget.FrameLayout;
-import me.kall.narutoui.mui.MuiBackground;
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Path;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.List;
 
 /**
  * Slideshow background preset: cross-fades through a list of images with configurable interval,

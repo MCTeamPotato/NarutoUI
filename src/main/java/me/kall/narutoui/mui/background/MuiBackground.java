@@ -1,16 +1,16 @@
-package me.kall.narutoui.mui;
+package me.kall.narutoui.mui.background;
 
 import icyllis.modernui.core.Context;
 import icyllis.modernui.graphics.drawable.ColorDrawable;
 import icyllis.modernui.graphics.drawable.Drawable;
 import icyllis.modernui.widget.FrameLayout;
-import me.kall.narutoui.mui.background.MuiImageBackground;
-import me.kall.narutoui.mui.background.MuiSlideshowBackground;
+import me.kall.narutoui.mui.screen.MuiConfigScreen;
+import me.kall.narutoui.mui.screen.MuiScreenHost;
 import org.jetbrains.annotations.NotNull;
 
 import java.nio.file.Path;
-import java.util.List;
 import java.util.function.Function;
+import java.util.List;
 
 /**
  * Supplies the background drawable for a {@link MuiConfigScreen}.

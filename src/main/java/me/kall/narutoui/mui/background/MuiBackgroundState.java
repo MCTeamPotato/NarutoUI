@@ -20,18 +20,12 @@ import java.util.List;
  * @param dim      dim overlay in {@code 0..1}
  * @param crop     crop of the fallback picture
  */
-public record MuiBackgroundState(@NotNull String image, @NotNull String folder,
-                                 @NotNull List<String> order, double interval, double fade,
-                                 double dim, @NotNull MuiCrop crop) {
+public record MuiBackgroundState(@NotNull String image, @NotNull String folder, @NotNull List<String> order, double interval, double fade, double dim, @NotNull MuiCrop crop) {
     /** Neutral state used when a settings adapter has no values yet. */
-    public static final MuiBackgroundState DEFAULT =
-            new MuiBackgroundState("", "", List.of(), 12.0D, 0.6D, 0.55D, MuiCrop.FULL);
+    public static final MuiBackgroundState DEFAULT = new MuiBackgroundState("", "", List.of(), 12.0D, 0.6D, 0.55D, MuiCrop.FULL);
 
     public MuiBackgroundState {
-        image = image == null ? "" : image;
-        folder = folder == null ? "" : folder;
-        order = order == null ? List.of() : List.copyOf(order);
-        crop = crop == null ? MuiCrop.FULL : crop;
+        order = List.copyOf(order);
         interval = Double.isFinite(interval) ? Math.max(1.0D, interval) : 12.0D;
         fade = Double.isFinite(fade) ? Math.max(0.0D, fade) : 0.6D;
         dim = Double.isFinite(dim) ? Math.max(0.0D, Math.min(1.0D, dim)) : 0.55D;

@@ -1,8 +1,20 @@
 # MUI 配置界面 API 教程
 
-本教程介绍 `me.kall.mui` 的配置界面 API。它不是某一套配置文件的规范，而是一层构建在 Modern UI 之上的界面框架：你只需要描述“有哪些页面、每个页面有哪些字段”，布局、控件样式、导航、背景和生命周期由 API 负责。
+本教程介绍 `me.kall.narutoui.mui` 的配置界面 API。它不是某一套配置文件的规范，而是一层构建在 Modern UI 之上的界面框架：你只需要描述“有哪些页面、每个页面有哪些字段”，布局、控件样式、导航、背景和生命周期由 API 负责。
+
+API 按职责分包：
+
+- `me.kall.narutoui.mui.screen`：入口、Fragment、页面、section、宿主接口
+- `me.kall.narutoui.mui.widget`：链式布局与通用控件
+- `me.kall.narutoui.mui.theme`：主题与控件工厂
+- `me.kall.narutoui.mui.background`：背景与可配置背景
+- `me.kall.narutoui.mui.shimmer`：流光系统
+- `me.kall.narutoui.mui.overlay`：颜色选择、裁剪浮层
+- `me.kall.narutoui.mui.util`：本地化与文件选择
 
 教程面向已经能编写 Forge / NeoForge 客户端模组的开发者。示例默认使用 Java 17，Minecraft 1.20.1 + Forge，Modern UI 3.12.0。
+
+> 第一次接触这个库？先看更通俗的 [EASY_START.md](EASY_START.md)。本文更适合查参数和进阶细节。
 
 ## 目录
 
@@ -37,7 +49,7 @@
 - 主题颜色、背景图片、本地化、动画；
 - 页面重建、窗口缩放、资源释放。
 
-`me.kall.mui` 把这些工作集中到 API 中。调用方只需要提供：
+`me.kall.narutoui.mui` 把这些工作集中到 API 中。调用方只需要提供：
 
 1. 页面和导航标题；
 2. 每个分区里放什么字段；
@@ -96,7 +108,7 @@ implementation "icyllis.modernui:ModernUI-Core:${modernui_version}"
 modImplementation("icyllis.modernui:ModernUI-Forge:${minecraft_version}-${modernui_version}.+")
 ```
 
-当前 API 与 NarutoOverlay 同工程，包名 `me.kall.mui`。未来计划拆成独立库模组；拆出后，消费方只需声明该库和 Modern UI 的依赖。
+当前 API 与 NarutoOverlay 同工程，包名 `me.kall.narutoui.mui`。未来计划拆成独立库模组；拆出后，消费方只需声明该库和 Modern UI 的依赖。
 
 ### 2.2 客户端限定
 
@@ -262,14 +274,16 @@ MuiConfigScreen.builder("Title")
 - `context()`：Modern UI `Context`；
 - `theme()`：当前 `MuiTheme`；
 - `content()`：页面内容列；
+- `contentLayout()`：同上，但返回可链式构建的 `MuiLayout`；
 - `header(title, subtitle)`；
 - `section(title)`：添加标题和卡片，返回卡片 body；
+- `sectionLayout(title)`：同上，但返回可链式构建的 `MuiLayout`；
 - `add(view)`；
 - `switchRow(...)`；
 - `valueRow(...)`；
 - `sliderRow(...)`。
 
-注意低层 `switchRow` 使用 `it.unimi.dsi.fastutil.booleans.BooleanConsumer`，而高层 `MuiSettingsSection` 使用 `java.util.function.BooleanConsumer`。这是两套有意分开的 API。
+`toggle` 和低层 `switchRow` 的布尔回调都使用 `it.unimi.dsi.fastutil.booleans.BooleanConsumer`；方法引用和 `value -> { }` 形式的 lambda 都可以直接传入。
 
 ### 5.2 何时使用低层 API
 
@@ -279,6 +293,146 @@ MuiConfigScreen.builder("Title")
 - 需要在 section 内直接操作 view。
 
 如果只是普通表单字段，优先使用高层 DSL。
+
+### 5.3 `MuiLayout` 链式布局
+
+`MuiLayout` 是 `LinearLayout` 的子类。它可以直接传给任何接受 `View` 或 `LinearLayout` 的 API，同时把所有常用配置方法变成返回自身的链式调用：
+
+```java
+MuiLayout card = MuiLayout.card(context, theme)
+        .margin(0, 12, 0, 0)
+        .spacing(8)
+        .heading("Appearance")
+        .text("Changes apply immediately.")
+        .button("Reset", MyConfig::reset);
+```
+
+构建方法：
+
+```text
+MuiLayout.column(context, theme)
+MuiLayout.row(context, theme)
+MuiLayout.card(context, theme)
+
+horizontal() / vertical()
+gravity(int) / center() / centerVertical()
+padding(dp) / padding(left, top, right, bottom)
+margin(dp) / margin(left, top, right, bottom)
+spacing(dp)
+minHeight(dp)
+background(int color) / background(Drawable)
+
+add(view) / add(view, params)
+addWeighted(view, weight) / addAll(view...)
+space(dp) / flexibleSpace()
+
+text(text) / text(text, size, color)
+heading(text) / heading(text, size, color)
+divider()
+button(label, action) / button(label, outlined, action)
+```
+
+约定：
+
+- 尺寸参数都以 DP 为单位；`text` 的 `size` 以 SP 为单位。
+- `add(view)` 使用 `LinearLayout` 的默认布局参数：纵向布局让子项填满宽度，横向布局包裹内容。
+- `spacing(dp)` 使用布局自身的 divider 槽位实现子项间距。它不会修改子项的 margin，因此可以和外层间距同时使用；如果之后手动设置 `setDividerDrawable`，间距会被替换。
+- `margin(...)` 会记住数值，并在父容器分配 `LayoutParams` 时应用，所以可以在 `add` 之前调用。
+
+低层页面和分区已经在内部使用 `MuiLayout`，对应的入口是：
+
+```java
+page.custom(ui -> {
+    ui.contentLayout()
+            .spacing(8)
+            .add(ui.switchRow("Enable HUD", null, true, value -> {}));
+
+    MuiLayout card = ui.sectionLayout("Rendering")
+            .add(ui.valueRow("Version", "1.0.0"));
+});
+```
+
+`MuiSettingsSection` 提供 `cardLayout()`（返回卡片本体）和 `customLayout(Consumer<MuiLayout>)`：
+
+```java
+.section("Rendering", section -> section
+        .toggle("Enable HUD", MyConfig::enabled, MyConfig::setEnabled)
+        .customLayout(row -> row
+                .spacing(6)
+                .add(section.page().valueRow("Version", "1.0.0"))))
+```
+
+### 5.4 `MuiCollapsibleCard` 可折叠卡片
+
+`MuiCollapsibleCard` 是带常驻标题栏和可动画 body 的卡片。标题栏包含：
+
+- 左侧 `+` / `-` 指示；
+- 标题；
+- 可选摘要；
+- 可选 trailing 控件（例如启用开关）。
+
+点击标题栏即可展开/收起 body：
+
+```java
+MuiCollapsibleCard.card(context, theme, "FPS", "1 / 4 字段 · (10, 5)", false)
+        .trailing(enabledSwitch)
+        .summary("1 / 4 字段 · (10, 5)")
+        .body(body -> body.add(
+                MuiControls.text(context, theme, "Content", 12, theme.onSurfaceVariant())))
+        .onExpandedChanged(expanded -> { ... });
+```
+
+可用方法：
+
+```text
+MuiCollapsibleCard.card(context, theme, title, summary, expanded)
+body()
+body(Consumer<MuiLayout>)
+trailing(view)
+summary(text)
+expanded(boolean) / setExpanded(boolean) / setExpanded(boolean, animate)
+toggle()
+isExpanded()
+onExpandedChanged(listener)
+```
+
+### 5.5 通用链式控件
+
+这些组件原本散落在页面/卡片编辑器的私有实现里，现在都已拆成可独立组合的链式控件：
+
+```java
+MuiLayout.row(context, theme)
+        .spacing(6)
+        .add(MuiNumberField.create(context, theme, 10)
+                .bounds(0, 100)
+                .width(64)
+                .gravity(Gravity.CENTER)
+                .onChange(value -> { ... }))
+        .add(MuiChip.create(context, theme, "Label", true)
+                .onChanged(checked -> { ... }))
+        .add(MuiTextAction.create(context, theme, "Reset", () -> { ... }));
+```
+
+- `MuiNumberField`：`bounds(min, max)`、`width(dp)`、`gravity(int)`、`onChange(IntConsumer)`、`value()` / `value(int)`；用户输入会 clamp，程序化 `value(int)` 不触发回调。
+- `MuiChip`：`checked(boolean)`、`isChecked()`、`onChanged(BooleanConsumer)`；背景是 shimmer target（选中 accent、未选中浅中性色），文字固定黑色。
+- `MuiTextAction`：`create(context, theme, label, action)` 或 `create(context, theme, label).onClick(action)`；紧凑的 primary 文本操作。
+- `MuiLogo`：圆形 shimmer 标志，`size(dp)` / `color(argb)` / `textColor(argb)`；自动注册和注销 shimmer。
+- `MuiHintBadge`：带 shimmer 描边的提示胶囊，`color(argb)` / `textSize(sp)`；文字和描边都可以参与流光。
+- `MuiColorField`：色块 + 标签 + pick 按钮，`color(argb)` / `buttonLabel(...)` / `onPick(...)`。
+- `MuiDescriptionRow`：标题 + 可选说明，适合用法提示、只读说明行。
+
+```java
+MuiLogo.create(context, theme, "N").color(accent).textColor(onAccent);
+MuiHintBadge.create(context, theme, "ESC").color(accent);
+MuiColorField.create(context, theme, "Border color", argb)
+        .buttonLabel("Pick")
+        .onPick(() -> { });
+MuiDescriptionRow.create(context, theme, "Drag", "Drag a card to move it.");
+```
+
+NarutoOverlay 的 Cards、About、Appearance 页面以及 rail 的 logo/hint 现在都直接组合这些组件，而不是依赖页面私有的 UI 代码。
+
+> `MuiCardEditor` 已移除。卡片、位置输入、chip、文本操作和重置逻辑都应该由调用方组合上面的通用组件完成。
 
 ---
 
@@ -619,10 +773,12 @@ new MuiCropOverlay(
 ### 11.1 进程内恢复
 
 ```java
-MuiConfigScreen.create(parent)
+MuiConfigScreen.builder("Title")
+        .page(...)
+        .create(parent)
 ```
 
-每次调用会创建一个 UUID，把 model 放进进程内 registry，并通过 `MuiConfigFragment.ARG_MODEL` 传给 fragment。
+每次调用 `builder().create(parent)` 会创建一个 UUID，把 model 放进进程内 registry，并通过 `MuiConfigFragment.ARG_MODEL` 传给 fragment。
 
 `MuiConfigFragment`：
 
@@ -798,6 +954,54 @@ section.text(...)
 section.button(...)
 section.divider()
 section.custom(...)
+section.customLayout(row -> ...)
+section.cardLayout()
+```
+
+### 链式布局
+
+```text
+MuiLayout.column(context, theme)
+MuiLayout.row(context, theme)
+MuiLayout.card(context, theme)
+layout.add(view) / add(view, params)
+layout.addWeighted(view, weight) / addAll(view...)
+layout.space(dp) / flexibleSpace()
+layout.text(...) / heading(...) / divider() / button(...)
+layout.padding(...) / margin(...) / spacing(...)
+layout.horizontal() / vertical() / gravity(...)
+layout.minHeight(...) / background(...)
+page.contentLayout()
+page.sectionLayout(title)
+```
+
+### 可折叠卡片 / 通用控件
+
+```text
+MuiCollapsibleCard.card(context, theme, title, summary, expanded)
+card.trailing(view) / summary(text) / body() / body(consumer)
+card.expanded(boolean) / toggle() / isExpanded() / onExpandedChanged(listener)
+
+MuiNumberField.create(context, theme, value)
+field.bounds(min, max) / width(dp) / gravity(int) / onChange(IntConsumer)
+field.value() / value(int)
+
+MuiChip.create(context, theme, label, checked)
+chip.checked(boolean) / isChecked() / onChanged(BooleanConsumer)
+
+MuiTextAction.create(context, theme, label, action)
+MuiTextAction.create(context, theme, label).onClick(action)
+
+MuiLogo.create(context, theme, glyph)
+logo.size(dp) / color(argb) / textColor(argb)
+
+MuiHintBadge.create(context, theme, text)
+badge.color(argb) / textSize(sp)
+
+MuiColorField.create(context, theme, label, argb)
+field.color(argb) / buttonLabel(label) / onPick(action)
+
+MuiDescriptionRow.create(context, theme, title, description)
 ```
 
 ### 主题

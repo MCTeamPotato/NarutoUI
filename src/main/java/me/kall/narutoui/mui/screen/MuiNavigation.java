@@ -1,4 +1,4 @@
-package me.kall.narutoui.mui;
+package me.kall.narutoui.mui.screen;
 
 /**
  * Placement of the screen navigation.

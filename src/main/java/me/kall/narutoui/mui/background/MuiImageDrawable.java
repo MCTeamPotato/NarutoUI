@@ -1,10 +1,10 @@
 package me.kall.narutoui.mui.background;
 
 import icyllis.modernui.graphics.Canvas;
+import icyllis.modernui.graphics.drawable.Drawable;
 import icyllis.modernui.graphics.Image;
 import icyllis.modernui.graphics.Paint;
 import icyllis.modernui.graphics.Rect;
-import icyllis.modernui.graphics.drawable.Drawable;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -29,8 +29,7 @@ public final class MuiImageDrawable extends Drawable {
      * @param cropHeight crop height in {@code 0..1}
      * @param dim        dim overlay in {@code 0..1}
      */
-    public MuiImageDrawable(@NotNull Image image, double cropX, double cropY, double cropWidth,
-                            double cropHeight, double dim) {
+    public MuiImageDrawable(@NotNull Image image, double cropX, double cropY, double cropWidth, double cropHeight, double dim) {
         this.image = image;
         this.cropX = (float) clamp01(cropX);
         this.cropY = (float) clamp01(cropY);
@@ -64,8 +63,7 @@ public final class MuiImageDrawable extends Drawable {
         float top = bounds.top + (bounds.height() - drawHeight) / 2.0F;
 
         this.paint.setColor(0xFFFFFFFF);
-        canvas.drawImage(this.image, sourceLeft, sourceTop, sourceLeft + sourceWidth, sourceTop + sourceHeight,
-                left, top, left + drawWidth, top + drawHeight, this.paint);
+        canvas.drawImage(this.image, sourceLeft, sourceTop, sourceLeft + sourceWidth, sourceTop + sourceHeight, left, top, left + drawWidth, top + drawHeight, this.paint);
 
         if (this.dimAlpha > 0) {
             this.paint.setColor(this.dimAlpha << 24);

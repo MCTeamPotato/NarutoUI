@@ -1,4 +1,4 @@
-package me.kall.narutoui.mui;
+package me.kall.narutoui.mui.screen;
 
 import icyllis.modernui.core.Context;
 import icyllis.modernui.fragment.Fragment;
@@ -9,12 +9,10 @@ import icyllis.modernui.view.Gravity;
 import icyllis.modernui.view.LayoutInflater;
 import icyllis.modernui.view.View;
 import icyllis.modernui.view.ViewGroup;
-import icyllis.modernui.widget.Button;
-import icyllis.modernui.widget.FrameLayout;
-import icyllis.modernui.widget.HorizontalScrollView;
-import icyllis.modernui.widget.LinearLayout;
-import icyllis.modernui.widget.TextView;
+import icyllis.modernui.widget.*;
 import me.kall.narutoui.mui.shimmer.MuiShimmerProfile;
+import me.kall.narutoui.mui.theme.MuiTheme;
+import me.kall.narutoui.mui.widget.MuiControls;
 import net.minecraft.client.Minecraft;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -33,6 +31,7 @@ import java.util.List;
  * It implements {@link MuiScreenHost}, so background controllers and other shell collaborators can
  * depend on the narrow host contract instead of the concrete fragment.
  */
+@SuppressWarnings("DataFlowIssue")
 public final class MuiConfigFragment extends Fragment implements MuiScreenHost {
     /** Fragment argument containing the registry key. */
     public static final String ARG_MODEL = "mui:model";
@@ -93,9 +92,7 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost {
      * @return the shell root
      */
     @Override
-    public @NotNull View onCreateView(@NotNull LayoutInflater inflater,
-                                      @Nullable ViewGroup container,
-                                      @Nullable DataSet savedInstanceState) {
+    public @NotNull View onCreateView(@NotNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable DataSet savedInstanceState) {
         Context context = requireContext();
         if (this.model == null) return this.buildRecoveryView(context);
 
@@ -112,19 +109,14 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost {
                 shell.setOrientation(LinearLayout.VERTICAL);
                 root.addView(shell, new FrameLayout.LayoutParams(MuiControls.MATCH, MuiControls.MATCH));
 
-                View topBar = MuiShimmerProfile.withCurrent(this.model.shimmerProfile(),
-                        () -> MuiControls.withFactory(this.model.widgetFactory(),
-                                () -> this.buildTopBar(context, this.theme)));
+                View topBar = MuiShimmerProfile.withCurrent(this.model.shimmerProfile(), () -> MuiControls.withFactory(this.model.widgetFactory(), () -> this.buildTopBar(context, this.theme)));
                 shell.addView(topBar, new LinearLayout.LayoutParams(MuiControls.MATCH, MuiControls.WRAP));
             } else {
                 shell = new LinearLayout(context);
                 shell.setOrientation(LinearLayout.HORIZONTAL);
                 root.addView(shell, new FrameLayout.LayoutParams(MuiControls.MATCH, MuiControls.MATCH));
 
-                shell.addView(MuiShimmerProfile.withCurrent(this.model.shimmerProfile(),
-                        () -> MuiControls.withFactory(this.model.widgetFactory(),
-                                () -> this.buildRail(context, this.theme))),
-                        new LinearLayout.LayoutParams(MuiControls.dp(context, RAIL_WIDTH), MuiControls.MATCH));
+                shell.addView(MuiShimmerProfile.withCurrent(this.model.shimmerProfile(), () -> MuiControls.withFactory(this.model.widgetFactory(), () -> this.buildRail(context, this.theme))), new LinearLayout.LayoutParams(MuiControls.dp(context, RAIL_WIDTH), MuiControls.MATCH));
             }
         }
 
@@ -187,11 +179,9 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost {
      * @return the page root
      */
     private @NotNull View createPage(@NotNull Context context, @NotNull MuiConfigScreen.PageSpec spec) {
-        return MuiShimmerProfile.withCurrent(this.model.shimmerProfile(),
-                () -> MuiControls.withFactory(this.model.widgetFactory(), () -> {
+        return MuiShimmerProfile.withCurrent(this.model.shimmerProfile(), () -> MuiControls.withFactory(this.model.widgetFactory(), () -> {
                     if (spec.viewFactory() != null) return spec.viewFactory().apply(context);
-                    return new MuiPage(context, this.theme, this.model.contentWidth(),
-                            spec.title(), spec.subtitle(), spec.body()).root();
+                    return new MuiPage(context, this.theme, this.model.contentWidth(), spec.title(), spec.subtitle(), spec.body()).root();
                 }));
     }
 
@@ -251,8 +241,7 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost {
      */
     private @NotNull LinearLayout buildRail(@NotNull Context context, @NotNull MuiTheme theme) {
         LinearLayout rail = MuiControls.column(context);
-        rail.setPadding(MuiControls.dp(context, 12), MuiControls.dp(context, 18),
-                MuiControls.dp(context, 12), MuiControls.dp(context, 12));
+        rail.setPadding(MuiControls.dp(context, 12), MuiControls.dp(context, 18), MuiControls.dp(context, 12), MuiControls.dp(context, 12));
         rail.setBackground(new ColorDrawable(MuiControls.alpha(theme.surface(), 0.96F)));
 
         if (this.model.railHeader() != null) {
@@ -263,8 +252,7 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost {
             rail.addView(title, MuiControls.fill());
 
             if (!this.model.subtitle().isBlank()) {
-                TextView subtitle = MuiControls.text(context, theme, this.model.subtitle(), 10,
-                        theme.onSurfaceVariant());
+                TextView subtitle = MuiControls.text(context, theme, this.model.subtitle(), 10, theme.onSurfaceVariant());
                 LinearLayout.LayoutParams params = MuiControls.fill();
                 params.topMargin = MuiControls.dp(context, 4);
                 rail.addView(subtitle, params);
@@ -308,8 +296,7 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost {
     private @NotNull LinearLayout buildTopBar(@NotNull Context context, @NotNull MuiTheme theme) {
         LinearLayout bar = MuiControls.row(context);
         bar.setGravity(Gravity.CENTER_VERTICAL);
-        bar.setPadding(MuiControls.dp(context, 12), MuiControls.dp(context, 8),
-                MuiControls.dp(context, 12), MuiControls.dp(context, 8));
+        bar.setPadding(MuiControls.dp(context, 12), MuiControls.dp(context, 8), MuiControls.dp(context, 12), MuiControls.dp(context, 8));
         bar.setBackground(new ColorDrawable(MuiControls.alpha(theme.surface(), 0.96F)));
 
         if (this.model.railHeader() != null) {
@@ -317,12 +304,10 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost {
             if (header != null) bar.addView(header, MuiControls.wrap());
         } else {
             LinearLayout titleBlock = MuiControls.column(context);
-            titleBlock.addView(MuiControls.heading(context, theme, this.model.title(), 16,
-                    theme.onSurface()), MuiControls.fill());
+            titleBlock.addView(MuiControls.heading(context, theme, this.model.title(), 16, theme.onSurface()), MuiControls.fill());
 
             if (!this.model.subtitle().isBlank()) {
-                TextView subtitle = MuiControls.text(context, theme, this.model.subtitle(), 10,
-                        theme.onSurfaceVariant());
+                TextView subtitle = MuiControls.text(context, theme, this.model.subtitle(), 10, theme.onSurfaceVariant());
                 LinearLayout.LayoutParams params = MuiControls.fill();
                 params.topMargin = MuiControls.dp(context, 2);
                 titleBlock.addView(subtitle, params);
@@ -332,8 +317,7 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost {
         }
 
         View gap = new View(context);
-        bar.addView(gap, new LinearLayout.LayoutParams(MuiControls.dp(context, 16),
-                MuiControls.dp(context, 1)));
+        bar.addView(gap, new LinearLayout.LayoutParams(MuiControls.dp(context, 16), MuiControls.dp(context, 1)));
 
         HorizontalScrollView scroll = new HorizontalScrollView(context);
         scroll.setHorizontalScrollBarEnabled(false);
@@ -360,8 +344,7 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost {
                 bar.addView(footer, params);
             }
         } else if (!this.model.footer().isBlank()) {
-            TextView footer = MuiControls.text(context, theme, this.model.footer(), 10,
-                    theme.onSurfaceVariant());
+            TextView footer = MuiControls.text(context, theme, this.model.footer(), 10, theme.onSurfaceVariant());
             LinearLayout.LayoutParams params = MuiControls.wrap();
             params.leftMargin = MuiControls.dp(context, 8);
             bar.addView(footer, params);
@@ -381,13 +364,10 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost {
      * @param top     {@code true} for the horizontal top bar
      * @return the navigation item
      */
-    private @NotNull TextView createNavItem(@NotNull Context context, @NotNull MuiTheme theme,
-                                            @NotNull MuiConfigScreen.PageSpec spec, int index,
-                                            boolean top) {
+    private @NotNull TextView createNavItem(@NotNull Context context, @NotNull MuiTheme theme, @NotNull MuiConfigScreen.PageSpec spec, int index, boolean top) {
         TextView item = MuiControls.text(context, theme, spec.navLabel(), 13, theme.onSurfaceVariant());
         item.setGravity(top ? Gravity.CENTER : Gravity.CENTER_VERTICAL);
-        item.setPadding(MuiControls.dp(context, top ? 12 : 10), MuiControls.dp(context, top ? 7 : 9),
-                MuiControls.dp(context, top ? 12 : 10), MuiControls.dp(context, top ? 7 : 9));
+        item.setPadding(MuiControls.dp(context, top ? 12 : 10), MuiControls.dp(context, top ? 7 : 9), MuiControls.dp(context, top ? 12 : 10), MuiControls.dp(context, top ? 7 : 9));
         item.setOnClickListener(view -> this.showPage(index));
         this.navItems.add(item);
         return item;
@@ -404,8 +384,7 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost {
         int clamped = Math.max(0, Math.min(this.pages.size() - 1, index));
         View page = this.pages.get(clamped);
         this.content.removeAllViews();
-        this.content.addView(page, new FrameLayout.LayoutParams(
-                MuiControls.MATCH, MuiControls.MATCH, Gravity.CENTER_HORIZONTAL));
+        this.content.addView(page, new FrameLayout.LayoutParams(MuiControls.MATCH, MuiControls.MATCH, Gravity.CENTER_HORIZONTAL));
         this.selected = clamped;
         this.refreshNav();
     }
@@ -425,8 +404,7 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost {
             background.setCornerRadius(MuiControls.dp(context, 10));
             background.setColor(active ? MuiControls.alpha(this.theme.primary(), 0.16F) : 0x00000000);
             if (active) {
-                background.setStroke(Math.max(1, MuiControls.dp(context, 1)),
-                        MuiControls.alpha(this.theme.primary(), 0.38F));
+                background.setStroke(Math.max(1, MuiControls.dp(context, 1)), MuiControls.alpha(this.theme.primary(), 0.38F));
             }
 
             item.setBackground(background);
@@ -439,28 +417,22 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost {
 
         FrameLayout root = new FrameLayout(context);
         LinearLayout column = MuiControls.column(context);
-        column.setPadding(MuiControls.dp(context, 24), MuiControls.dp(context, 24),
-                MuiControls.dp(context, 24), MuiControls.dp(context, 24));
+        column.setPadding(MuiControls.dp(context, 24), MuiControls.dp(context, 24), MuiControls.dp(context, 24), MuiControls.dp(context, 24));
 
-        TextView title = MuiControls.heading(context, theme, "Configuration unavailable", 20,
-                theme.onSurface());
+        TextView title = MuiControls.heading(context, theme, "Configuration unavailable", 20, theme.onSurface());
         column.addView(title, MuiControls.fill());
 
-        TextView message = MuiControls.text(context, theme,
-                "The configuration screen was recreated without its model. Close it and reopen the config screen.",
-                12, theme.onSurfaceVariant());
+        TextView message = MuiControls.text(context, theme, "The configuration screen was recreated without its model. Close it and reopen the config screen.", 12, theme.onSurfaceVariant());
         LinearLayout.LayoutParams messageParams = MuiControls.fill();
         messageParams.topMargin = MuiControls.dp(context, 8);
         column.addView(message, messageParams);
 
-        Button close = MuiControls.button(context, theme, "Close", false,
-                view -> Minecraft.getInstance().setScreen(null));
+        Button close = MuiControls.button(context, theme, "Close", false, view -> Minecraft.getInstance().setScreen(null));
         LinearLayout.LayoutParams closeParams = MuiControls.wrap();
         closeParams.topMargin = MuiControls.dp(context, 18);
         column.addView(close, closeParams);
 
-        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
-                MuiControls.dp(context, 420), MuiControls.WRAP, Gravity.CENTER);
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(MuiControls.dp(context, 420), MuiControls.WRAP, Gravity.CENTER);
         root.addView(column, params);
         return root;
     }

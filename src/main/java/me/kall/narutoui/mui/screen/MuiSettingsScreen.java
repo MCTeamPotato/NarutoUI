@@ -1,17 +1,21 @@
-package me.kall.narutoui.mui;
+package me.kall.narutoui.mui.screen;
 
 import icyllis.modernui.core.Context;
 import icyllis.modernui.view.View;
+import me.kall.narutoui.mui.background.MuiBackground;
 import me.kall.narutoui.mui.shimmer.MuiShimmerProfile;
+import me.kall.narutoui.mui.theme.MuiTheme;
+import me.kall.narutoui.mui.theme.MuiWidgetFactory;
 import net.minecraft.client.gui.screens.Screen;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * High-level declarative entry point for configuration screens.
@@ -267,8 +271,7 @@ public final class MuiSettingsScreen {
          * @param body     page builder callback
          * @return this builder
          */
-        public @NotNull Builder page(@NotNull String navLabel,
-                                     @NotNull Consumer<MuiSettingsPage> body) {
+        public @NotNull Builder page(@NotNull String navLabel, @NotNull Consumer<MuiSettingsPage> body) {
             return page(navLabel, navLabel, null, body);
         }
 
@@ -281,9 +284,7 @@ public final class MuiSettingsScreen {
          * @param body     page builder callback
          * @return this builder
          */
-        public @NotNull Builder page(@NotNull String navLabel, @NotNull String title,
-                                     @Nullable String subtitle,
-                                     @NotNull Consumer<MuiSettingsPage> body) {
+        public @NotNull Builder page(@NotNull String navLabel, @NotNull String title, @Nullable String subtitle, @NotNull Consumer<MuiSettingsPage> body) {
             this.pages.add(PageDefinition.form(navLabel, title, subtitle, body));
             return this;
         }
@@ -296,8 +297,7 @@ public final class MuiSettingsScreen {
          * @param factory  root-view factory
          * @return this builder
          */
-        public @NotNull Builder customPage(@NotNull String navLabel,
-                                           @NotNull Function<Context, View> factory) {
+        public @NotNull Builder customPage(@NotNull String navLabel, @NotNull Function<Context, View> factory) {
             this.pages.add(PageDefinition.custom(navLabel, factory));
             return this;
         }
@@ -319,6 +319,7 @@ public final class MuiSettingsScreen {
             return delegate.create(parent);
         }
 
+        @SuppressWarnings("DataFlowIssue")
         private void applyTo(@NotNull MuiConfigScreen.Builder delegate) {
             delegate.subtitle(this.subtitle)
                     .footer(this.footer)
@@ -340,8 +341,7 @@ public final class MuiSettingsScreen {
                 if (page.viewFactory() != null) {
                     delegate.customPage(page.navLabel(), page.viewFactory());
                 } else {
-                    delegate.page(page.navLabel(), page.title(), page.subtitle(),
-                            context -> page.body().accept(new MuiSettingsPage(context)));
+                    delegate.page(page.navLabel(), page.title(), page.subtitle(), context -> page.body().accept(new MuiSettingsPage(context)));
                 }
             }
         }
@@ -354,8 +354,7 @@ public final class MuiSettingsScreen {
      * @param title rail title
      * @param body  builder recipe
      */
-    public static void register(@NotNull String id, @NotNull String title,
-                                @NotNull Consumer<Builder> body) {
+    public static void register(@NotNull String id, @NotNull String title, @NotNull Consumer<Builder> body) {
         MuiConfigScreen.register(id, title, delegate -> {
             Builder builder = builder(title);
             body.accept(builder);
@@ -383,9 +382,7 @@ public final class MuiSettingsScreen {
      * @param body        DSL body, or {@code null} for a custom page
      * @param viewFactory custom root factory, or {@code null} for a DSL page
      */
-    private record PageDefinition(String navLabel, @Nullable String title, @Nullable String subtitle,
-                                  @Nullable Consumer<MuiSettingsPage> body,
-                                  @Nullable Function<Context, View> viewFactory) {
+    private record PageDefinition(String navLabel, @Nullable String title, @Nullable String subtitle, @Nullable Consumer<MuiSettingsPage> body, @Nullable Function<Context, View> viewFactory) {
         /**
          * Creates a DSL page definition.
          *
@@ -395,8 +392,8 @@ public final class MuiSettingsScreen {
          * @param body      page builder
          * @return the definition
          */
-        static PageDefinition form(String nav, String title, @Nullable String subtitle,
-                                   Consumer<MuiSettingsPage> body) {
+        @Contract("_, _, _, _ -> new")
+        static @NotNull PageDefinition form(String nav, String title, @Nullable String subtitle, Consumer<MuiSettingsPage> body) {
             return new PageDefinition(nav, title, subtitle, body, null);
         }
 
@@ -407,7 +404,8 @@ public final class MuiSettingsScreen {
          * @param factory root-view factory
          * @return the definition
          */
-        static PageDefinition custom(String nav, Function<Context, View> factory) {
+        @Contract("_, _ -> new")
+        static @NotNull PageDefinition custom(String nav, Function<Context, View> factory) {
             return new PageDefinition(nav, null, null, null, factory);
         }
     }

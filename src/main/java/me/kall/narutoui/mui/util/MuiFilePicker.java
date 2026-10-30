@@ -1,20 +1,17 @@
-package me.kall.narutoui.mui;
+package me.kall.narutoui.mui.util;
 
 import icyllis.modernui.mc.MuiModApi;
+import javax.swing.*;
 import net.minecraft.client.Minecraft;
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.util.tinyfd.TinyFileDialogs;
 
-import javax.swing.JFileChooser;
-import javax.swing.SwingUtilities;
-import java.awt.FileDialog;
-import java.awt.Frame;
-import java.awt.GraphicsEnvironment;
+import java.awt.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -51,8 +48,7 @@ public final class MuiFilePicker {
      * @param filterLabel native filter label
      * @param callback    selection callback
      */
-    public static void openImage(@NotNull String title, @NotNull String filterLabel,
-                                 @NotNull Callback callback) {
+    public static void openImage(@NotNull String title, @NotNull String filterLabel, @NotNull Callback callback) {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.isSameThread()) {
             openImageNow(title, filterLabel, callback);
@@ -68,8 +64,7 @@ public final class MuiFilePicker {
      * @param title    dialog title
      * @param callback selection callback
      */
-    public static void openFolder(@Nullable Path initial, @NotNull String title,
-                                  @NotNull Callback callback) {
+    public static void openFolder(@Nullable Path initial, @NotNull String title, @NotNull Callback callback) {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.isSameThread()) {
             openFolderNow(initial, title, callback);
@@ -78,8 +73,7 @@ public final class MuiFilePicker {
         }
     }
 
-    private static void openImageNow(@NotNull String title, @NotNull String filterLabel,
-                                     @NotNull Callback callback) {
+    private static void openImageNow(@NotNull String title, @NotNull String filterLabel, @NotNull Callback callback) {
         try {
             String picked = openNativeImage(title, filterLabel);
             if (picked == null || picked.isBlank()) return;
@@ -91,8 +85,7 @@ public final class MuiFilePicker {
         }
     }
 
-    private static void openFolderNow(@Nullable Path initial, @NotNull String title,
-                                      @NotNull Callback callback) {
+    private static void openFolderNow(@Nullable Path initial, @NotNull String title, @NotNull Callback callback) {
         try {
             String picked = openNativeFolder(initial, title);
             if (picked == null || picked.isBlank()) return;
@@ -118,9 +111,7 @@ public final class MuiFilePicker {
     }
 
     private static @Nullable String openNativeFolder(@Nullable Path initial, @NotNull String title) {
-        String defaultPath = initial != null && Files.isDirectory(initial)
-                ? initial.toString()
-                : Minecraft.getInstance().gameDirectory.getAbsolutePath();
+        String defaultPath = initial != null && Files.isDirectory(initial) ? initial.toString() : Minecraft.getInstance().gameDirectory.getAbsolutePath();
         return TinyFileDialogs.tinyfd_selectFolderDialog(title, defaultPath);
     }
 
@@ -179,7 +170,6 @@ public final class MuiFilePicker {
 
     private static boolean isImage(@NotNull String name) {
         String lower = name.toLowerCase(java.util.Locale.ROOT);
-        return lower.endsWith(".png") || lower.endsWith(".jpg") || lower.endsWith(".jpeg")
-                || lower.endsWith(".bmp") || lower.endsWith(".gif") || lower.endsWith(".tga");
+        return lower.endsWith(".png") || lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".bmp") || lower.endsWith(".gif") || lower.endsWith(".tga");
     }
 }

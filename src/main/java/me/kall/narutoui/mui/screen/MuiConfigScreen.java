@@ -1,21 +1,24 @@
-package me.kall.narutoui.mui;
+package me.kall.narutoui.mui.screen;
 
 import icyllis.modernui.core.Context;
 import icyllis.modernui.mc.MuiModApi;
 import icyllis.modernui.util.DataSet;
 import icyllis.modernui.view.View;
+import me.kall.narutoui.mui.background.MuiBackground;
 import me.kall.narutoui.mui.shimmer.MuiShimmerProfile;
+import me.kall.narutoui.mui.theme.MuiTheme;
+import me.kall.narutoui.mui.theme.MuiWidgetFactory;
 import net.minecraft.client.gui.screens.Screen;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 /**
  * Entry point for building a Modern UI configuration screen.
@@ -23,10 +26,9 @@ import java.util.function.Function;
  * <pre>{@code
  * Screen screen = MuiConfigScreen.builder("My Mod")
  *         .subtitle("Settings for the example mod")
- *         .page("General", "General", "Everyday options", ui -> {
- *             LinearLayout card = ui.section("Rendering");
- *             card.addView(ui.switchRow("Enable overlay", null, true, value -> {}), MuiControls.fill());
- *         })
+ *         .page("General", "General", "Everyday options", ui ->
+ *                 ui.sectionLayout("Rendering")
+ *                         .add(ui.switchRow("Enable overlay", null, true, value -> {})))
  *         .create(parent);
  * }</pre>
  *
@@ -290,9 +292,7 @@ public final class MuiConfigScreen {
          * @param body     page body callback
          * @return this builder
          */
-        public @NotNull Builder page(@NotNull String navLabel, @NotNull String title,
-                                     @Nullable String subtitle,
-                                     @NotNull Consumer<MuiPageContext> body) {
+        public @NotNull Builder page(@NotNull String navLabel, @NotNull String title, @Nullable String subtitle, @NotNull Consumer<MuiPageContext> body) {
             this.pages.add(PageSpec.body(navLabel, title, subtitle, body));
             return this;
         }
@@ -335,10 +335,7 @@ public final class MuiConfigScreen {
                 throw new IllegalStateException("Single-page mode needs exactly one page");
             }
 
-            return new Model(this.title, this.subtitle, this.footer, this.singlePage, this.navigation,
-                    this.theme, this.widgetFactory, this.shimmerProfile, this.contentWidth,
-                    this.background, List.copyOf(this.pages), this.initialPage, this.railHeader,
-                    this.railFooter, this.onCreated, this.onDestroyed);
+            return new Model(this.title, this.subtitle, this.footer, this.singlePage, this.navigation, this.theme, this.widgetFactory, this.shimmerProfile, this.contentWidth, this.background, List.copyOf(this.pages), this.initialPage, this.railHeader, this.railFooter, this.onCreated, this.onDestroyed);
         }
     }
 
@@ -349,8 +346,7 @@ public final class MuiConfigScreen {
      * @param title rail title
      * @param body  builder recipe
      */
-    public static void register(@NotNull String id, @NotNull String title,
-                                @NotNull Consumer<Builder> body) {
+    public static void register(@NotNull String id, @NotNull String title, @NotNull Consumer<Builder> body) {
         MuiConfigRegistry.putRecipe(id, new MuiConfigRegistry.Recipe(title, body));
     }
 
@@ -384,8 +380,7 @@ public final class MuiConfigScreen {
         return model != null ? model : MuiConfigRegistry.buildModel(id);
     }
 
-    private static @NotNull Screen createScreen(@NotNull Model model, @NotNull String key,
-                                                @Nullable Screen parent) {
+    private static @NotNull Screen createScreen(@NotNull Model model, @NotNull String key, @Nullable Screen parent) {
         MuiConfigRegistry.putModel(key, model);
 
         DataSet args = new DataSet();
@@ -416,14 +411,7 @@ public final class MuiConfigScreen {
      * @param onCreated   optional creation callback
      * @param onDestroyed optional destruction callback
      */
-    record Model(String title, String subtitle, String footer, boolean singlePage,
-                 MuiNavigation navigation, @Nullable MuiTheme theme,
-                 MuiWidgetFactory widgetFactory, MuiShimmerProfile shimmerProfile, int contentWidth,
-                 MuiBackground background, List<PageSpec> pages,
-                 int initialPage, @Nullable Function<Context, View> railHeader,
-                 @Nullable Function<Context, View> railFooter,
-                 @Nullable Consumer<MuiConfigFragment> onCreated,
-                 @Nullable Consumer<MuiConfigFragment> onDestroyed) {}
+    record Model(String title, String subtitle, String footer, boolean singlePage, MuiNavigation navigation, @Nullable MuiTheme theme, MuiWidgetFactory widgetFactory, MuiShimmerProfile shimmerProfile, int contentWidth, MuiBackground background, List<PageSpec> pages, int initialPage, @Nullable Function<Context, View> railHeader, @Nullable Function<Context, View> railFooter, @Nullable Consumer<MuiConfigFragment> onCreated, @Nullable Consumer<MuiConfigFragment> onDestroyed) {}
 
     /**
      * One page entry, either a low-level body callback or a custom root-view factory.
@@ -434,9 +422,7 @@ public final class MuiConfigScreen {
      * @param body        body callback, or {@code null} for a custom page
      * @param viewFactory custom root factory, or {@code null} for a body page
      */
-    record PageSpec(String navLabel, @Nullable String title, @Nullable String subtitle,
-                    @Nullable Consumer<MuiPageContext> body,
-                    @Nullable Function<Context, View> viewFactory) {
+    record PageSpec(String navLabel, @Nullable String title, @Nullable String subtitle, @Nullable Consumer<MuiPageContext> body, @Nullable Function<Context, View> viewFactory) {
         /**
          * Creates a body-page spec.
          *
@@ -447,8 +433,7 @@ public final class MuiConfigScreen {
          * @return the spec
          */
         @Contract("_, _, _, _ -> new")
-        static @NotNull PageSpec body(String nav, String title, @Nullable String subtitle,
-                                      Consumer<MuiPageContext> body) {
+        static @NotNull PageSpec body(String nav, String title, @Nullable String subtitle, Consumer<MuiPageContext> body) {
             return new PageSpec(nav, title, subtitle, body, null);
         }
 

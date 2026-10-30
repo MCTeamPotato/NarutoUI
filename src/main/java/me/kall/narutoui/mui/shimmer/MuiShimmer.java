@@ -195,7 +195,7 @@ public final class MuiShimmer {
         return (a + b) * 0.25F + 0.5F;
     }
 
-    private static int rampColor(int[] colors, float[] stops, float value) {
+    private static int rampColor(int[] colors, float @NotNull [] stops, float value) {
         float v = Math.max(0.0F, Math.min(1.0F, value));
 
         for (int i = 1; i < stops.length; i++) {

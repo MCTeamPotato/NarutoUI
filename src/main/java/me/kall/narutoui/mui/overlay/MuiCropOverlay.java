@@ -1,11 +1,11 @@
-package me.kall.narutoui.mui.widget;
+package me.kall.narutoui.mui.overlay;
 
 import icyllis.modernui.core.Context;
 import icyllis.modernui.graphics.Canvas;
+import icyllis.modernui.graphics.drawable.ColorDrawable;
 import icyllis.modernui.graphics.Image;
 import icyllis.modernui.graphics.Paint;
 import icyllis.modernui.graphics.RectF;
-import icyllis.modernui.graphics.drawable.ColorDrawable;
 import icyllis.modernui.view.Gravity;
 import icyllis.modernui.view.MotionEvent;
 import icyllis.modernui.view.View;
@@ -13,8 +13,8 @@ import icyllis.modernui.widget.Button;
 import icyllis.modernui.widget.FrameLayout;
 import icyllis.modernui.widget.LinearLayout;
 import icyllis.modernui.widget.TextView;
-import me.kall.narutoui.mui.MuiControls;
-import me.kall.narutoui.mui.MuiTheme;
+import me.kall.narutoui.mui.theme.MuiTheme;
+import me.kall.narutoui.mui.widget.MuiControls;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -63,9 +63,7 @@ public final class MuiCropOverlay extends FrameLayout {
      * @param labels       localized labels
      * @param listener     crop callback
      */
-    public MuiCropOverlay(@NotNull Context context, @NotNull MuiTheme theme, @NotNull Image image,
-                          int imageWidth, int imageHeight, float targetAspect,
-                          @NotNull Labels labels, @NotNull Listener listener) {
+    public MuiCropOverlay(@NotNull Context context, @NotNull MuiTheme theme, @NotNull Image image, int imageWidth, int imageHeight, float targetAspect, @NotNull Labels labels, @NotNull Listener listener) {
         super(context);
         setBackground(new ColorDrawable(0xF2090A0F));
         setClickable(true);
@@ -76,12 +74,10 @@ public final class MuiCropOverlay extends FrameLayout {
         column.setPadding(padding, padding, padding, padding);
         addView(column, new FrameLayout.LayoutParams(MuiControls.MATCH, MuiControls.MATCH));
 
-        TextView title = MuiControls.heading(context, theme, labels.title(), 18,
-                theme.onSurface());
+        TextView title = MuiControls.heading(context, theme, labels.title(), 18, theme.onSurface());
         column.addView(title, MuiControls.wrap());
 
-        TextView hint = MuiControls.text(context, theme, labels.hint(), 12,
-                theme.onSurfaceVariant());
+        TextView hint = MuiControls.text(context, theme, labels.hint(), 12, theme.onSurfaceVariant());
         LinearLayout.LayoutParams hintParams = MuiControls.fill();
         hintParams.topMargin = MuiControls.dp(context, 4);
         column.addView(hint, hintParams);
@@ -98,8 +94,7 @@ public final class MuiCropOverlay extends FrameLayout {
         barParams.topMargin = MuiControls.dp(context, 12);
         column.addView(bar, barParams);
 
-        Button cancel = MuiControls.button(context, theme, labels.cancel(), true,
-                view -> listener.onCancel());
+        Button cancel = MuiControls.button(context, theme, labels.cancel(), true, view -> listener.onCancel());
         LinearLayout.LayoutParams cancelParams = MuiControls.wrap();
         cancelParams.setMargins(0, 0, MuiControls.dp(context, 8), 0);
         bar.addView(cancel, cancelParams);
@@ -188,9 +183,7 @@ public final class MuiCropOverlay extends FrameLayout {
 
             this.paint.setStyle(Paint.FILL);
             this.paint.setColor(0xFFFFFFFF);
-            canvas.drawImage(this.image, 0, 0, this.imageWidth, this.imageHeight,
-                    this.display.left, this.display.top, this.display.right, this.display.bottom,
-                    this.paint);
+            canvas.drawImage(this.image, 0, 0, this.imageWidth, this.imageHeight, this.display.left, this.display.top, this.display.right, this.display.bottom, this.paint);
 
             this.paint.setColor(0xB4000000);
             canvas.drawRect(0, 0, getWidth(), this.crop.top, this.paint);

@@ -1,15 +1,15 @@
-package me.kall.narutoui.mui;
+package me.kall.narutoui.mui.screen;
 
 import icyllis.modernui.core.Context;
 import icyllis.modernui.view.View;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Services exposed by a configuration-screen host.
+ * General services exposed by a configuration-screen host.
  * <p>
- * {@link MuiConfigFragment} implements this contract, and it is the narrow interface that
- * background controllers and other shell collaborators should depend on. It deliberately excludes
- * page building, theming and the screen model.
+ * This is the single contract that pages, overlays, background controllers and application-level
+ * hosts should depend on. {@link MuiConfigFragment} implements it directly; application hosts can
+ * wrap a fragment to add app-specific services without introducing another host interface.
  */
 public interface MuiScreenHost {
     /**
@@ -38,4 +38,12 @@ public interface MuiScreenHost {
      * Rebuilds the currently visible page.
      */
     void reloadCurrentPage();
+
+    /**
+     * Called after a theme change. The default rebuilds the current page so page-local colors and
+     * custom previews are resolved again. Hosts with additional theme state can override it.
+     */
+    default void onThemeChanged() {
+        reloadCurrentPage();
+    }
 }

@@ -17,8 +17,7 @@ public final class MuiShimmerProfile {
     /** Default profile used by HUD widgets and screens that do not select one. */
     private static final MuiShimmerProfile DEFAULT = new MuiShimmerProfile(MuiShimmerConfig.defaults());
 
-    private static final ThreadLocal<Deque<MuiShimmerProfile>> CURRENT =
-            ThreadLocal.withInitial(ArrayDeque::new);
+    private static final ThreadLocal<Deque<MuiShimmerProfile>> CURRENT = ThreadLocal.withInitial(ArrayDeque::new);
 
     private final MuiShimmerClock clock;
     private MuiShimmerConfig config;

@@ -1,8 +1,7 @@
-package me.kall.narutoui.mui;
+package me.kall.narutoui.mui.widget;
 
 import icyllis.modernui.core.Context;
 import icyllis.modernui.graphics.drawable.ColorDrawable;
-import icyllis.modernui.graphics.drawable.ShapeDrawable;
 import icyllis.modernui.text.TextPaint;
 import icyllis.modernui.util.ColorStateList;
 import icyllis.modernui.view.Gravity;
@@ -10,6 +9,9 @@ import icyllis.modernui.view.View;
 import icyllis.modernui.view.ViewGroup;
 import icyllis.modernui.widget.*;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
+import me.kall.narutoui.mui.theme.MuiTheme;
+import me.kall.narutoui.mui.theme.MuiWidgetFactory;
+import me.kall.narutoui.mui.util.MuiLocalization;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -21,7 +23,8 @@ import java.util.function.*;
  * Theme-aware Modern UI widgets for configuration screens.
  * <p>
  * Every factory takes the current {@link MuiTheme} explicitly, so a screen can be themed without
- * touching global Modern UI state and multiple differently-themed screens can coexist.
+ * touching global Modern UI state and multiple differently-themed screens can coexist. Fluent
+ * layout building is available through {@link MuiLayout}, a {@code LinearLayout} subclass.
  */
 public final class MuiControls {
     /** Alias for {@link ViewGroup.LayoutParams#MATCH_PARENT}. */
@@ -32,8 +35,7 @@ public final class MuiControls {
     /** Active widget factory, replaceable through {@link #setWidgetFactory(MuiWidgetFactory)}. */
     private static volatile MuiWidgetFactory widgetFactory = MuiWidgetFactory.modern();
     /** Per-screen factory stack used while a page or rail is being built. */
-    private static final ThreadLocal<Deque<MuiWidgetFactory>> FACTORY_STACK =
-            ThreadLocal.withInitial(ArrayDeque::new);
+    private static final ThreadLocal<Deque<MuiWidgetFactory>> FACTORY_STACK = ThreadLocal.withInitial(ArrayDeque::new);
 
     private MuiControls() {}
 
@@ -101,6 +103,7 @@ public final class MuiControls {
      * @param value   size in DP
      * @return size in pixels
      */
+    @SuppressWarnings("UnstableApiUsage")
     public static int dp(@NotNull Context context, float value) {
         return Math.round(value * context.getResources().getDisplayMetrics().density);
     }
@@ -126,8 +129,7 @@ public final class MuiControls {
      * @param color   text color
      * @return the text view
      */
-    public static @NotNull TextView text(@NotNull Context context, @NotNull MuiTheme theme,
-                                         @NotNull CharSequence text, float size, int color) {
+    public static @NotNull TextView text(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence text, float size, int color) {
         return factory().text(context, MuiLocalization.resolve(text), size, color);
     }
 
@@ -141,8 +143,7 @@ public final class MuiControls {
      * @param color   text color
      * @return the heading view
      */
-    public static @NotNull TextView heading(@NotNull Context context, @NotNull MuiTheme theme,
-                                            @NotNull CharSequence text, float size, int color) {
+    public static @NotNull TextView heading(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence text, float size, int color) {
         TextView view = text(context, theme, text, size, color);
         view.setTextStyle(TextPaint.BOLD);
         return view;
@@ -168,13 +169,24 @@ public final class MuiControls {
      */
     public static @NotNull LinearLayout row(@NotNull Context context) {
         LinearLayout layout = new LinearLayout(context);
+        applyRowStyle(layout, context);
+        return layout;
+    }
+
+    /**
+     * Applies the shared row geometry to a layout. Used by {@link #row(Context)} and
+     * {@link MuiLayout#row(Context, MuiTheme)} so both factories stay identical.
+     *
+     * @param layout  the layout to configure
+     * @param context the screen context
+     */
+    static void applyRowStyle(@NotNull LinearLayout layout, @NotNull Context context) {
         layout.setOrientation(LinearLayout.HORIZONTAL);
         layout.setGravity(Gravity.CENTER_VERTICAL);
         layout.setMinimumHeight(dp(context, 44));
         int dp2 = dp(context, 2);
         int dp3 = dp(context, 6);
         layout.setPadding(dp2, dp3, dp2, dp3);
-        return layout;
     }
 
     /**
@@ -185,17 +197,7 @@ public final class MuiControls {
      * @return a new card layout
      */
     public static @NotNull LinearLayout card(@NotNull Context context, @NotNull MuiTheme theme) {
-        LinearLayout layout = column(context);
-
-        ShapeDrawable background = new ShapeDrawable();
-        background.setCornerRadius(dp(context, theme.cornerRadius()));
-        background.setColor(alpha(theme.surfaceLow(), 0.78F));
-        background.setStroke(Math.max(1, dp(context, 1)), alpha(theme.outline(), 0.75F));
-        layout.setBackground(background);
-
-        int padding = dp(context, 12);
-        layout.setPadding(padding, padding, padding, padding);
-        return layout;
+        return MuiLayout.card(context, theme);
     }
 
     /**
@@ -260,9 +262,7 @@ public final class MuiControls {
      * @param onChange    state callback
      * @return the composed row
      */
-    public static @NotNull LinearLayout switchRow(@NotNull Context context, @NotNull MuiTheme theme,
-                                                  @NotNull CharSequence title, @Nullable CharSequence description,
-                                                  boolean value, @NotNull BooleanConsumer onChange) {
+    public static @NotNull LinearLayout switchRow(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence title, @Nullable CharSequence description, boolean value, @NotNull BooleanConsumer onChange) {
         LinearLayout row = row(context);
 
         LinearLayout texts = column(context);
@@ -299,9 +299,7 @@ public final class MuiControls {
      * @param onChange    state callback
      * @return the composed row
      */
-    public static @NotNull LinearLayout switchRow(@NotNull Context context, @NotNull MuiTheme theme,
-                                                  @NotNull CharSequence title, @Nullable CharSequence description,
-                                                  @NotNull BooleanSupplier value, @NotNull BooleanConsumer onChange) {
+    public static @NotNull LinearLayout switchRow(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence title, @Nullable CharSequence description, @NotNull BooleanSupplier value, @NotNull BooleanConsumer onChange) {
         LinearLayout row = row(context);
 
         LinearLayout texts = column(context);
@@ -347,8 +345,7 @@ public final class MuiControls {
      * @param value   value text
      * @return the composed row
      */
-    public static @NotNull LinearLayout valueRow(@NotNull Context context, @NotNull MuiTheme theme,
-                                                 @NotNull CharSequence title, @NotNull CharSequence value) {
+    public static @NotNull LinearLayout valueRow(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence title, @NotNull CharSequence value) {
         LinearLayout row = row(context);
         row.addView(text(context, theme, title, 14, theme.onSurface()), weight());
         row.addView(text(context, theme, value, 12, theme.onSurfaceVariant()), wrap());
@@ -364,8 +361,7 @@ public final class MuiControls {
      * @param value   live integer supplier
      * @return the composed row
      */
-    public static @NotNull LinearLayout valueRow(@NotNull Context context, @NotNull MuiTheme theme,
-                                                 @NotNull CharSequence title, @NotNull IntSupplier value) {
+    public static @NotNull LinearLayout valueRow(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence title, @NotNull IntSupplier value) {
         return valueRow(context, theme, title, Integer::toString, value);
     }
 
@@ -379,10 +375,7 @@ public final class MuiControls {
      * @param value   live integer supplier
      * @return the composed row
      */
-    public static @NotNull LinearLayout valueRow(@NotNull Context context, @NotNull MuiTheme theme,
-                                                 @NotNull CharSequence title,
-                                                 @NotNull IntFunction<CharSequence> format,
-                                                 @NotNull IntSupplier value) {
+    public static @NotNull LinearLayout valueRow(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence title, @NotNull IntFunction<CharSequence> format, @NotNull IntSupplier value) {
         LinearLayout row = row(context);
         row.addView(text(context, theme, title, 14, theme.onSurface()), weight());
 
@@ -421,9 +414,7 @@ public final class MuiControls {
      * @param onChange progress callback
      * @return the composed row
      */
-    public static @NotNull LinearLayout sliderRow(@NotNull Context context, @NotNull MuiTheme theme,
-                                                  @NotNull CharSequence title, @NotNull CharSequence value,
-                                                  int max, int progress, @NotNull IntConsumer onChange) {
+    public static @NotNull LinearLayout sliderRow(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence title, @NotNull CharSequence value, int max, int progress, @NotNull IntConsumer onChange) {
         LinearLayout block = column(context);
 
         LinearLayout header = row(context);
@@ -456,11 +447,7 @@ public final class MuiControls {
      * @param onChange value callback
      * @return the composed row
      */
-    public static @NotNull LinearLayout sliderRow(@NotNull Context context, @NotNull MuiTheme theme,
-                                                  @NotNull CharSequence title,
-                                                  @NotNull IntFunction<CharSequence> format,
-                                                  int max, @NotNull IntSupplier value,
-                                                  @NotNull IntConsumer onChange) {
+    public static @NotNull LinearLayout sliderRow(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence title, @NotNull IntFunction<CharSequence> format, int max, @NotNull IntSupplier value, @NotNull IntConsumer onChange) {
         return sliderRow(context, theme, title, format, 0, max, value, onChange);
     }
 
@@ -477,11 +464,8 @@ public final class MuiControls {
      * @param onChange value callback
      * @return the composed row
      */
-    public static @NotNull LinearLayout sliderRow(@NotNull Context context, @NotNull MuiTheme theme,
-                                                  @NotNull CharSequence title,
-                                                  @NotNull IntFunction<CharSequence> format,
-                                                  int min, int max, @NotNull IntSupplier value,
-                                                  @NotNull IntConsumer onChange) {
+    @SuppressWarnings("UnnecessaryLocalVariable")
+    public static @NotNull LinearLayout sliderRow(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence title, @NotNull IntFunction<CharSequence> format, int min, int max, @NotNull IntSupplier value, @NotNull IntConsumer onChange) {
         int lower = min;
         int upper = Math.max(lower + 1, max);
         int span = upper - lower;
@@ -581,9 +565,7 @@ public final class MuiControls {
      * @param onClick  click listener
      * @return the button
      */
-    public static @NotNull Button button(@NotNull Context context, @NotNull MuiTheme theme,
-                                         @NotNull CharSequence label, boolean outlined,
-                                         @NotNull View.OnClickListener onClick) {
+    public static @NotNull Button button(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence label, boolean outlined, @NotNull View.OnClickListener onClick) {
         return factory().button(context, theme, MuiLocalization.resolve(label), outlined, onClick);
     }
 }
