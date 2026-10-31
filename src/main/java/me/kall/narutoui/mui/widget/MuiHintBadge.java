@@ -7,6 +7,7 @@ import icyllis.modernui.widget.TextView;
 import me.kall.narutoui.mui.shimmer.MuiShimmer;
 import me.kall.narutoui.mui.shimmer.ShimmerHintDrawable;
 import me.kall.narutoui.mui.theme.MuiTheme;
+import me.kall.narutoui.mui.util.MuiLocalization;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -32,14 +33,13 @@ public final class MuiHintBadge extends FrameLayout {
 
         this.text = MuiControls.text(context, theme, content, 9, theme.onSurfaceVariant());
         this.text.setGravity(Gravity.CENTER);
-        addView(this.text, new FrameLayout.LayoutParams(MuiControls.MATCH, MuiControls.WRAP));
+        this.addView(this.text, new FrameLayout.LayoutParams(MuiControls.MATCH, MuiControls.WRAP));
 
-        setPadding(MuiControls.dp(context, 4), MuiControls.dp(context, 4),
-                MuiControls.dp(context, 4), MuiControls.dp(context, 4));
+        this.setPadding(MuiControls.dp(context, 4), MuiControls.dp(context, 4), MuiControls.dp(context, 4), MuiControls.dp(context, 4));
 
         this.outline = new ShimmerHintDrawable(this.text, theme.primary());
         this.outline.setCornerRadius(MuiControls.dp(context, 8));
-        setBackground(this.outline);
+        this.setBackground(this.outline);
     }
 
     /**
@@ -50,9 +50,28 @@ public final class MuiHintBadge extends FrameLayout {
      * @param content hint text or translation key
      * @return the badge
      */
-    public static @NotNull MuiHintBadge create(@NotNull Context context, @NotNull MuiTheme theme,
-                                               @NotNull CharSequence content) {
+    public static @NotNull MuiHintBadge create(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence content) {
         return new MuiHintBadge(context, theme, content);
+    }
+
+    /**
+     * Replaces the hint text.
+     *
+     * @param content hint text or translation key
+     * @return this badge, for chaining
+     */
+    public @NotNull MuiHintBadge text(@NotNull CharSequence content) {
+        this.text.setText(MuiLocalization.resolve(content));
+        return this;
+    }
+
+    /**
+     * Returns the current hint text.
+     *
+     * @return the hint text
+     */
+    public @NotNull CharSequence text() {
+        return this.text.getText();
     }
 
     /**

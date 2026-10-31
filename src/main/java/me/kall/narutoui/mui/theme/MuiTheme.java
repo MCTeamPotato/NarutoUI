@@ -1,7 +1,7 @@
 package me.kall.narutoui.mui.theme;
 
-import icyllis.modernui.core.Context;
 import icyllis.modernui.R;
+import icyllis.modernui.core.Context;
 import icyllis.modernui.resources.TypedValue;
 import org.jetbrains.annotations.NotNull;
 
@@ -77,6 +77,76 @@ public record MuiTheme(
      */
     public @NotNull MuiTheme withOnPrimary(int color) {
         return new MuiTheme(this.primary, color, this.surface, this.surfaceLow, this.surfaceHigh, this.onSurface, this.onSurfaceVariant, this.outline, this.error, this.cornerRadius, this.spacing);
+    }
+
+    /**
+     * Returns a copy with a different screen surface color.
+     *
+     * @param color the replacement surface color
+     * @return a new theme instance
+     */
+    public @NotNull MuiTheme withSurface(int color) {
+        return new MuiTheme(this.primary, this.onPrimary, color, this.surfaceLow, this.surfaceHigh, this.onSurface, this.onSurfaceVariant, this.outline, this.error, this.cornerRadius, this.spacing);
+    }
+
+    /**
+     * Returns a copy with a different low-emphasis card color.
+     *
+     * @param color the replacement low-emphasis surface color
+     * @return a new theme instance
+     */
+    public @NotNull MuiTheme withSurfaceLow(int color) {
+        return new MuiTheme(this.primary, this.onPrimary, this.surface, color, this.surfaceHigh, this.onSurface, this.onSurfaceVariant, this.outline, this.error, this.cornerRadius, this.spacing);
+    }
+
+    /**
+     * Returns a copy with a different high-emphasis control color.
+     *
+     * @param color the replacement high-emphasis surface color
+     * @return a new theme instance
+     */
+    public @NotNull MuiTheme withSurfaceHigh(int color) {
+        return new MuiTheme(this.primary, this.onPrimary, this.surface, this.surfaceLow, color, this.onSurface, this.onSurfaceVariant, this.outline, this.error, this.cornerRadius, this.spacing);
+    }
+
+    /**
+     * Returns a copy with a different primary text color.
+     *
+     * @param color the replacement on-surface color
+     * @return a new theme instance
+     */
+    public @NotNull MuiTheme withOnSurface(int color) {
+        return new MuiTheme(this.primary, this.onPrimary, this.surface, this.surfaceLow, this.surfaceHigh, color, this.onSurfaceVariant, this.outline, this.error, this.cornerRadius, this.spacing);
+    }
+
+    /**
+     * Returns a copy with a different secondary text color.
+     *
+     * @param color the replacement on-surface-variant color
+     * @return a new theme instance
+     */
+    public @NotNull MuiTheme withOnSurfaceVariant(int color) {
+        return new MuiTheme(this.primary, this.onPrimary, this.surface, this.surfaceLow, this.surfaceHigh, this.onSurface, color, this.outline, this.error, this.cornerRadius, this.spacing);
+    }
+
+    /**
+     * Returns a copy with a different divider and border color.
+     *
+     * @param color the replacement outline color
+     * @return a new theme instance
+     */
+    public @NotNull MuiTheme withOutline(int color) {
+        return new MuiTheme(this.primary, this.onPrimary, this.surface, this.surfaceLow, this.surfaceHigh, this.onSurface, this.onSurfaceVariant, color, this.error, this.cornerRadius, this.spacing);
+    }
+
+    /**
+     * Returns a copy with a different destructive-action color.
+     *
+     * @param color the replacement error color
+     * @return a new theme instance
+     */
+    public @NotNull MuiTheme withError(int color) {
+        return new MuiTheme(this.primary, this.onPrimary, this.surface, this.surfaceLow, this.surfaceHigh, this.onSurface, this.onSurfaceVariant, this.outline, color, this.cornerRadius, this.spacing);
     }
 
     /**

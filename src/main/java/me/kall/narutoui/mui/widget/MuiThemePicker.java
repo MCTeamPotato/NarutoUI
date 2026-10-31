@@ -86,9 +86,10 @@ public final class MuiThemePicker {
      * @param sectionTitle section heading
      * @param options      selectable options
      * @param changed      callback invoked after an option is selected
+     * @return the page, for chaining
      */
-    public static void add(@NotNull MuiSettingsPage page, @NotNull CharSequence sectionTitle, @NotNull List<? extends Option> options, @NotNull Runnable changed) {
-        add(page, sectionTitle, options, "In use", changed);
+    public static @NotNull MuiSettingsPage add(@NotNull MuiSettingsPage page, @NotNull CharSequence sectionTitle, @NotNull List<? extends Option> options, @NotNull Runnable changed) {
+        return add(page, sectionTitle, options, "In use", changed);
     }
 
     /**
@@ -99,28 +100,59 @@ public final class MuiThemePicker {
      * @param options      selectable options
      * @param inUse        label shown on the selected option
      * @param changed      callback invoked after an option is selected
+     * @return the page, for chaining
      */
-    public static void add(@NotNull MuiSettingsPage page, @NotNull CharSequence sectionTitle, @NotNull List<? extends Option> options, @NotNull String inUse, @NotNull Runnable changed) {
-        page.section(sectionTitle, section -> section.custom(card -> {
-            Context context = section.page().context();
-            MuiTheme theme = section.page().theme();
+    public static @NotNull MuiSettingsPage add(@NotNull MuiSettingsPage page, @NotNull CharSequence sectionTitle, @NotNull List<? extends Option> options, @NotNull CharSequence inUse, @NotNull Runnable changed) {
+        page.section(sectionTitle, section -> section.custom(create(section.page().context(), section.page().theme(), options, inUse, changed)));
+        return page;
+    }
 
-            for (int i = 0; i < options.size(); i += 2) {
-                LinearLayout row = MuiControls.row(context);
-                row.setPadding(0, 0, 0, 0);
+    /**
+     * Builds a two-column theme picker as a standalone layout.
+     * <p>
+     * Use this overload when the picker should be embedded in an existing section instead of
+     * owning a section of its own. The returned layout can be passed to
+     * {@link me.kall.narutoui.mui.screen.MuiSettingsSection#custom(icyllis.modernui.view.View)}.
+     *
+     * @param context the screen context
+     * @param theme   active theme
+     * @param options selectable options
+     * @param changed callback invoked after an option is selected
+     * @return the picker layout
+     */
+    public static @NotNull MuiLayout create(@NotNull Context context, @NotNull MuiTheme theme, @NotNull List<? extends Option> options, @NotNull Runnable changed) {
+        return create(context, theme, options, "In use", changed);
+    }
 
-                Option left = options.get(i);
-                row.addView(tile(context, theme, left, inUse, changed), tileParams(context, i + 1 < options.size()));
+    /**
+     * Builds a two-column theme picker as a standalone layout.
+     *
+     * @param context the screen context
+     * @param theme   active theme
+     * @param options selectable options
+     * @param inUse   label shown on the selected option
+     * @param changed callback invoked after an option is selected
+     * @return the picker layout
+     */
+    public static @NotNull MuiLayout create(@NotNull Context context, @NotNull MuiTheme theme, @NotNull List<? extends Option> options, @NotNull CharSequence inUse, @NotNull Runnable changed) {
+        MuiLayout column = MuiLayout.column(context, theme);
 
-                if (i + 1 < options.size()) {
-                    row.addView(tile(context, theme, options.get(i + 1), inUse, changed), tileParams(context, false));
-                }
+        for (int i = 0; i < options.size(); i += 2) {
+            MuiLayout row = MuiLayout.row(context, theme).padding(0);
 
-                LinearLayout.LayoutParams params = MuiControls.fill();
-                params.topMargin = i == 0 ? 0 : MuiControls.dp(context, 8);
-                card.addView(row, params);
+            Option left = options.get(i);
+            row.add(tile(context, theme, left, inUse, changed), tileParams(context, i + 1 < options.size()));
+
+            if (i + 1 < options.size()) {
+                row.add(tile(context, theme, options.get(i + 1), inUse, changed), tileParams(context, false));
             }
-        }));
+
+            LinearLayout.LayoutParams params = MuiControls.fill();
+            params.topMargin = i == 0 ? 0 : MuiControls.dp(context, 8);
+            column.add(row, params);
+        }
+
+        return column;
     }
 
     /**
@@ -133,7 +165,7 @@ public final class MuiThemePicker {
      * @param changed selection callback
      * @return the tile view
      */
-    private static @NotNull View tile(@NotNull Context context, @NotNull MuiTheme theme, @NotNull Option option, @NotNull String inUse, @NotNull Runnable changed) {
+    private static @NotNull View tile(@NotNull Context context, @NotNull MuiTheme theme, @NotNull Option option, @NotNull CharSequence inUse, @NotNull Runnable changed) {
         LinearLayout tile = MuiControls.column(context);
         tile.setPadding(MuiControls.dp(context, 10), MuiControls.dp(context, 10), MuiControls.dp(context, 10), MuiControls.dp(context, 10));
 

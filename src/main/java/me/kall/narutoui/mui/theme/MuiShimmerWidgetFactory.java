@@ -1,9 +1,9 @@
 package me.kall.narutoui.mui.theme;
 
+import icyllis.modernui.R;
 import icyllis.modernui.core.Context;
 import icyllis.modernui.graphics.drawable.RippleDrawable;
 import icyllis.modernui.graphics.drawable.ShapeDrawable;
-import icyllis.modernui.R;
 import icyllis.modernui.util.ColorStateList;
 import icyllis.modernui.util.StateSet;
 import icyllis.modernui.view.View;
@@ -60,8 +60,7 @@ public final class MuiShimmerWidgetFactory implements MuiWidgetFactory {
         toggle.setTrackDrawable(track);
 
         toggle.setThumbTintList(new ColorStateList(new int[][]{new int[]{-R.attr.state_enabled, -R.attr.state_checked}, new int[]{-R.attr.state_enabled, R.attr.state_checked}, new int[]{R.attr.state_checked}, StateSet.WILD_CARD}, new int[]{ColorStateList.modulateColor(theme.onSurface(), 0.38F), theme.surface(), theme.onPrimary(), theme.onSurfaceVariant()}));
-        toggle.bind(track, accent, theme.surfaceHigh());
-        return toggle;
+        return toggle.bind(track, accent, theme.surfaceHigh());
     }
 
     @Override
@@ -75,8 +74,7 @@ public final class MuiShimmerWidgetFactory implements MuiWidgetFactory {
         bar.setProgressTintList(ColorStateList.valueOf(accent));
         bar.setProgressBackgroundTintList(ColorStateList.valueOf(MuiControls.alpha(accent, 0.28F)));
         bar.setThumbTintList(ColorStateList.valueOf(accent));
-        bar.bind(accent);
-        return bar;
+        return bar.bind(accent);
     }
 
     @Override
@@ -104,8 +102,7 @@ public final class MuiShimmerWidgetFactory implements MuiWidgetFactory {
         button.setBackground(new RippleDrawable(ColorStateList.valueOf(outlined ? ColorStateList.modulateColor(accent, 0.18F) : 0x33FFFFFF), shape, null));
 
         if (!outlined && button instanceof ShimmerButton shimmer) {
-            shimmer.bindBackground(shape, accent);
-            shimmer.setTextShimmer(false);
+            shimmer.bindBackground(shape, accent).setTextShimmer(false);
         }
 
         return button;

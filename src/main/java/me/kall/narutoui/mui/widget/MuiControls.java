@@ -196,7 +196,7 @@ public final class MuiControls {
      * @param theme   active theme
      * @return a new card layout
      */
-    public static @NotNull LinearLayout card(@NotNull Context context, @NotNull MuiTheme theme) {
+    public static @NotNull MuiLayout card(@NotNull Context context, @NotNull MuiTheme theme) {
         return MuiLayout.card(context, theme);
     }
 

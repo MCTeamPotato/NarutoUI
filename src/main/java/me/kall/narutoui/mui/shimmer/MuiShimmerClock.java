@@ -81,8 +81,7 @@ public final class MuiShimmerClock {
             }
         }
 
-        if (!this.scaleTransition && now - this.pendingSince >= SCALE_DEBOUNCE_MS
-                && Math.abs(this.pendingScale - this.scaleTo) > SCALE_EPSILON) {
+        if (!this.scaleTransition && now - this.pendingSince >= SCALE_DEBOUNCE_MS && Math.abs(this.pendingScale - this.scaleTo) > SCALE_EPSILON) {
             this.scaleFrom = this.scaleTo;
             this.scaleTo = this.pendingScale;
             this.scaleMix = 0.0D;

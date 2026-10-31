@@ -38,8 +38,7 @@ public final class MuiSettingsSection {
     }
 
     /**
-     * Returns the card body. Prefer {@link #custom(Consumer)} or {@link #customLayout(Consumer)}
-     * over direct manipulation.
+     * Returns the card body. Prefer {@link #customLayout(Consumer)} over direct manipulation.
      *
      * @return the card layout
      */
@@ -196,19 +195,6 @@ public final class MuiSettingsSection {
      */
     public @NotNull MuiSettingsSection custom(@NotNull View view) {
         return this.add(view);
-    }
-
-    /**
-     * Adds arbitrary content as one automatic row. A divider is inserted before rows after the
-     * first, matching the built-in fields.
-     *
-     * @param body callback receiving the row body
-     * @return this section, for chaining
-     */
-    public @NotNull MuiSettingsSection custom(@NotNull Consumer<LinearLayout> body) {
-        LinearLayout row = MuiControls.column(this.page.context());
-        body.accept(row);
-        return this.add(row);
     }
 
     /**

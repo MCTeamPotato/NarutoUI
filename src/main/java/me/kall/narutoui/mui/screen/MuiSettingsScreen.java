@@ -12,10 +12,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * High-level declarative entry point for configuration screens.
@@ -130,7 +130,7 @@ public final class MuiSettingsScreen {
          * @return this builder
          */
         public @NotNull Builder topNavigation() {
-            return navigation(MuiNavigation.TOP);
+            return this.navigation(MuiNavigation.TOP);
         }
 
         /**
@@ -139,7 +139,7 @@ public final class MuiSettingsScreen {
          * @return this builder
          */
         public @NotNull Builder leftNavigation() {
-            return navigation(MuiNavigation.LEFT);
+            return this.navigation(MuiNavigation.LEFT);
         }
 
         /**
@@ -272,7 +272,7 @@ public final class MuiSettingsScreen {
          * @return this builder
          */
         public @NotNull Builder page(@NotNull String navLabel, @NotNull Consumer<MuiSettingsPage> body) {
-            return page(navLabel, navLabel, null, body);
+            return this.page(navLabel, navLabel, null, body);
         }
 
         /**

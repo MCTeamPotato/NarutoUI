@@ -1,10 +1,10 @@
 package me.kall.narutoui.mui.background;
 
 import icyllis.modernui.graphics.Canvas;
-import icyllis.modernui.graphics.drawable.Drawable;
 import icyllis.modernui.graphics.Image;
 import icyllis.modernui.graphics.Paint;
 import icyllis.modernui.graphics.Rect;
+import icyllis.modernui.graphics.drawable.Drawable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -33,7 +33,7 @@ public final class MuiSlideDrawable extends Drawable {
         this.previous = previous;
         this.current = current;
         this.progress = previous == null ? 1.0F : 0.0F;
-        invalidateSelf();
+        this.invalidateSelf();
     }
 
     /**
@@ -43,7 +43,7 @@ public final class MuiSlideDrawable extends Drawable {
      */
     public void setProgress(float progress) {
         this.progress = Math.max(0.0F, Math.min(1.0F, progress));
-        invalidateSelf();
+        this.invalidateSelf();
     }
 
     /**
@@ -53,19 +53,19 @@ public final class MuiSlideDrawable extends Drawable {
      */
     public void setDim(double dim) {
         this.dim = (float) Math.max(0.0D, Math.min(1.0D, dim));
-        invalidateSelf();
+        this.invalidateSelf();
     }
 
     @Override
     public void draw(@NotNull Canvas canvas) {
-        Rect bounds = getBounds();
+        Rect bounds = this.getBounds();
         if (bounds.isEmpty()) return;
 
         this.paint.setColor(0xC00A0B0F);
         canvas.drawRect(bounds.left, bounds.top, bounds.right, bounds.bottom, this.paint);
 
-        if (this.previous != null) drawImage(canvas, this.previous, bounds, 1.0F);
-        if (this.current != null) drawImage(canvas, this.current, bounds, this.progress);
+        if (this.previous != null) this.drawImage(canvas, this.previous, bounds, 1.0F);
+        if (this.current != null) this.drawImage(canvas, this.current, bounds, this.progress);
 
         int alpha = Math.round(this.dim * 255.0F);
         if (alpha > 0) {
@@ -89,7 +89,6 @@ public final class MuiSlideDrawable extends Drawable {
         float top = bounds.top + (bounds.height() - drawHeight) / 2.0F;
 
         this.paint.setColor(opacity << 24 | 0xFFFFFF);
-        canvas.drawImage(image, 0.0F, 0.0F, width, height,
-                left, top, left + drawWidth, top + drawHeight, this.paint);
+        canvas.drawImage(image, 0.0F, 0.0F, width, height, left, top, left + drawWidth, top + drawHeight, this.paint);
     }
 }

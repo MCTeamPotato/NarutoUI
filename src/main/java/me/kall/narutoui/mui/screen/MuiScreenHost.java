@@ -44,6 +44,6 @@ public interface MuiScreenHost {
      * custom previews are resolved again. Hosts with additional theme state can override it.
      */
     default void onThemeChanged() {
-        reloadCurrentPage();
+        this.reloadCurrentPage();
     }
 }

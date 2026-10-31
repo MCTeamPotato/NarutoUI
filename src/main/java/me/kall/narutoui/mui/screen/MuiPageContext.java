@@ -105,7 +105,7 @@ public final class MuiPageContext {
      * @return the card's vertical body
      */
     public @NotNull LinearLayout section(@NotNull CharSequence title) {
-        return sectionLayout(title);
+        return this.sectionLayout(title);
     }
 
     /**

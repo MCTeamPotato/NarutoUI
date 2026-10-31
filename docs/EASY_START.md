@@ -117,7 +117,7 @@ Screen
 - Modern UI **3.12.0+**
 - NarutoUI **1.4.0**
 
-`build.gradle` 里也保留了 1.21.1 / NeoForge 的版本配置，但本文示例以 **1.20.1 Forge** 为准。
+`../build.gradle` 里也保留了 1.21.1 / NeoForge 的版本配置，但本文示例以 **1.20.1 Forge** 为准。
 
 NarutoUI 依赖 Modern UI。你的开发环境里至少要能编译到：
 
@@ -358,7 +358,6 @@ MuiSettingsScreen.builder("My Mod")
 | `button(label, Runnable)` | 按钮 | `.button("Reset", MyConfig::reset)` |
 | `divider()` | 显式分隔线 | `.divider()` |
 | `custom(View)` | 自定义一行 | `.custom(myView)` |
-| `custom(Consumer<LinearLayout>)` | 自定义行容器 | `.custom(row -> row.addView(...))` |
 | `customLayout(Consumer<MuiLayout>)` | 链式自定义行容器 | `.customLayout(row -> row.text("Hi"))` |
 | `cardLayout()` | 拿到卡片本体 | `section.cardLayout().spacing(8)` |
 
@@ -1279,8 +1278,10 @@ manager.setFragmentFactory(new MuiConfigFragmentFactory());
 MuiThemePicker.add(page, "Theme", options, () -> {
     MyConfig.save();
     // 如果主题影响整个 screen，可以在这里调用 host.reloadCurrentPage()
-});
+}).text("Changes apply immediately.");
 ```
+
+`add(...)` 返回页面，可以继续链式添加内容；如果想把选择器嵌进已有 section，用 `MuiThemePicker.create(context, theme, options, inUse, changed)`，它返回一个 `MuiLayout`。
 
 每个选项实现 `MuiThemePicker.Option`：
 

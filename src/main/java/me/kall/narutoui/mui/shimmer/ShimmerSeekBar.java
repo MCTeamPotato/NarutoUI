@@ -28,11 +28,13 @@ public final class ShimmerSeekBar extends SeekBar implements ShimmerTarget {
      * Binds the base progress color.
      *
      * @param baseColor base ARGB color
+     * @return this seek bar, for chaining
      */
-    public void bind(int baseColor) {
+    public @NotNull ShimmerSeekBar bind(int baseColor) {
         this.baseColor = baseColor;
         this.bound = true;
-        if (isAttachedToWindow()) MuiShimmer.attach(this);
+        if (this.isAttachedToWindow()) MuiShimmer.attach(this);
+        return this;
     }
 
     @Override
@@ -42,18 +44,18 @@ public final class ShimmerSeekBar extends SeekBar implements ShimmerTarget {
 
     @Override
     public void applyShimmerColor(int color) {
-        setProgressTintList(ColorStateList.valueOf(color));
-        setThumbTintList(ColorStateList.valueOf(color));
+        this.setProgressTintList(ColorStateList.valueOf(color));
+        this.setThumbTintList(ColorStateList.valueOf(color));
     }
 
     @Override
     public void applyBaseColor() {
-        applyShimmerColor(this.baseColor);
+        this.applyShimmerColor(this.baseColor);
     }
 
     @Override
     public boolean shimmerEnabled() {
-        return this.bound && isEnabled() && this.profile.config().text() && this.profile.config().controls();
+        return this.bound && this.isEnabled() && this.profile.config().text() && this.profile.config().controls();
     }
 
     @Override

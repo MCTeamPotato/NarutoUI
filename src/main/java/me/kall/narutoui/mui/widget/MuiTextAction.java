@@ -15,6 +15,8 @@ import org.jetbrains.annotations.NotNull;
  * stable and allows the label to be replaced after the action is created.
  */
 public final class MuiTextAction extends FrameLayout {
+    /** Active visual tokens. */
+    private final MuiTheme theme;
     /** Label view created by the active widget factory. */
     private final TextView text;
 
@@ -38,14 +40,15 @@ public final class MuiTextAction extends FrameLayout {
      * @param label   action label or translation key
      * @param action  click callback
      */
-    public MuiTextAction(@NotNull Context context, @NotNull MuiTheme theme,
-                         @NotNull CharSequence label, @NotNull Runnable action) {
+    public MuiTextAction(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence label, @NotNull Runnable action) {
         super(context);
+        this.theme = theme;
         this.text = MuiControls.text(context, theme, label, 12, theme.primary());
-        this.text.setPadding(MuiControls.dp(context, 8), MuiControls.dp(context, 4),
-                MuiControls.dp(context, 8), MuiControls.dp(context, 4));
-        addView(this.text, new FrameLayout.LayoutParams(MuiControls.WRAP, MuiControls.WRAP));
-        setOnClickListener(view -> action.run());
+        this.text.setPadding(MuiControls.dp(context, 8), MuiControls.dp(context, 4), MuiControls.dp(context, 8), MuiControls.dp(context, 4));
+        this.addView(this.text, new FrameLayout.LayoutParams(MuiControls.WRAP, MuiControls.WRAP));
+        this.setOnClickListener(view -> {
+            if (this.isEnabled()) action.run();
+        });
     }
 
     /**
@@ -57,8 +60,7 @@ public final class MuiTextAction extends FrameLayout {
      * @param action  click callback
      * @return the action view
      */
-    public static @NotNull MuiTextAction create(@NotNull Context context, @NotNull MuiTheme theme,
-                                                @NotNull CharSequence label, @NotNull Runnable action) {
+    public static @NotNull MuiTextAction create(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence label, @NotNull Runnable action) {
         return new MuiTextAction(context, theme, label, action);
     }
 
@@ -70,8 +72,7 @@ public final class MuiTextAction extends FrameLayout {
      * @param label   action label or translation key
      * @return the action view
      */
-    public static @NotNull MuiTextAction create(@NotNull Context context, @NotNull MuiTheme theme,
-                                                @NotNull CharSequence label) {
+    public static @NotNull MuiTextAction create(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence label) {
         return new MuiTextAction(context, theme, label);
     }
 
@@ -87,13 +88,36 @@ public final class MuiTextAction extends FrameLayout {
     }
 
     /**
+     * Enables or disables the action. A disabled action dims its label and ignores clicks.
+     *
+     * @param enabled {@code false} to disable
+     * @return this action, for chaining
+     */
+    public @NotNull MuiTextAction enabled(boolean enabled) {
+        this.setEnabled(enabled);
+        this.text.setTextColor(enabled ? this.theme.primary() : MuiControls.alpha(this.theme.primary(), 0.38F));
+        return this;
+    }
+
+    /**
+     * Returns the current label.
+     *
+     * @return the label
+     */
+    public @NotNull CharSequence label() {
+        return this.text.getText();
+    }
+
+    /**
      * Sets the click callback.
      *
      * @param action click callback
      * @return this action, for chaining
      */
     public @NotNull MuiTextAction onClick(@NotNull Runnable action) {
-        setOnClickListener(view -> action.run());
+        this.setOnClickListener(view -> {
+            if (this.isEnabled()) action.run();
+        });
         return this;
     }
 

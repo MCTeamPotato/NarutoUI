@@ -19,8 +19,18 @@ public final class ShimmerButton extends Button implements ShimmerTarget {
     private int baseColor = 0xFFFFFFFF;
     private @Nullable ShapeDrawable backgroundShape;
     private int backgroundBaseColor;
+    private boolean shimmer = true;
     private boolean shimmerText = true;
     private final MuiShimmerProfile profile;
+
+    /**
+     * Creates a shimmer button without an attribute set or default style.
+     *
+     * @param context the screen context
+     */
+    public ShimmerButton(@NotNull Context context) {
+        this(context, null, null);
+    }
 
     /**
      * Creates a shimmer button.
@@ -39,10 +49,12 @@ public final class ShimmerButton extends Button implements ShimmerTarget {
      *
      * @param shape          the background shape used by the button
      * @param baseBackground the normal filled background color
+     * @return this button, for chaining
      */
-    public void bindBackground(@NotNull ShapeDrawable shape, int baseBackground) {
+    public @NotNull ShimmerButton bindBackground(@NotNull ShapeDrawable shape, int baseBackground) {
         this.backgroundShape = shape;
         this.backgroundBaseColor = baseBackground;
+        return this;
     }
 
     /**
@@ -50,34 +62,47 @@ public final class ShimmerButton extends Button implements ShimmerTarget {
      * while only the background follows the ripple.
      *
      * @param shimmerText {@code false} to keep the base text color
+     * @return this button, for chaining
      */
-    public void setTextShimmer(boolean shimmerText) {
+    public @NotNull ShimmerButton setTextShimmer(boolean shimmerText) {
         this.shimmerText = shimmerText;
+        return this;
+    }
+
+    /**
+     * Enables or disables shimmer for this individual button.
+     *
+     * @param shimmer {@code false} to keep the base colors
+     * @return this button, for chaining
+     */
+    public @NotNull ShimmerButton setShimmerEnabled(boolean shimmer) {
+        this.shimmer = shimmer;
+        return this;
     }
 
     private void applyBackground(int color) {
         if (this.backgroundShape == null) return;
         this.backgroundShape.setColor(color);
-        invalidate();
+        this.invalidate();
     }
 
     @Override
     public void setTextColor(int color) {
         this.baseColor = color;
         this.baseColors = ColorStateList.valueOf(color);
-        if (getTextColors() == null || !MuiShimmer.isRunning()) super.setTextColor(color);
+        if (this.getTextColors() == null || !MuiShimmer.isRunning()) super.setTextColor(color);
     }
 
     @Override
     public void setTextColor(@NotNull ColorStateList colors) {
         this.baseColors = colors;
         this.baseColor = colors.getDefaultColor();
-        if (getTextColors() == null || !MuiShimmer.isRunning()) super.setTextColor(colors);
+        if (this.getTextColors() == null || !MuiShimmer.isRunning()) super.setTextColor(colors);
     }
 
     @Override
     public int shimmerBaseColor() {
-        return this.baseColors.getColorForState(getDrawableState(), this.baseColor);
+        return this.baseColors.getColorForState(this.getDrawableState(), this.baseColor);
     }
 
     @Override
@@ -97,7 +122,7 @@ public final class ShimmerButton extends Button implements ShimmerTarget {
     }
 
     @SuppressWarnings("SameParameterValue")
-    private static int blend(int from, int to, float amount) {
+    static int blend(int from, int to, float amount) {
         int a = (int) (((from >>> 24) & 0xFF) + (((to >>> 24) & 0xFF) - ((from >>> 24) & 0xFF)) * amount);
         int r = (int) (((from >> 16) & 0xFF) + (((to >> 16) & 0xFF) - ((from >> 16) & 0xFF)) * amount);
         int g = (int) (((from >> 8) & 0xFF) + (((to >> 8) & 0xFF) - ((from >> 8) & 0xFF)) * amount);
@@ -107,7 +132,7 @@ public final class ShimmerButton extends Button implements ShimmerTarget {
 
     @Override
     public boolean shimmerEnabled() {
-        return isAttachedToWindow() && this.profile.config().text() && this.profile.config().configText();
+        return this.shimmer && this.isAttachedToWindow() && this.profile.config().text() && this.profile.config().configText();
     }
 
     @Override
@@ -117,7 +142,7 @@ public final class ShimmerButton extends Button implements ShimmerTarget {
 
     @Override
     public float shimmerStrength() {
-        return isEnabled() ? 0.65F : 0.3F;
+        return this.isEnabled() ? 0.65F : 0.3F;
     }
 
     @Override

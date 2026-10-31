@@ -178,8 +178,7 @@ public final class MuiShimmer {
             float waveB = wave(x, y, time, scaleB);
             float wave = waveA + (waveB - waveA) * scaleMix;
             int color = rampColor(colors, stops, wave);
-            target.applyShimmerColor(lerp(target.shimmerBaseColor(), color,
-                    target.shimmerStrength() * strength));
+            target.applyShimmerColor(lerp(target.shimmerBaseColor(), color, target.shimmerStrength() * strength));
         }
 
         if (!active) {
@@ -209,11 +208,6 @@ public final class MuiShimmer {
     }
 
     private static int lerp(int from, int to, float fraction) {
-        float f = Math.max(0.0F, Math.min(1.0F, fraction));
-        int a = (int) (((from >>> 24) & 0xFF) + (((to >>> 24) & 0xFF) - ((from >>> 24) & 0xFF)) * f);
-        int r = (int) (((from >> 16) & 0xFF) + (((to >> 16) & 0xFF) - ((from >> 16) & 0xFF)) * f);
-        int g = (int) (((from >> 8) & 0xFF) + (((to >> 8) & 0xFF) - ((from >> 8) & 0xFF)) * f);
-        int b = (int) ((from & 0xFF) + ((to & 0xFF) - (from & 0xFF)) * f);
-        return (a << 24) | (r << 16) | (g << 8) | b;
+        return ShimmerButton.blend(from, to, Math.max(0.0F, Math.min(1.0F, fraction)));
     }
 }

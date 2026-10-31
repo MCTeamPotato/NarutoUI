@@ -22,20 +22,22 @@ public final class ShimmerCircleDrawable extends ShapeDrawable implements Shimme
         this.host = host;
         this.profile = MuiShimmerProfile.current();
         this.baseColor = baseColor;
-        setColor(baseColor);
+        this.setColor(baseColor);
     }
 
     /**
      * Updates the color restored when shimmer is disabled.
      *
      * @param color base ARGB color
+     * @return this drawable, for chaining
      */
-    public void setBaseColor(int color) {
+    public @NotNull ShimmerCircleDrawable setBaseColor(int color) {
         this.baseColor = color;
         if (!MuiShimmer.isRunning()) {
-            setColor(color);
-            invalidateSelf();
+            this.setColor(color);
+            this.invalidateSelf();
         }
+        return this;
     }
 
     @Override
@@ -45,19 +47,19 @@ public final class ShimmerCircleDrawable extends ShapeDrawable implements Shimme
 
     @Override
     public void applyShimmerColor(int color) {
-        setColor(color);
-        invalidateSelf();
+        this.setColor(color);
+        this.invalidateSelf();
     }
 
     @Override
     public void applyBaseColor() {
-        setColor(this.baseColor);
-        invalidateSelf();
+        this.setColor(this.baseColor);
+        this.invalidateSelf();
     }
 
     @Override
     public boolean shimmerEnabled() {
-        return this.host.isAttachedToWindow() && this.profile.config().text() && this.profile.config().controls();
+        return this.host.isAttachedToWindow() && this.host.isEnabled() && this.profile.config().text() && this.profile.config().controls();
     }
 
     @Override

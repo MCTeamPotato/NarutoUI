@@ -2,8 +2,8 @@ package me.kall.narutoui.mui.background;
 
 import icyllis.modernui.graphics.Bitmap;
 import icyllis.modernui.graphics.BitmapFactory;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -92,7 +92,7 @@ public final class MuiBackgroundFiles {
     public @NotNull List<Path> images(@NotNull String configuredFolder, @NotNull List<String> order) {
         if (configuredFolder.isBlank()) return List.of();
 
-        Path folder = folder(configuredFolder);
+        Path folder = this.folder(configuredFolder);
         if (!Files.isDirectory(folder)) return List.of();
 
         List<Path> found = new ArrayList<>();
@@ -133,7 +133,7 @@ public final class MuiBackgroundFiles {
      */
     public @NotNull String copyInto(@NotNull Path source) throws IOException {
         String name = this.baseName + extensionOf(source.getFileName().toString());
-        Path target = file(name);
+        Path target = this.file(name);
         if (!source.toAbsolutePath().normalize().equals(target)) {
             Files.createDirectories(target.getParent());
             Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);

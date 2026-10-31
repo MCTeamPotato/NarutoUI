@@ -42,20 +42,21 @@ public final class MuiChip extends TextView {
         this.theme = theme;
         this.checked = checked;
 
-        setText(MuiLocalization.resolve(label));
-        setTextSize(11);
-        setTextColor(LABEL_COLOR);
-        setGravity(Gravity.CENTER);
-        setPadding(MuiControls.dp(context, 10), MuiControls.dp(context, 4),
+        this.setText(MuiLocalization.resolve(label));
+        this.setTextSize(11);
+        this.setTextColor(LABEL_COLOR);
+        this.setGravity(Gravity.CENTER);
+        this.setPadding(MuiControls.dp(context, 10), MuiControls.dp(context, 4),
                 MuiControls.dp(context, 10), MuiControls.dp(context, 4));
 
-        this.fill = new ShimmerCircleDrawable(this, fillColor());
+        this.fill = new ShimmerCircleDrawable(this, this.fillColor());
         this.fill.setCornerRadius(MuiControls.dp(context, 14));
-        setBackground(this.fill);
+        this.setBackground(this.fill);
 
-        setOnClickListener(view -> {
+        this.setOnClickListener(view -> {
+            if (!this.isEnabled()) return;
             this.checked = !this.checked;
-            applyStyle();
+            this.applyStyle();
             if (this.onChanged != null) this.onChanged.accept(this.checked);
         });
     }
@@ -69,9 +70,40 @@ public final class MuiChip extends TextView {
      * @param checked  initial selected state
      * @return the chip
      */
-    public static @NotNull MuiChip create(@NotNull Context context, @NotNull MuiTheme theme,
-                                          @NotNull CharSequence label, boolean checked) {
+    public static @NotNull MuiChip create(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence label, boolean checked) {
         return new MuiChip(context, theme, label, checked);
+    }
+
+    /**
+     * Enables or disables the chip. A disabled chip keeps its layout but dims its fill and label.
+     *
+     * @param enabled {@code false} to disable
+     * @return this chip, for chaining
+     */
+    public @NotNull MuiChip enabled(boolean enabled) {
+        this.setEnabled(enabled);
+        this.applyStyle();
+        return this;
+    }
+
+    /**
+     * Replaces the chip label.
+     *
+     * @param label label or translation key
+     * @return this chip, for chaining
+     */
+    public @NotNull MuiChip label(@NotNull CharSequence label) {
+        this.setText(MuiLocalization.resolve(label));
+        return this;
+    }
+
+    /**
+     * Returns the current chip label.
+     *
+     * @return the label
+     */
+    public @NotNull CharSequence label() {
+        return this.getText();
     }
 
     /**
@@ -82,7 +114,7 @@ public final class MuiChip extends TextView {
      */
     public @NotNull MuiChip checked(boolean checked) {
         this.checked = checked;
-        applyStyle();
+        this.applyStyle();
         return this;
     }
 
@@ -110,17 +142,18 @@ public final class MuiChip extends TextView {
      * Applies the themed fill and label colors.
      */
     private void applyStyle() {
-        this.fill.setBaseColor(fillColor());
-        setTextColor(LABEL_COLOR);
+        this.fill.setBaseColor(this.fillColor());
+        this.setTextColor(this.isEnabled() ? LABEL_COLOR : MuiControls.alpha(LABEL_COLOR, 0.38F));
     }
 
     /**
-     * Returns the base fill color for the current selected state.
+     * Returns the base fill color for the current selected and enabled state.
      *
      * @return an ARGB color
      */
     private int fillColor() {
-        return this.checked ? this.theme.primary() : this.theme.onSurfaceVariant();
+        int color = this.checked ? this.theme.primary() : this.theme.onSurfaceVariant();
+        return this.isEnabled() ? color : MuiControls.alpha(color, 0.38F);
     }
 
     /**

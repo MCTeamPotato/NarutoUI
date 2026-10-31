@@ -1,3 +1,13 @@
+# Unreleased
+- Make `MuiCollapsibleCard.expanded(...)` / `setExpanded(...)` chainable and add `expanded(boolean, boolean animate)`.
+- Add `MuiThemePicker.create(...)` returning a standalone `MuiLayout`; `MuiThemePicker.add(...)` now returns the page.
+- Add the missing `MuiTheme.with*` methods for surface, text, outline and error tokens.
+- Add chainable text updates: `MuiChip.label`, `MuiHintBadge.text`, `MuiColorField.label`, `MuiLogo.glyph`, `MuiDescriptionRow.title` / `description`.
+- Add `enabled(boolean)` to `MuiChip`, `MuiTextAction`, `MuiNumberField` and `MuiColorField`, including dimmed disabled states.
+- Make shimmer control bind methods chainable; add `ShimmerButton(Context)`.
+- Add `MuiSettingsPage.customLayout(...)`; remove `MuiSettingsSection.custom(Consumer<LinearLayout>)` in favor of `customLayout`.
+- Change `MuiControls.card(...)` to return `MuiLayout`.
+
 # 1.0.0
 - Initial release.
 # 1.1.0

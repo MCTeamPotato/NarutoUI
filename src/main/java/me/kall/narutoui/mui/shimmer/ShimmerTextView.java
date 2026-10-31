@@ -29,9 +29,11 @@ public final class ShimmerTextView extends TextView implements ShimmerTarget {
      * Enables or disables shimmer for this individual view.
      *
      * @param enabled {@code false} to keep the base color
+     * @return this text view, for chaining
      */
-    public void setShimmerEnabled(boolean enabled) {
+    public @NotNull ShimmerTextView setShimmerEnabled(boolean enabled) {
         this.shimmer = enabled;
+        return this;
     }
 
     @Override
@@ -39,13 +41,13 @@ public final class ShimmerTextView extends TextView implements ShimmerTarget {
         this.baseColor = color;
         // During TextView's own constructor mTextColor is still null; it must be initialised,
         // otherwise the subsequent setHintTextColor() call inside the constructor NPEs.
-        if (getTextColors() == null || !MuiShimmer.isRunning()) super.setTextColor(color);
+        if (this.getTextColors() == null || !MuiShimmer.isRunning()) super.setTextColor(color);
     }
 
     @Override
     public void setTextColor(@NotNull ColorStateList colors) {
         this.baseColor = colors.getDefaultColor();
-        if (getTextColors() == null || !MuiShimmer.isRunning()) super.setTextColor(colors);
+        if (this.getTextColors() == null || !MuiShimmer.isRunning()) super.setTextColor(colors);
     }
 
     @Override
@@ -65,7 +67,7 @@ public final class ShimmerTextView extends TextView implements ShimmerTarget {
 
     @Override
     public boolean shimmerEnabled() {
-        return this.shimmer && isEnabled() && this.profile.config().text() && this.profile.config().configText();
+        return this.shimmer && this.isEnabled() && this.profile.config().text() && this.profile.config().configText();
     }
 
     @Override

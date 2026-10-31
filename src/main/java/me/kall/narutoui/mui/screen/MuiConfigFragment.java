@@ -45,8 +45,6 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost {
     private @Nullable MuiConfigScreen.Model model;
     /** Registry key used to remove the process-local model on final destroy. */
     private @Nullable String modelKey;
-    /** {@code true} when neither a model nor a stable recipe could be resolved. */
-    private boolean missingModel;
     /** Navigation item views, parallel to {@link #pages}. */
     private final List<TextView> navItems = new ArrayList<>();
     /** Built page roots, retained across tab switches. */
@@ -75,12 +73,11 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost {
     public void onCreate(@Nullable DataSet savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        DataSet arguments = getArguments();
+        DataSet arguments = this.getArguments();
         this.modelKey = arguments == null ? null : arguments.getString(ARG_MODEL);
         if (this.modelKey != null && !this.modelKey.isEmpty()) {
             this.model = MuiConfigScreen.buildModelFor(this.modelKey);
         }
-        this.missingModel = this.model == null;
     }
 
     /**
@@ -93,7 +90,7 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost {
      */
     @Override
     public @NotNull View onCreateView(@NotNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable DataSet savedInstanceState) {
-        Context context = requireContext();
+        Context context = this.requireContext();
         if (this.model == null) return this.buildRecoveryView(context);
 
         this.theme = this.model.theme() != null ? this.model.theme() : MuiTheme.modern(context);
@@ -206,7 +203,7 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost {
         if (this.model == null || this.selected < 0 || this.selected >= this.pages.size()) return;
 
         int index = this.selected;
-        this.pages.set(index, this.createPage(requireContext(), this.model.pages().get(index)));
+        this.pages.set(index, this.createPage(this.requireContext(), this.model.pages().get(index)));
         this.showPage(index);
     }
 
@@ -395,7 +392,7 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost {
     private void refreshNav() {
         if (this.navItems.isEmpty() || this.theme == null) return;
 
-        Context context = requireContext();
+        Context context = this.requireContext();
         for (int i = 0; i < this.navItems.size(); i++) {
             TextView item = this.navItems.get(i);
             boolean active = i == this.selected;

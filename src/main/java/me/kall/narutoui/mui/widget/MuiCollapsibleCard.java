@@ -73,7 +73,7 @@ public final class MuiCollapsibleCard extends LinearLayout {
         super(context);
         this.theme = theme;
         this.expanded = expanded;
-        setOrientation(VERTICAL);
+        this.setOrientation(VERTICAL);
         MuiLayout.applyCardStyle(this, context, theme);
 
         this.header = new LinearLayout(context);
@@ -88,8 +88,7 @@ public final class MuiCollapsibleCard extends LinearLayout {
 
         MuiLayout texts = MuiLayout.column(context, theme);
         texts.add(MuiControls.heading(context, theme, title, 15, theme.primary()));
-        this.summaryView = MuiControls.text(context, theme,
-                summary == null ? "" : summary, 11, theme.onSurfaceVariant());
+        this.summaryView = MuiControls.text(context, theme, summary == null ? "" : summary, 11, theme.onSurfaceVariant());
         this.summaryView.setVisibility(summary == null || summary.length() == 0 ? GONE : VISIBLE);
         texts.add(this.summaryView);
 
@@ -104,9 +103,8 @@ public final class MuiCollapsibleCard extends LinearLayout {
         this.reveal.addView(this.body, new FrameLayout.LayoutParams(MuiControls.MATCH, MuiControls.WRAP));
         this.reveal.setVisibility(expanded ? VISIBLE : GONE);
 
-        addView(this.header, new LinearLayout.LayoutParams(MuiControls.MATCH, MuiControls.WRAP));
-        addView(this.reveal, new LinearLayout.LayoutParams(MuiControls.MATCH,
-                expanded ? MuiControls.WRAP : 0));
+        this.addView(this.header, new LinearLayout.LayoutParams(MuiControls.MATCH, MuiControls.WRAP));
+        this.addView(this.reveal, new LinearLayout.LayoutParams(MuiControls.MATCH, expanded ? MuiControls.WRAP : 0));
     }
 
     /**
@@ -119,9 +117,7 @@ public final class MuiCollapsibleCard extends LinearLayout {
      * @param expanded whether the body starts expanded
      * @return the card
      */
-    public static @NotNull MuiCollapsibleCard card(@NotNull Context context, @NotNull MuiTheme theme,
-                                                   @NotNull CharSequence title, @Nullable CharSequence summary,
-                                                   boolean expanded) {
+    public static @NotNull MuiCollapsibleCard card(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence title, @Nullable CharSequence summary, boolean expanded) {
         return new MuiCollapsibleCard(context, theme, title, summary, expanded);
     }
 
@@ -163,7 +159,7 @@ public final class MuiCollapsibleCard extends LinearLayout {
      */
     public @NotNull MuiCollapsibleCard trailing(@NotNull View view) {
         LinearLayout.LayoutParams params = MuiControls.wrap();
-        params.setMargins(dp(getContext(), 12), 0, 0, 0);
+        params.setMargins(dp(this.getContext(), 12), 0, 0, 0);
         this.header.addView(view, params);
         return this;
     }
@@ -188,8 +184,7 @@ public final class MuiCollapsibleCard extends LinearLayout {
      * @return this card, for chaining
      */
     public @NotNull MuiCollapsibleCard expanded(boolean expanded) {
-        setExpanded(expanded);
-        return this;
+        return this.setExpanded(expanded);
     }
 
     /**
@@ -198,17 +193,17 @@ public final class MuiCollapsibleCard extends LinearLayout {
      * @return this card, for chaining
      */
     public @NotNull MuiCollapsibleCard toggle() {
-        setExpanded(!this.expanded);
-        return this;
+        return this.setExpanded(!this.expanded);
     }
 
     /**
      * Expands or collapses the body with the default animation.
      *
      * @param expanded {@code true} to expand
+     * @return this card, for chaining
      */
-    public void setExpanded(boolean expanded) {
-        setExpanded(expanded, true);
+    public @NotNull MuiCollapsibleCard setExpanded(boolean expanded) {
+        return this.setExpanded(expanded, true);
     }
 
     /**
@@ -216,14 +211,27 @@ public final class MuiCollapsibleCard extends LinearLayout {
      *
      * @param expanded {@code true} to expand
      * @param animate  {@code false} to apply the target height immediately
+     * @return this card, for chaining
      */
-    public void setExpanded(boolean expanded, boolean animate) {
-        if (this.expanded == expanded) return;
+    public @NotNull MuiCollapsibleCard setExpanded(boolean expanded, boolean animate) {
+        if (this.expanded == expanded) return this;
 
         this.expanded = expanded;
         this.chevron.setText(expanded ? "-" : "+");
         if (this.onExpandedChanged != null) this.onExpandedChanged.accept(expanded);
-        animateReveal(expanded, animate);
+        this.animateReveal(expanded, animate);
+        return this;
+    }
+
+    /**
+     * Expands or collapses the body with the default animation.
+     *
+     * @param expanded {@code true} to expand
+     * @param animate  {@code false} to apply the target height immediately
+     * @return this card, for chaining
+     */
+    public @NotNull MuiCollapsibleCard expanded(boolean expanded, boolean animate) {
+        return this.setExpanded(expanded, animate);
     }
 
     /**
@@ -284,7 +292,7 @@ public final class MuiCollapsibleCard extends LinearLayout {
         int target = 0;
 
         if (expand) {
-            int width = getWidth() - getPaddingLeft() - getPaddingRight();
+            int width = this.getWidth() - this.getPaddingLeft() - this.getPaddingRight();
             if (width <= 0) width = this.reveal.getWidth();
             if (width <= 0) {
                 this.reveal.setVisibility(VISIBLE);
@@ -295,8 +303,7 @@ public final class MuiCollapsibleCard extends LinearLayout {
 
             params.height = MuiControls.WRAP;
             this.reveal.setLayoutParams(params);
-            this.reveal.measure(MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY),
-                    MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
+            this.reveal.measure(MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
             target = this.reveal.getMeasuredHeight();
 
             this.reveal.setVisibility(VISIBLE);
@@ -365,12 +372,9 @@ public final class MuiCollapsibleCard extends LinearLayout {
          * @param heightUsed           vertical space already used
          */
         @Override
-        protected void measureChildWithMargins(@NotNull View child, int parentWidthMeasureSpec, int widthUsed,
-                                               int parentHeightMeasureSpec, int heightUsed) {
+        protected void measureChildWithMargins(@NotNull View child, int parentWidthMeasureSpec, int widthUsed, int parentHeightMeasureSpec, int heightUsed) {
             ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) child.getLayoutParams();
-            int childWidthSpec = getChildMeasureSpec(parentWidthMeasureSpec,
-                    getPaddingLeft() + getPaddingRight() + params.leftMargin + params.rightMargin + widthUsed,
-                    params.width);
+            int childWidthSpec = getChildMeasureSpec(parentWidthMeasureSpec, this.getPaddingLeft() + this.getPaddingRight() + params.leftMargin + params.rightMargin + widthUsed, params.width);
             child.measure(childWidthSpec, MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
         }
     }

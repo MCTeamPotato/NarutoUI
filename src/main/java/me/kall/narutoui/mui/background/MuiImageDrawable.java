@@ -1,10 +1,10 @@
 package me.kall.narutoui.mui.background;
 
 import icyllis.modernui.graphics.Canvas;
-import icyllis.modernui.graphics.drawable.Drawable;
 import icyllis.modernui.graphics.Image;
 import icyllis.modernui.graphics.Paint;
 import icyllis.modernui.graphics.Rect;
+import icyllis.modernui.graphics.drawable.Drawable;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -44,7 +44,7 @@ public final class MuiImageDrawable extends Drawable {
 
     @Override
     public void draw(@NotNull Canvas canvas) {
-        Rect bounds = getBounds();
+        Rect bounds = this.getBounds();
         if (bounds.isEmpty() || this.image.isClosed()) return;
 
         int width = this.image.getWidth();

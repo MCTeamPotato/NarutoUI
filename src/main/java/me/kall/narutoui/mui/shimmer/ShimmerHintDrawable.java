@@ -33,13 +33,15 @@ public final class ShimmerHintDrawable extends ShapeDrawable implements ShimmerT
      * Updates the color restored when shimmer is disabled.
      *
      * @param color base ARGB color
+     * @return this drawable, for chaining
      */
-    public void setBaseColor(int color) {
+    public @NotNull ShimmerHintDrawable setBaseColor(int color) {
         this.baseColor = color;
         if (!MuiShimmer.isRunning()) {
             this.applyColor(color);
-            invalidateSelf();
+            this.invalidateSelf();
         }
+        return this;
     }
 
     @Override
@@ -50,18 +52,18 @@ public final class ShimmerHintDrawable extends ShapeDrawable implements ShimmerT
     @Override
     public void applyShimmerColor(int color) {
         this.applyColor(color);
-        invalidateSelf();
+        this.invalidateSelf();
     }
 
     @Override
     public void applyBaseColor() {
         this.applyColor(this.baseColor);
-        invalidateSelf();
+        this.invalidateSelf();
     }
 
     private void applyColor(int color) {
-        setColor(ColorStateList.modulateColor(color, 0.14F));
-        setStroke(this.strokeWidth, ColorStateList.modulateColor(color, 0.7F));
+        this.setColor(ColorStateList.modulateColor(color, 0.14F));
+        this.setStroke(this.strokeWidth, ColorStateList.modulateColor(color, 0.7F));
     }
 
     @Override

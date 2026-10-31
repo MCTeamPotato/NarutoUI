@@ -9,8 +9,8 @@ import me.kall.narutoui.mui.screen.MuiScreenHost;
 import org.jetbrains.annotations.NotNull;
 
 import java.nio.file.Path;
-import java.util.function.Function;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * Supplies the background drawable for a {@link MuiConfigScreen}.

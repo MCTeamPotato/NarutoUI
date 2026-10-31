@@ -14,11 +14,11 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * Entry point for building a Modern UI configuration screen.
@@ -137,7 +137,7 @@ public final class MuiConfigScreen {
          * @return this builder
          */
         public @NotNull Builder topNavigation() {
-            return navigation(MuiNavigation.TOP);
+            return this.navigation(MuiNavigation.TOP);
         }
 
         /**
@@ -146,7 +146,7 @@ public final class MuiConfigScreen {
          * @return this builder
          */
         public @NotNull Builder leftNavigation() {
-            return navigation(MuiNavigation.LEFT);
+            return this.navigation(MuiNavigation.LEFT);
         }
 
         /**
@@ -280,7 +280,7 @@ public final class MuiConfigScreen {
          * @return this builder
          */
         public @NotNull Builder page(@NotNull String navLabel, @NotNull Consumer<MuiPageContext> body) {
-            return page(navLabel, navLabel, null, body);
+            return this.page(navLabel, navLabel, null, body);
         }
 
         /**
@@ -327,7 +327,8 @@ public final class MuiConfigScreen {
          * @return the model
          * @throws IllegalStateException when no page was added
          */
-        MuiConfigScreen.Model buildModel() {
+        @Contract(" -> new")
+        MuiConfigScreen.@NotNull Model buildModel() {
             if (this.pages.isEmpty()) {
                 throw new IllegalStateException("A MuiConfigScreen needs at least one page");
             }

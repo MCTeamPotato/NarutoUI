@@ -1,8 +1,8 @@
 package me.kall.narutoui.mui.shimmer;
 
+import icyllis.modernui.R;
 import icyllis.modernui.core.Context;
 import icyllis.modernui.graphics.drawable.ShapeDrawable;
-import icyllis.modernui.R;
 import icyllis.modernui.util.ColorStateList;
 import icyllis.modernui.util.StateSet;
 import icyllis.modernui.view.View;
@@ -44,8 +44,9 @@ public final class ShimmerSwitch extends Switch implements ShimmerTarget {
      * @param track     the track drawable
      * @param baseColor checked track color
      * @param offColor  unchecked track color
+     * @return this switch, for chaining
      */
-    public void bind(@NotNull ShapeDrawable track, int baseColor, int offColor) {
+    public @NotNull ShimmerSwitch bind(@NotNull ShapeDrawable track, int baseColor, int offColor) {
         this.track = track;
         this.baseColor = baseColor;
         this.offColor = offColor;
@@ -53,7 +54,8 @@ public final class ShimmerSwitch extends Switch implements ShimmerTarget {
         this.bound = true;
         this.applyBaseColor();
 
-        if (isAttachedToWindow()) MuiShimmer.attach(this);
+        if (this.isAttachedToWindow()) MuiShimmer.attach(this);
+        return this;
     }
 
     @Override
@@ -75,18 +77,13 @@ public final class ShimmerSwitch extends Switch implements ShimmerTarget {
         ShapeDrawable track = this.track;
         if (track == null) return;
 
-        track.setColor(new ColorStateList(STATES, new int[]{
-                this.offDisabledColor,
-                ColorStateList.modulateColor(color, 0.38F),
-                color,
-                this.offColor
-        }));
+        track.setColor(new ColorStateList(STATES, new int[]{this.offDisabledColor, ColorStateList.modulateColor(color, 0.38F), color, this.offColor}));
         track.invalidateSelf();
     }
 
     @Override
     public boolean shimmerEnabled() {
-        return this.bound && isEnabled() && this.profile.config().text() && this.profile.config().controls();
+        return this.bound && this.isEnabled() && this.profile.config().text() && this.profile.config().controls();
     }
 
     @Override

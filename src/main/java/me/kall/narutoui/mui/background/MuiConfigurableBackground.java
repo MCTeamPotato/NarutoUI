@@ -2,27 +2,26 @@ package me.kall.narutoui.mui.background;
 
 import icyllis.modernui.core.Context;
 import icyllis.modernui.graphics.Bitmap;
+import icyllis.modernui.graphics.Image;
 import icyllis.modernui.graphics.drawable.ColorDrawable;
 import icyllis.modernui.graphics.drawable.Drawable;
-import icyllis.modernui.graphics.Image;
 import icyllis.modernui.mc.MuiModApi;
 import icyllis.modernui.widget.FrameLayout;
 import icyllis.modernui.widget.Toast;
 import me.kall.narutoui.mui.overlay.MuiCropOverlay;
-import me.kall.narutoui.mui.screen.MuiConfigScreen;
+import me.kall.narutoui.mui.overlay.MuiCropOverlayFactory;
 import me.kall.narutoui.mui.screen.MuiScreenHost;
 import me.kall.narutoui.mui.util.MuiFilePicker;
 import net.minecraft.client.Minecraft;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.concurrent.CompletableFuture;
 import java.util.List;
-import me.kall.narutoui.mui.overlay.MuiCropOverlayFactory;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Turnkey configurable background for a {@link me.kall.narutoui.mui.screen.MuiConfigScreen}.
@@ -237,10 +236,7 @@ public final class MuiConfigurableBackground implements MuiBackground, MuiBackgr
 
         List<Path> images = this.images();
         if (!images.isEmpty()) {
-            MuiSlideshowBackground show = new MuiSlideshowBackground(images,
-                    this.state.interval(),
-                    this.state.fade(),
-                    this.state.dim());
+            MuiSlideshowBackground show = new MuiSlideshowBackground(images, this.state.interval(), this.state.fade(), this.state.dim());
             this.slideshow = show;
             show.attach(root);
             return;
@@ -254,8 +250,7 @@ public final class MuiConfigurableBackground implements MuiBackground, MuiBackgr
         Image image = this.image;
         if (image != null) {
             MuiCrop crop = this.state.crop();
-            root.setBackground(new MuiImageDrawable(image, crop.x(), crop.y(), crop.width(),
-                    crop.height(), this.state.dim()));
+            root.setBackground(new MuiImageDrawable(image, crop.x(), crop.y(), crop.width(), crop.height(), this.state.dim()));
         } else {
             root.setBackground(new ColorDrawable(FALLBACK_COLOR));
             this.loadAsync(this::refresh);

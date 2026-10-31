@@ -23,6 +23,10 @@ import java.util.function.IntConsumer;
 public final class MuiNumberField extends EditText {
     /** Context used for density conversion. */
     private final Context context;
+    /** Active visual tokens. */
+    private final MuiTheme theme;
+    /** Rounded input background. */
+    private final ShapeDrawable background;
     /** Inclusive lower bound. */
     private int min = 0;
     /** Inclusive upper bound. */
@@ -44,27 +48,28 @@ public final class MuiNumberField extends EditText {
     public MuiNumberField(@NotNull Context context, @NotNull MuiTheme theme, int value) {
         super(context);
         this.context = context;
+        this.theme = theme;
         this.current = value;
 
-        setSingleLine();
-        setTextSize(14);
-        setTextColor(theme.onSurface());
-        setText(String.valueOf(value));
+        this.setSingleLine();
+        this.setTextSize(14);
+        this.setTextColor(theme.onSurface());
+        this.setText(String.valueOf(value));
 
-        ShapeDrawable background = new ShapeDrawable();
-        background.setCornerRadius(MuiControls.dp(context, 8));
-        background.setColor(theme.surfaceHigh());
-        setBackground(background);
-        setPadding(MuiControls.dp(context, 10), MuiControls.dp(context, 6), MuiControls.dp(context, 10), MuiControls.dp(context, 6));
+        this.background = new ShapeDrawable();
+        this.background.setCornerRadius(MuiControls.dp(context, 8));
+        this.background.setColor(theme.surfaceHigh());
+        this.setBackground(this.background);
+        this.setPadding(MuiControls.dp(context, 10), MuiControls.dp(context, 6), MuiControls.dp(context, 10), MuiControls.dp(context, 6));
 
-        setFilters((source, start, end, dest, dStart, dEnd) -> {
+        this.setFilters((source, start, end, dest, dStart, dEnd) -> {
             for (int i = start; i < end; i++) {
                 if (!Character.isDigit(source.charAt(i))) return "";
             }
             return null;
         });
 
-        addTextChangedListener(new TextWatcher() {
+        this.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
@@ -82,7 +87,7 @@ public final class MuiNumberField extends EditText {
                     return;
                 }
 
-                int clamped = clamp(parsed);
+                int clamped = MuiNumberField.this.clamp(parsed);
                 MuiNumberField.this.current = clamped;
                 if (MuiNumberField.this.onChange != null) {
                     MuiNumberField.this.onChange.accept(clamped);
@@ -112,6 +117,22 @@ public final class MuiNumberField extends EditText {
     }
 
     /**
+     * Enables or disables the field. A disabled field dims its text and background and no longer
+     * accepts focus.
+     *
+     * @param enabled {@code false} to disable
+     * @return this field, for chaining
+     */
+    public @NotNull MuiNumberField enabled(boolean enabled) {
+        this.setEnabled(enabled);
+        this.setFocusable(enabled);
+        this.setFocusableInTouchMode(enabled);
+        this.setTextColor(enabled ? this.theme.onSurface() : MuiControls.alpha(this.theme.onSurface(), 0.38F));
+        this.background.setColor(enabled ? this.theme.surfaceHigh() : MuiControls.alpha(this.theme.surfaceHigh(), 0.5F));
+        return this;
+    }
+
+    /**
      * Sets the inclusive bounds and clamps the current value.
      *
      * @param min lower bound
@@ -121,7 +142,7 @@ public final class MuiNumberField extends EditText {
     public @NotNull MuiNumberField bounds(int min, int max) {
         this.min = min;
         this.max = Math.max(min, max);
-        value(this.current);
+        this.value(this.current);
         return this;
     }
 
@@ -133,7 +154,7 @@ public final class MuiNumberField extends EditText {
      * @return this field, for chaining
      */
     public @NotNull MuiNumberField width(int dp) {
-        ViewGroup.LayoutParams currentParams = getLayoutParams();
+        ViewGroup.LayoutParams currentParams = this.getLayoutParams();
         LinearLayout.LayoutParams params;
         if (currentParams instanceof LinearLayout.LayoutParams linear) {
             params = linear;
@@ -145,7 +166,7 @@ public final class MuiNumberField extends EditText {
             params = new LinearLayout.LayoutParams(MuiControls.WRAP, MuiControls.WRAP);
         }
         params.width = MuiControls.dp(this.context, dp);
-        setLayoutParams(params);
+        this.setLayoutParams(params);
         return this;
     }
 
@@ -156,7 +177,7 @@ public final class MuiNumberField extends EditText {
      * @return this field, for chaining
      */
     public @NotNull MuiNumberField gravity(int gravity) {
-        setGravity(gravity);
+        this.setGravity(gravity);
         return this;
     }
 
@@ -187,11 +208,11 @@ public final class MuiNumberField extends EditText {
      * @return this field, for chaining
      */
     public @NotNull MuiNumberField value(int value) {
-        int clamped = clamp(value);
+        int clamped = this.clamp(value);
         this.current = clamped;
-        if (!getText().toString().equals(String.valueOf(clamped))) {
+        if (!this.getText().toString().equals(String.valueOf(clamped))) {
             this.guard = true;
-            setText(String.valueOf(clamped));
+            this.setText(String.valueOf(clamped));
             this.guard = false;
         }
         return this;

@@ -52,4 +52,15 @@ public final class MuiSettingsPage {
         body.accept(this.context);
         return this;
     }
+
+    /**
+     * Adds arbitrary content directly to the page column using the fluent layout wrapper.
+     *
+     * @param body callback receiving the page content column
+     * @return this page, for chaining
+     */
+    public @NotNull MuiSettingsPage customLayout(@NotNull Consumer<MuiLayout> body) {
+        body.accept(this.context.contentLayout());
+        return this;
+    }
 }

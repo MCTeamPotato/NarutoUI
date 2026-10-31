@@ -28,10 +28,6 @@ public record MuiBackgroundLabels(@NotNull String pickerTitle, @NotNull String i
         folderPickerFailed = MuiLocalization.resolve(folderPickerFailed);
         failed = MuiLocalization.resolve(failed);
         saved = MuiLocalization.resolve(saved);
-        crop = new MuiCropOverlay.Labels(
-                MuiLocalization.resolve(crop.title()),
-                MuiLocalization.resolve(crop.hint()),
-                MuiLocalization.resolve(crop.confirm()),
-                MuiLocalization.resolve(crop.cancel()));
+        crop = new MuiCropOverlay.Labels(MuiLocalization.resolve(crop.title()), MuiLocalization.resolve(crop.hint()), MuiLocalization.resolve(crop.confirm()), MuiLocalization.resolve(crop.cancel()));
     }
 }

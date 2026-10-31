@@ -236,7 +236,7 @@ public final class MyConfigScreen {
 | `button(label, Runnable)` | 按钮 |
 | `divider()` | 显式分隔线 |
 | `custom(View)` | 自定义一行，仍自动分隔 |
-| `custom(Consumer<LinearLayout>)` | 自定义行容器 |
+| `customLayout(Consumer<MuiLayout>)` | 链式自定义行容器 |
 
 Supplier 版本每 100 ms 轮询一次。它适合“外部状态偶尔变化”的场景，不适合高频事件；高频数据请直接使用事件回调并在回调中更新控件。
 
@@ -390,10 +390,17 @@ body()
 body(Consumer<MuiLayout>)
 trailing(view)
 summary(text)
-expanded(boolean) / setExpanded(boolean) / setExpanded(boolean, animate)
+expanded(boolean) / expanded(boolean, animate)
+setExpanded(boolean) / setExpanded(boolean, animate)
 toggle()
 isExpanded()
 onExpandedChanged(listener)
+```
+
+`expanded(...)` 和 `setExpanded(...)` 都返回卡片本身，因此“无动画展开 + 继续配置”可以写成一行：
+
+```java
+card.expanded(true, false).summary("...");
 ```
 
 ### 5.5 通用链式控件
@@ -413,13 +420,15 @@ MuiLayout.row(context, theme)
         .add(MuiTextAction.create(context, theme, "Reset", () -> { ... }));
 ```
 
-- `MuiNumberField`：`bounds(min, max)`、`width(dp)`、`gravity(int)`、`onChange(IntConsumer)`、`value()` / `value(int)`；用户输入会 clamp，程序化 `value(int)` 不触发回调。
-- `MuiChip`：`checked(boolean)`、`isChecked()`、`onChanged(BooleanConsumer)`；背景是 shimmer target（选中 accent、未选中浅中性色），文字固定黑色。
-- `MuiTextAction`：`create(context, theme, label, action)` 或 `create(context, theme, label).onClick(action)`；紧凑的 primary 文本操作。
-- `MuiLogo`：圆形 shimmer 标志，`size(dp)` / `color(argb)` / `textColor(argb)`；自动注册和注销 shimmer。
-- `MuiHintBadge`：带 shimmer 描边的提示胶囊，`color(argb)` / `textSize(sp)`；文字和描边都可以参与流光。
-- `MuiColorField`：色块 + 标签 + pick 按钮，`color(argb)` / `buttonLabel(...)` / `onPick(...)`。
-- `MuiDescriptionRow`：标题 + 可选说明，适合用法提示、只读说明行。
+- `MuiNumberField`：`bounds(min, max)`、`width(dp)`、`gravity(int)`、`onChange(IntConsumer)`、`enabled(boolean)`、`value()` / `value(int)`；用户输入会 clamp，程序化 `value(int)` 不触发回调。
+- `MuiChip`：`label(CharSequence)` / `label()`、`checked(boolean)` / `isChecked()`、`enabled(boolean)`、`onChanged(BooleanConsumer)`；背景是 shimmer target（选中 accent、未选中浅中性色），文字固定黑色。
+- `MuiTextAction`：`create(context, theme, label, action)` 或 `create(context, theme, label).onClick(action)`；`text(...)` / `label()` / `enabled(boolean)`；紧凑的 primary 文本操作。
+- `MuiLogo`：圆形 shimmer 标志，`glyph(...)` / `size(dp)` / `color(argb)` / `textColor(argb)`；自动注册和注销 shimmer。
+- `MuiHintBadge`：带 shimmer 描边的提示胶囊，`text(...)` / `color(argb)` / `textSize(sp)`；文字和描边都可以参与流光。
+- `MuiColorField`：色块 + 标签 + pick 按钮，`label(...)` / `color(...)` / `color()` / `buttonLabel(...)` / `onPick(...)` / `enabled(boolean)`。
+- `MuiDescriptionRow`：标题 + 可选说明，`title(...)` / `description(...)`，适合用法提示、只读说明行。
+
+`MuiChip`、`MuiTextAction`、`MuiNumberField`、`MuiColorField` 的 `enabled(boolean)` 不只是转发 `setEnabled`：它们会同时调制文字/背景/色块的颜色，避免出现“点不动但看起来正常”的状态。
 
 ```java
 MuiLogo.create(context, theme, "N").color(accent).textColor(onAccent);
@@ -434,6 +443,25 @@ NarutoOverlay 的 Cards、About、Appearance 页面以及 rail 的 logo/hint 现
 
 > `MuiCardEditor` 已移除。卡片、位置输入、chip、文本操作和重置逻辑都应该由调用方组合上面的通用组件完成。
 
+### 5.6 主题卡片选择器
+
+`MuiThemePicker` 提供两列主题卡片。`add(...)` 会追加一个 section，并返回页面，因此可以继续链式添加内容：
+
+```java
+MuiThemePicker.add(page, "Theme", options, "In use", changed)
+        .text("Theme options apply immediately.");
+```
+
+如果想把选择器嵌进已有的 section，而不是让它独占一张卡片，使用 `create(...)` 返回的 `MuiLayout`：
+
+```java
+.section("Appearance", section -> section
+        .text("Pick a theme:")
+        .custom(MuiThemePicker.create(context, theme, options, "In use", changed)))
+```
+
+`MuiThemePicker.Option` 仍然是唯一需要实现的数据接口。
+
 ---
 
 ## 6 主题与控件
@@ -443,6 +471,8 @@ NarutoOverlay 的 Cards、About、Appearance 页面以及 rail 的 logo/hint 现
 ```java
 MuiTheme theme = MuiTheme.modern(context)
         .withPrimary(0xFFE0A64A)
+        .withSurface(0xCC101116)
+        .withOutline(0xFF3A3C48)
         .withSpacing(18)
         .withCornerRadius(14);
 ```
@@ -456,6 +486,8 @@ onSurface, onSurfaceVariant,
 outline, error,
 cornerRadius, spacing
 ```
+
+每个 token 都有对应的 `withX(...)`：`withPrimary`、`withOnPrimary`、`withSurface`、`withSurfaceLow`、`withSurfaceHigh`、`withOnSurface`、`withOnSurfaceVariant`、`withOutline`、`withError`、`withCornerRadius`、`withSpacing`。`MuiTheme` 是 record，所有 `withX` 都返回新实例，不会修改原主题。
 
 `MuiTheme.modern(context)` 从 Modern UI 属性解析，解析不到时使用回退色。
 
@@ -946,6 +978,7 @@ MuiSettingsScreen.builder(title)
 page.section(title, section -> ...)
 page.text(text)
 page.custom(context -> ...)
+page.customLayout(row -> ...)
 
 section.toggle(...)
 section.slider(...)
@@ -953,7 +986,7 @@ section.value(...)
 section.text(...)
 section.button(...)
 section.divider()
-section.custom(...)
+section.custom(view)
 section.customLayout(row -> ...)
 section.cardLayout()
 ```
@@ -980,28 +1013,35 @@ page.sectionLayout(title)
 ```text
 MuiCollapsibleCard.card(context, theme, title, summary, expanded)
 card.trailing(view) / summary(text) / body() / body(consumer)
-card.expanded(boolean) / toggle() / isExpanded() / onExpandedChanged(listener)
+card.expanded(boolean) / expanded(boolean, animate)
+card.setExpanded(boolean) / setExpanded(boolean, animate)
+card.toggle() / isExpanded() / onExpandedChanged(listener)
 
 MuiNumberField.create(context, theme, value)
-field.bounds(min, max) / width(dp) / gravity(int) / onChange(IntConsumer)
+field.bounds(min, max) / width(dp) / gravity(int) / onChange(IntConsumer) / enabled(boolean)
 field.value() / value(int)
 
 MuiChip.create(context, theme, label, checked)
-chip.checked(boolean) / isChecked() / onChanged(BooleanConsumer)
+chip.label(text) / label() / checked(boolean) / isChecked() / enabled(boolean) / onChanged(BooleanConsumer)
 
 MuiTextAction.create(context, theme, label, action)
 MuiTextAction.create(context, theme, label).onClick(action)
+action.text(label) / label() / enabled(boolean)
 
 MuiLogo.create(context, theme, glyph)
-logo.size(dp) / color(argb) / textColor(argb)
+logo.glyph(text) / glyph() / size(dp) / color(argb) / textColor(argb)
 
 MuiHintBadge.create(context, theme, text)
-badge.color(argb) / textSize(sp)
+badge.text(text) / text() / color(argb) / textSize(sp)
 
 MuiColorField.create(context, theme, label, argb)
-field.color(argb) / buttonLabel(label) / onPick(action)
+field.label(text) / label() / color(argb) / color() / buttonLabel(label) / onPick(action) / enabled(boolean)
 
 MuiDescriptionRow.create(context, theme, title, description)
+row.title(text) / title() / description(text) / description()
+
+MuiThemePicker.add(page, title, options, inUse, changed)       // 返回 page
+MuiThemePicker.create(context, theme, options, inUse, changed)  // 返回 MuiLayout
 ```
 
 ### 主题
@@ -1009,6 +1049,14 @@ MuiDescriptionRow.create(context, theme, title, description)
 ```text
 MuiTheme.modern(context)
 theme.withPrimary(argb)
+theme.withOnPrimary(argb)
+theme.withSurface(argb)
+theme.withSurfaceLow(argb)
+theme.withSurfaceHigh(argb)
+theme.withOnSurface(argb)
+theme.withOnSurfaceVariant(argb)
+theme.withOutline(argb)
+theme.withError(argb)
 theme.withSpacing(dp)
 theme.withCornerRadius(dp)
 ```

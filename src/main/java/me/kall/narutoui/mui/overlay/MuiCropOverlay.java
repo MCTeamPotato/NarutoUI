@@ -2,10 +2,10 @@ package me.kall.narutoui.mui.overlay;
 
 import icyllis.modernui.core.Context;
 import icyllis.modernui.graphics.Canvas;
-import icyllis.modernui.graphics.drawable.ColorDrawable;
 import icyllis.modernui.graphics.Image;
 import icyllis.modernui.graphics.Paint;
 import icyllis.modernui.graphics.RectF;
+import icyllis.modernui.graphics.drawable.ColorDrawable;
 import icyllis.modernui.view.Gravity;
 import icyllis.modernui.view.MotionEvent;
 import icyllis.modernui.view.View;
@@ -65,14 +65,14 @@ public final class MuiCropOverlay extends FrameLayout {
      */
     public MuiCropOverlay(@NotNull Context context, @NotNull MuiTheme theme, @NotNull Image image, int imageWidth, int imageHeight, float targetAspect, @NotNull Labels labels, @NotNull Listener listener) {
         super(context);
-        setBackground(new ColorDrawable(0xF2090A0F));
-        setClickable(true);
+        this.setBackground(new ColorDrawable(0xF2090A0F));
+        this.setClickable(true);
 
         int padding = MuiControls.dp(context, 20);
         LinearLayout column = new LinearLayout(context);
         column.setOrientation(LinearLayout.VERTICAL);
         column.setPadding(padding, padding, padding, padding);
-        addView(column, new FrameLayout.LayoutParams(MuiControls.MATCH, MuiControls.MATCH));
+        this.addView(column, new FrameLayout.LayoutParams(MuiControls.MATCH, MuiControls.MATCH));
 
         TextView title = MuiControls.heading(context, theme, labels.title(), 18, theme.onSurface());
         column.addView(title, MuiControls.wrap());
@@ -139,7 +139,7 @@ public final class MuiCropOverlay extends FrameLayout {
             this.imageHeight = Math.max(1, imageHeight);
             this.aspect = aspect > 0.0F ? aspect : 16.0F / 9.0F;
             this.paint.setAntiAlias(true);
-            setClickable(true);
+            this.setClickable(true);
         }
 
         @Override
@@ -148,7 +148,7 @@ public final class MuiCropOverlay extends FrameLayout {
         }
 
         private void updateLayout(int width, int height) {
-            int padding = dp(8);
+            int padding = this.dp(8);
             float availableWidth = Math.max(1, width - padding * 2);
             float availableHeight = Math.max(1, height - padding * 2);
             float scale = Math.min(availableWidth / this.imageWidth, availableHeight / this.imageHeight);
@@ -177,7 +177,7 @@ public final class MuiCropOverlay extends FrameLayout {
         @Override
         protected void onDraw(@NotNull Canvas canvas) {
             if (this.display.isEmpty()) {
-                this.updateLayout(getWidth(), getHeight());
+                this.updateLayout(this.getWidth(), this.getHeight());
             }
             if (this.display.isEmpty()) return;
 
@@ -186,13 +186,13 @@ public final class MuiCropOverlay extends FrameLayout {
             canvas.drawImage(this.image, 0, 0, this.imageWidth, this.imageHeight, this.display.left, this.display.top, this.display.right, this.display.bottom, this.paint);
 
             this.paint.setColor(0xB4000000);
-            canvas.drawRect(0, 0, getWidth(), this.crop.top, this.paint);
-            canvas.drawRect(0, this.crop.bottom, getWidth(), getHeight(), this.paint);
+            canvas.drawRect(0, 0, this.getWidth(), this.crop.top, this.paint);
+            canvas.drawRect(0, this.crop.bottom, this.getWidth(), this.getHeight(), this.paint);
             canvas.drawRect(0, this.crop.top, this.crop.left, this.crop.bottom, this.paint);
-            canvas.drawRect(this.crop.right, this.crop.top, getWidth(), this.crop.bottom, this.paint);
+            canvas.drawRect(this.crop.right, this.crop.top, this.getWidth(), this.crop.bottom, this.paint);
 
             this.paint.setStyle(Paint.STROKE);
-            this.paint.setStrokeWidth(Math.max(1, dp(1)));
+            this.paint.setStrokeWidth(Math.max(1, this.dp(1)));
             this.paint.setColor(0x55FFFFFF);
             float thirdW = this.crop.width() / 3.0F;
             float thirdH = this.crop.height() / 3.0F;
@@ -204,12 +204,12 @@ public final class MuiCropOverlay extends FrameLayout {
             }
 
             this.paint.setStyle(Paint.STROKE);
-            this.paint.setStrokeWidth(Math.max(1, dp(1)));
+            this.paint.setStrokeWidth(Math.max(1, this.dp(1)));
             this.paint.setColor(0xFFFFFFFF);
             canvas.drawRect(this.crop.left, this.crop.top, this.crop.right, this.crop.bottom, this.paint);
 
             this.paint.setStyle(Paint.FILL);
-            float handle = dp(5);
+            float handle = this.dp(5);
             this.handle(canvas, this.crop.left, this.crop.top, handle);
             this.handle(canvas, this.crop.right, this.crop.top, handle);
             this.handle(canvas, this.crop.left, this.crop.bottom, handle);
@@ -242,7 +242,7 @@ public final class MuiCropOverlay extends FrameLayout {
                     } else {
                         this.resize(x, y);
                     }
-                    invalidate();
+                    this.invalidate();
                     return true;
                 }
                 case MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
@@ -256,7 +256,7 @@ public final class MuiCropOverlay extends FrameLayout {
         }
 
         private int hitTest(float x, float y) {
-            float radius = dp(18);
+            float radius = this.dp(18);
             if (near(x, y, this.crop.left, this.crop.top, radius)) return MODE_TOP_LEFT;
             if (near(x, y, this.crop.right, this.crop.top, radius)) return MODE_TOP_RIGHT;
             if (near(x, y, this.crop.left, this.crop.bottom, radius)) return MODE_BOTTOM_LEFT;
@@ -280,7 +280,7 @@ public final class MuiCropOverlay extends FrameLayout {
         }
 
         private void resize(float x, float y) {
-            float minWidth = Math.max(dp(48), 8);
+            float minWidth = Math.max(this.dp(48), 8);
             boolean fromRight = this.mode == MODE_TOP_LEFT || this.mode == MODE_BOTTOM_LEFT;
             boolean fromBottom = this.mode == MODE_TOP_LEFT || this.mode == MODE_TOP_RIGHT;
 

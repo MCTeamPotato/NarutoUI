@@ -2,13 +2,13 @@ package me.kall.narutoui.mui.background;
 
 import icyllis.modernui.core.Context;
 import icyllis.modernui.graphics.BitmapFactory;
+import icyllis.modernui.graphics.Image;
 import icyllis.modernui.graphics.drawable.ColorDrawable;
 import icyllis.modernui.graphics.drawable.Drawable;
-import icyllis.modernui.graphics.Image;
 import icyllis.modernui.mc.MuiModApi;
 import icyllis.modernui.widget.FrameLayout;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

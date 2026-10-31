@@ -9,6 +9,7 @@ import icyllis.modernui.view.View;
 import icyllis.modernui.view.ViewGroup;
 import icyllis.modernui.widget.LinearLayout;
 import me.kall.narutoui.mui.theme.MuiTheme;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -128,7 +129,7 @@ public final class MuiLayout extends LinearLayout {
      * @return this layout, for chaining
      */
     public @NotNull MuiLayout horizontal() {
-        setOrientation(HORIZONTAL);
+        this.setOrientation(HORIZONTAL);
         return this;
     }
 
@@ -138,7 +139,7 @@ public final class MuiLayout extends LinearLayout {
      * @return this layout, for chaining
      */
     public @NotNull MuiLayout vertical() {
-        setOrientation(VERTICAL);
+        this.setOrientation(VERTICAL);
         return this;
     }
 
@@ -151,7 +152,7 @@ public final class MuiLayout extends LinearLayout {
     @SuppressWarnings("UnstableApiUsage")
     public void setOrientation(@OrientationMode int orientation) {
         super.setOrientation(orientation);
-        if (this.spacing > 0) applySpacing();
+        if (this.spacing > 0) this.applySpacing();
     }
 
     /**
@@ -161,7 +162,7 @@ public final class MuiLayout extends LinearLayout {
      * @return this layout, for chaining
      */
     public @NotNull MuiLayout gravity(int gravity) {
-        setGravity(gravity);
+        this.setGravity(gravity);
         return this;
     }
 
@@ -171,7 +172,7 @@ public final class MuiLayout extends LinearLayout {
      * @return this layout, for chaining
      */
     public @NotNull MuiLayout center() {
-        return gravity(Gravity.CENTER);
+        return this.gravity(Gravity.CENTER);
     }
 
     /**
@@ -180,7 +181,7 @@ public final class MuiLayout extends LinearLayout {
      * @return this layout, for chaining
      */
     public @NotNull MuiLayout centerVertical() {
-        return gravity(Gravity.CENTER_VERTICAL);
+        return this.gravity(Gravity.CENTER_VERTICAL);
     }
 
     /**
@@ -190,7 +191,7 @@ public final class MuiLayout extends LinearLayout {
      * @return this layout, for chaining
      */
     public @NotNull MuiLayout padding(int dp) {
-        return padding(dp, dp, dp, dp);
+        return this.padding(dp, dp, dp, dp);
     }
 
     /**
@@ -203,7 +204,7 @@ public final class MuiLayout extends LinearLayout {
      * @return this layout, for chaining
      */
     public @NotNull MuiLayout padding(int left, int top, int right, int bottom) {
-        setPadding(MuiControls.dp(getContext(), left), MuiControls.dp(getContext(), top), MuiControls.dp(getContext(), right), MuiControls.dp(getContext(), bottom));
+        this.setPadding(MuiControls.dp(this.getContext(), left), MuiControls.dp(this.getContext(), top), MuiControls.dp(this.getContext(), right), MuiControls.dp(this.getContext(), bottom));
         return this;
     }
 
@@ -214,7 +215,7 @@ public final class MuiLayout extends LinearLayout {
      * @return this layout, for chaining
      */
     public @NotNull MuiLayout margin(int dp) {
-        return margin(dp, dp, dp, dp);
+        return this.margin(dp, dp, dp, dp);
     }
 
     /**
@@ -228,16 +229,16 @@ public final class MuiLayout extends LinearLayout {
      * @return this layout, for chaining
      */
     public @NotNull MuiLayout margin(int left, int top, int right, int bottom) {
-        this.marginLeft = MuiControls.dp(getContext(), left);
-        this.marginTop = MuiControls.dp(getContext(), top);
-        this.marginRight = MuiControls.dp(getContext(), right);
-        this.marginBottom = MuiControls.dp(getContext(), bottom);
+        this.marginLeft = MuiControls.dp(this.getContext(), left);
+        this.marginTop = MuiControls.dp(this.getContext(), top);
+        this.marginRight = MuiControls.dp(this.getContext(), right);
+        this.marginBottom = MuiControls.dp(this.getContext(), bottom);
         this.hasMargins = true;
 
-        ViewGroup.LayoutParams current = getLayoutParams();
+        ViewGroup.LayoutParams current = this.getLayoutParams();
         if (current instanceof ViewGroup.MarginLayoutParams margins) {
-            applyMargins(margins);
-            setLayoutParams(margins);
+            this.applyMargins(margins);
+            this.setLayoutParams(margins);
         }
         return this;
     }
@@ -249,7 +250,7 @@ public final class MuiLayout extends LinearLayout {
      */
     @Override
     public void setLayoutParams(ViewGroup.@NotNull LayoutParams params) {
-        if (this.hasMargins && params instanceof ViewGroup.MarginLayoutParams margins) applyMargins(margins);
+        if (this.hasMargins && params instanceof ViewGroup.MarginLayoutParams margins) this.applyMargins(margins);
         super.setLayoutParams(params);
     }
 
@@ -260,7 +261,7 @@ public final class MuiLayout extends LinearLayout {
      * @return this layout, for chaining
      */
     public @NotNull MuiLayout minHeight(int dp) {
-        setMinimumHeight(MuiControls.dp(getContext(), dp));
+        this.setMinimumHeight(MuiControls.dp(this.getContext(), dp));
         return this;
     }
 
@@ -271,7 +272,7 @@ public final class MuiLayout extends LinearLayout {
      * @return this layout, for chaining
      */
     public @NotNull MuiLayout background(int color) {
-        setBackground(new ColorDrawable(color));
+        this.setBackground(new ColorDrawable(color));
         return this;
     }
 
@@ -282,7 +283,7 @@ public final class MuiLayout extends LinearLayout {
      * @return this layout, for chaining
      */
     public @NotNull MuiLayout background(@NotNull Drawable drawable) {
-        setBackground(drawable);
+        this.setBackground(drawable);
         return this;
     }
 
@@ -294,8 +295,8 @@ public final class MuiLayout extends LinearLayout {
      * @return this layout, for chaining
      */
     public @NotNull MuiLayout spacing(int dp) {
-        this.spacing = Math.max(0, MuiControls.dp(getContext(), dp));
-        applySpacing();
+        this.spacing = Math.max(0, MuiControls.dp(this.getContext(), dp));
+        this.applySpacing();
         return this;
     }
 
@@ -306,7 +307,7 @@ public final class MuiLayout extends LinearLayout {
      * @return this layout, for chaining
      */
     public @NotNull MuiLayout add(@NotNull View child) {
-        addView(child);
+        this.addView(child);
         return this;
     }
 
@@ -318,7 +319,7 @@ public final class MuiLayout extends LinearLayout {
      * @return this layout, for chaining
      */
     public @NotNull MuiLayout add(@NotNull View child, @NotNull ViewGroup.LayoutParams params) {
-        addView(child, params);
+        this.addView(child, params);
         return this;
     }
 
@@ -330,8 +331,8 @@ public final class MuiLayout extends LinearLayout {
      * @return this layout, for chaining
      */
     public @NotNull MuiLayout addWeighted(@NotNull View child, float weight) {
-        LinearLayout.LayoutParams params = getOrientation() == HORIZONTAL ? new LinearLayout.LayoutParams(0, MuiControls.WRAP, weight) : new LinearLayout.LayoutParams(MuiControls.MATCH, 0, weight);
-        addView(child, params);
+        LinearLayout.LayoutParams params = this.getOrientation() == HORIZONTAL ? new LinearLayout.LayoutParams(0, MuiControls.WRAP, weight) : new LinearLayout.LayoutParams(MuiControls.MATCH, 0, weight);
+        this.addView(child, params);
         return this;
     }
 
@@ -341,8 +342,9 @@ public final class MuiLayout extends LinearLayout {
      * @param children the child views
      * @return this layout, for chaining
      */
-    public @NotNull MuiLayout addAll(@NotNull View... children) {
-        for (View child : children) addView(child);
+    @Contract("_ -> this")
+    public @NotNull MuiLayout addAll(@NotNull View @NotNull ... children) {
+        for (View child : children) this.addView(child);
         return this;
     }
 
@@ -353,9 +355,9 @@ public final class MuiLayout extends LinearLayout {
      * @return this layout, for chaining
      */
     public @NotNull MuiLayout space(int dp) {
-        int size = Math.max(0, MuiControls.dp(getContext(), dp));
-        LinearLayout.LayoutParams params = getOrientation() == HORIZONTAL ? new LinearLayout.LayoutParams(size, MuiControls.WRAP) : new LinearLayout.LayoutParams(MuiControls.MATCH, size);
-        addView(new View(getContext()), params);
+        int size = Math.max(0, MuiControls.dp(this.getContext(), dp));
+        LinearLayout.LayoutParams params = this.getOrientation() == HORIZONTAL ? new LinearLayout.LayoutParams(size, MuiControls.WRAP) : new LinearLayout.LayoutParams(MuiControls.MATCH, size);
+        this.addView(new View(this.getContext()), params);
         return this;
     }
 
@@ -365,7 +367,7 @@ public final class MuiLayout extends LinearLayout {
      * @return this layout, for chaining
      */
     public @NotNull MuiLayout flexibleSpace() {
-        return addWeighted(new View(getContext()), 1.0F);
+        return this.addWeighted(new View(this.getContext()), 1.0F);
     }
 
     /**
@@ -375,7 +377,7 @@ public final class MuiLayout extends LinearLayout {
      * @return this layout, for chaining
      */
     public @NotNull MuiLayout text(@NotNull CharSequence text) {
-        return add(MuiControls.text(getContext(), this.theme, text, 12, this.theme.onSurfaceVariant()));
+        return this.add(MuiControls.text(this.getContext(), this.theme, text, 12, this.theme.onSurfaceVariant()));
     }
 
     /**
@@ -387,7 +389,7 @@ public final class MuiLayout extends LinearLayout {
      * @return this layout, for chaining
      */
     public @NotNull MuiLayout text(@NotNull CharSequence text, float size, int color) {
-        return add(MuiControls.text(getContext(), this.theme, text, size, color));
+        return this.add(MuiControls.text(this.getContext(), this.theme, text, size, color));
     }
 
     /**
@@ -397,7 +399,7 @@ public final class MuiLayout extends LinearLayout {
      * @return this layout, for chaining
      */
     public @NotNull MuiLayout heading(@NotNull CharSequence text) {
-        return add(MuiControls.heading(getContext(), this.theme, text, 16, this.theme.onSurface()));
+        return this.add(MuiControls.heading(this.getContext(), this.theme, text, 16, this.theme.onSurface()));
     }
 
     /**
@@ -409,7 +411,7 @@ public final class MuiLayout extends LinearLayout {
      * @return this layout, for chaining
      */
     public @NotNull MuiLayout heading(@NotNull CharSequence text, float size, int color) {
-        return add(MuiControls.heading(getContext(), this.theme, text, size, color));
+        return this.add(MuiControls.heading(this.getContext(), this.theme, text, size, color));
     }
 
     /**
@@ -418,11 +420,11 @@ public final class MuiLayout extends LinearLayout {
      * @return this layout, for chaining
      */
     public @NotNull MuiLayout divider() {
-        View divider = MuiControls.divider(getContext(), this.theme);
-        if (getOrientation() == HORIZONTAL) {
-            addView(divider, new LinearLayout.LayoutParams(Math.max(1, MuiControls.dp(getContext(), 1)), MuiControls.MATCH));
+        View divider = MuiControls.divider(this.getContext(), this.theme);
+        if (this.getOrientation() == HORIZONTAL) {
+            this.addView(divider, new LinearLayout.LayoutParams(Math.max(1, MuiControls.dp(this.getContext(), 1)), MuiControls.MATCH));
         } else {
-            addView(divider, new LinearLayout.LayoutParams(MuiControls.MATCH, Math.max(1, MuiControls.dp(getContext(), 1))));
+            this.addView(divider, new LinearLayout.LayoutParams(MuiControls.MATCH, Math.max(1, MuiControls.dp(this.getContext(), 1))));
         }
         return this;
     }
@@ -435,7 +437,7 @@ public final class MuiLayout extends LinearLayout {
      * @return this layout, for chaining
      */
     public @NotNull MuiLayout button(@NotNull CharSequence label, @NotNull Runnable action) {
-        return button(label, false, action);
+        return this.button(label, false, action);
     }
 
     /**
@@ -447,7 +449,7 @@ public final class MuiLayout extends LinearLayout {
      * @return this layout, for chaining
      */
     public @NotNull MuiLayout button(@NotNull CharSequence label, boolean outlined, @NotNull Runnable action) {
-        return add(MuiControls.button(getContext(), this.theme, label, outlined, view -> action.run()));
+        return this.add(MuiControls.button(this.getContext(), this.theme, label, outlined, view -> action.run()));
     }
 
     /**
@@ -464,8 +466,8 @@ public final class MuiLayout extends LinearLayout {
      */
     private void applySpacing() {
         if (this.spacing <= 0) {
-            setShowDividers(SHOW_DIVIDER_NONE);
-            setDividerDrawable(null);
+            this.setShowDividers(SHOW_DIVIDER_NONE);
+            this.setDividerDrawable(null);
             return;
         }
 
@@ -481,7 +483,7 @@ public final class MuiLayout extends LinearLayout {
                 return MuiLayout.this.getOrientation() == VERTICAL ? size : 0;
             }
         };
-        setDividerDrawable(gap);
-        setShowDividers(SHOW_DIVIDER_MIDDLE);
+        this.setDividerDrawable(gap);
+        this.setShowDividers(SHOW_DIVIDER_MIDDLE);
     }
 }

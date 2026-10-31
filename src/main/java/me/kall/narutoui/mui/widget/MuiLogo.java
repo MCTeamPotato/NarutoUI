@@ -7,6 +7,7 @@ import icyllis.modernui.widget.TextView;
 import me.kall.narutoui.mui.shimmer.MuiShimmer;
 import me.kall.narutoui.mui.shimmer.ShimmerCircleDrawable;
 import me.kall.narutoui.mui.theme.MuiTheme;
+import me.kall.narutoui.mui.util.MuiLocalization;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -41,12 +42,10 @@ public final class MuiLogo extends FrameLayout {
         this.glyph.setGravity(Gravity.CENTER);
 
         this.circle = new ShimmerCircleDrawable(this.glyph, theme.primary());
-        this.circle.setCornerRadius(MuiControls.dp(context, DEFAULT_SIZE / 2));
+        this.circle.setCornerRadius(MuiControls.dp(context, (float) DEFAULT_SIZE / 2));
         this.glyph.setBackground(this.circle);
 
-        addView(this.glyph, new FrameLayout.LayoutParams(
-                MuiControls.dp(context, DEFAULT_SIZE), MuiControls.dp(context, DEFAULT_SIZE),
-                Gravity.CENTER_HORIZONTAL));
+        this.addView(this.glyph, new FrameLayout.LayoutParams(MuiControls.dp(context, DEFAULT_SIZE), MuiControls.dp(context, DEFAULT_SIZE), Gravity.CENTER_HORIZONTAL));
     }
 
     /**
@@ -57,9 +56,28 @@ public final class MuiLogo extends FrameLayout {
      * @param text    glyph text, usually one character
      * @return the logo
      */
-    public static @NotNull MuiLogo create(@NotNull Context context, @NotNull MuiTheme theme,
-                                          @NotNull CharSequence text) {
+    public static @NotNull MuiLogo create(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence text) {
         return new MuiLogo(context, theme, text);
+    }
+
+    /**
+     * Replaces the glyph.
+     *
+     * @param glyph glyph text or translation key
+     * @return this logo, for chaining
+     */
+    public @NotNull MuiLogo glyph(@NotNull CharSequence glyph) {
+        this.glyph.setText(MuiLocalization.resolve(glyph));
+        return this;
+    }
+
+    /**
+     * Returns the current glyph.
+     *
+     * @return the glyph text
+     */
+    public @NotNull CharSequence glyph() {
+        return this.glyph.getText();
     }
 
     /**
@@ -71,10 +89,10 @@ public final class MuiLogo extends FrameLayout {
     public @NotNull MuiLogo size(int dp) {
         this.size = dp;
         FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) this.glyph.getLayoutParams();
-        params.width = MuiControls.dp(getContext(), dp);
-        params.height = MuiControls.dp(getContext(), dp);
+        params.width = MuiControls.dp(this.getContext(), dp);
+        params.height = MuiControls.dp(this.getContext(), dp);
         this.glyph.setLayoutParams(params);
-        this.circle.setCornerRadius(MuiControls.dp(getContext(), dp / 2));
+        this.circle.setCornerRadius(MuiControls.dp(this.getContext(), (float) dp / 2));
         return this;
     }
 

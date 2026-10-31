@@ -1,9 +1,9 @@
 package me.kall.narutoui.mui.theme;
 
+import icyllis.modernui.R;
 import icyllis.modernui.core.Context;
 import icyllis.modernui.graphics.drawable.RippleDrawable;
 import icyllis.modernui.graphics.drawable.ShapeDrawable;
-import icyllis.modernui.R;
 import icyllis.modernui.util.ColorStateList;
 import icyllis.modernui.util.StateSet;
 import icyllis.modernui.view.Gravity;
@@ -65,8 +65,7 @@ public interface MuiWidgetFactory {
      * @param onClick  click listener
      * @return the button
      */
-    @NotNull Button button(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence label,
-                           boolean outlined, @NotNull View.OnClickListener onClick);
+    @NotNull Button button(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence label, boolean outlined, @NotNull View.OnClickListener onClick);
 
     /**
      * Returns the default Modern UI widget factory.
@@ -157,8 +156,7 @@ public interface MuiWidgetFactory {
         }
 
         @Override
-        public @NotNull Button button(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence label,
-                                      boolean outlined, @NotNull View.OnClickListener onClick) {
+        public @NotNull Button button(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence label, boolean outlined, @NotNull View.OnClickListener onClick) {
             Button button = new Button(context);
             button.setText(label);
             button.setTextSize(12);
@@ -171,19 +169,14 @@ public interface MuiWidgetFactory {
             shape.setCornerRadius(MuiControls.dp(context, 18));
             if (outlined) {
                 shape.setColor(0x00000000);
-                shape.setStroke(Math.max(1, MuiControls.dp(context, 1)),
-                        MuiControls.alpha(theme.outline(), 0.8F));
+                shape.setStroke(Math.max(1, MuiControls.dp(context, 1)), MuiControls.alpha(theme.outline(), 0.8F));
                 button.setTextColor(theme.primary());
             } else {
                 shape.setColor(theme.primary());
                 button.setTextColor(theme.onPrimary());
             }
 
-            button.setBackground(new RippleDrawable(
-                    ColorStateList.valueOf(outlined
-                            ? MuiControls.alpha(theme.primary(), 0.16F)
-                            : 0x33FFFFFF),
-                    shape, null));
+            button.setBackground(new RippleDrawable(ColorStateList.valueOf(outlined ? MuiControls.alpha(theme.primary(), 0.16F) : 0x33FFFFFF), shape, null));
             return button;
         }
     }
