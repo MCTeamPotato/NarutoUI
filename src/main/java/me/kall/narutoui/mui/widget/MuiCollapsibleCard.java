@@ -1,5 +1,8 @@
 package me.kall.narutoui.mui.widget;
 
+import me.kall.narutoui.mui.layout.MuiLayout;
+import me.kall.narutoui.mui.layout.MuiControls;
+
 import icyllis.modernui.animation.Animator;
 import icyllis.modernui.animation.AnimatorListener;
 import icyllis.modernui.animation.MotionEasingUtils;
@@ -13,7 +16,10 @@ import icyllis.modernui.widget.FrameLayout;
 import icyllis.modernui.widget.LinearLayout;
 import icyllis.modernui.widget.TextView;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
-import me.kall.narutoui.mui.screen.MuiSettingsSection;
+import me.kall.narutoui.mui.shimmer.MuiShimmer;
+import me.kall.narutoui.mui.shimmer.MuiShimmerContainer;
+import me.kall.narutoui.mui.shimmer.MuiShimmerScope;
+import me.kall.narutoui.mui.shimmer.MuiShimmerable;
 import me.kall.narutoui.mui.theme.MuiTheme;
 import me.kall.narutoui.mui.util.MuiLocalization;
 import org.jetbrains.annotations.NotNull;
@@ -28,12 +34,12 @@ import java.util.function.Consumer;
  * summary and an optional trailing view (for example an enabled switch). Clicking the header
  * animates the body between zero height and its measured height. The body is a regular
  * {@link MuiLayout}, so callers can compose it with {@link MuiControls} or with an internal
- * {@link MuiSettingsSection}.
+ * {@link me.kall.narutoui.mui.screen.MuiSettingsSection}.
  * <p>
  * This is the generic card used directly by NarutoOverlay's Cards page; it is also useful for any
  * long settings page that should start with a compact overview.
  */
-public final class MuiCollapsibleCard extends LinearLayout {
+public final class MuiCollapsibleCard extends LinearLayout implements MuiShimmerContainer {
     /** Expand/collapse animation duration in milliseconds. */
     private static final long ANIMATION_DURATION = 190L;
 
@@ -58,6 +64,8 @@ public final class MuiCollapsibleCard extends LinearLayout {
     private @Nullable ValueAnimator animator;
     /** Guards callbacks from animations that were superseded or cancelled. */
     private int animationToken;
+    /** Marker applied to the header, body and trailing view. */
+    private MuiShimmerable shimmerable = MuiShimmerable.NEVER;
 
     /**
      * Creates a collapsible card.
@@ -68,8 +76,7 @@ public final class MuiCollapsibleCard extends LinearLayout {
      * @param summary  optional summary; empty hides the summary line
      * @param expanded whether the body starts expanded
      */
-    public MuiCollapsibleCard(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence title,
-                              @Nullable CharSequence summary, boolean expanded) {
+    public MuiCollapsibleCard(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence title, @Nullable CharSequence summary, boolean expanded) {
         super(context);
         this.theme = theme;
         this.expanded = expanded;
@@ -89,7 +96,7 @@ public final class MuiCollapsibleCard extends LinearLayout {
         MuiLayout texts = MuiLayout.column(context, theme);
         texts.add(MuiControls.heading(context, theme, title, 15, theme.primary()));
         this.summaryView = MuiControls.text(context, theme, summary == null ? "" : summary, 11, theme.onSurfaceVariant());
-        this.summaryView.setVisibility(summary == null || summary.length() == 0 ? GONE : VISIBLE);
+        this.summaryView.setVisibility(summary == null || summary.isEmpty() ? GONE : VISIBLE);
         texts.add(this.summaryView);
 
         LinearLayout.LayoutParams textParams = MuiControls.weight();
@@ -130,6 +137,14 @@ public final class MuiCollapsibleCard extends LinearLayout {
         return this.theme;
     }
 
+    @Override
+    public void setShimmerable(@NotNull MuiShimmerable marker) {
+        this.shimmerable = marker;
+        MuiShimmerScope.apply(this.header, marker);
+        MuiShimmerScope.apply(this.body, marker);
+        MuiShimmer.refresh();
+    }
+
     /**
      * Returns the collapsible body. Add rows and controls here.
      *
@@ -147,6 +162,7 @@ public final class MuiCollapsibleCard extends LinearLayout {
      */
     public @NotNull MuiCollapsibleCard body(@NotNull Consumer<MuiLayout> content) {
         content.accept(this.body);
+        MuiShimmerScope.apply(this.body, this.shimmerable);
         return this;
     }
 
@@ -161,6 +177,7 @@ public final class MuiCollapsibleCard extends LinearLayout {
         LinearLayout.LayoutParams params = MuiControls.wrap();
         params.setMargins(dp(this.getContext(), 12), 0, 0, 0);
         this.header.addView(view, params);
+        MuiShimmerScope.apply(view, this.shimmerable);
         return this;
     }
 

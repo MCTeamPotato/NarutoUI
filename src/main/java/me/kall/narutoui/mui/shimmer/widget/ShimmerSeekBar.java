@@ -1,4 +1,9 @@
-package me.kall.narutoui.mui.shimmer;
+package me.kall.narutoui.mui.shimmer.widget;
+
+import me.kall.narutoui.mui.shimmer.MuiShimmer;
+import me.kall.narutoui.mui.shimmer.MuiShimmerProfile;
+import me.kall.narutoui.mui.shimmer.MuiShimmerable;
+import me.kall.narutoui.mui.shimmer.ShimmerTarget;
 
 import icyllis.modernui.core.Context;
 import icyllis.modernui.util.ColorStateList;
@@ -13,6 +18,7 @@ public final class ShimmerSeekBar extends SeekBar implements ShimmerTarget {
     private int baseColor = 0xFFFFFFFF;
     private boolean bound;
     private final MuiShimmerProfile profile;
+    private MuiShimmerable marker = MuiShimmerable.NEVER;
 
     /**
      * Creates a shimmer seek bar.
@@ -37,6 +43,24 @@ public final class ShimmerSeekBar extends SeekBar implements ShimmerTarget {
         return this;
     }
 
+    /**
+     * Replaces the per-instance marker.
+     *
+     * @param marker the marker
+     * @return this seek bar, for chaining
+     */
+    public @NotNull ShimmerSeekBar shimmerable(@NotNull MuiShimmerable marker) {
+        this.marker = marker;
+        MuiShimmer.refresh();
+        return this;
+    }
+
+    @Override
+    public void setShimmerable(@NotNull MuiShimmerable marker) {
+        this.marker = marker;
+        MuiShimmer.refresh();
+    }
+
     @Override
     public int shimmerBaseColor() {
         return this.baseColor;
@@ -55,7 +79,7 @@ public final class ShimmerSeekBar extends SeekBar implements ShimmerTarget {
 
     @Override
     public boolean shimmerEnabled() {
-        return this.bound && this.isEnabled() && this.profile.config().text() && this.profile.config().controls();
+        return this.marker.shimmer() && this.bound && this.isEnabled();
     }
 
     @Override

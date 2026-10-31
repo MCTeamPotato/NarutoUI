@@ -6,8 +6,9 @@ import icyllis.modernui.util.DataSet;
 import icyllis.modernui.view.View;
 import me.kall.narutoui.mui.background.MuiBackground;
 import me.kall.narutoui.mui.shimmer.MuiShimmerProfile;
+import me.kall.narutoui.mui.shimmer.MuiShimmerable;
 import me.kall.narutoui.mui.theme.MuiTheme;
-import me.kall.narutoui.mui.theme.MuiWidgetFactory;
+import me.kall.narutoui.mui.factory.MuiWidgetFactory;
 import net.minecraft.client.gui.screens.Screen;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -76,6 +77,10 @@ public final class MuiConfigScreen {
         private MuiWidgetFactory widgetFactory = MuiWidgetFactory.modern();
         /** Per-screen shimmer profile. */
         private MuiShimmerProfile shimmerProfile = MuiShimmerProfile.defaultProfile();
+        /** Marker applied to every navigation label. */
+        private MuiShimmerable navigationShimmerable = MuiShimmerable.NEVER;
+        /** Marker applied to rail/top-bar titles, subtitles and footers. */
+        private MuiShimmerable titlesShimmerable = MuiShimmerable.NEVER;
         /** Maximum content width in DP; zero or negative means full width. */
         private int contentWidth = MuiPage.DEFAULT_CONTENT_WIDTH;
         /** Background provider. */
@@ -191,6 +196,46 @@ public final class MuiConfigScreen {
          */
         public @NotNull Builder shimmerProfile(@NotNull MuiShimmerProfile profile) {
             this.shimmerProfile = Objects.requireNonNull(profile, "profile");
+            return this;
+        }
+
+        /**
+         * Enables shimmer for every navigation label on this screen.
+         *
+         * @return this builder
+         */
+        public @NotNull Builder shimmerNavigation() {
+            return this.shimmerNavigation(MuiShimmerable.ALWAYS);
+        }
+
+        /**
+         * Sets the marker used by every navigation label on this screen.
+         *
+         * @param marker the marker
+         * @return this builder
+         */
+        public @NotNull Builder shimmerNavigation(@NotNull MuiShimmerable marker) {
+            this.navigationShimmerable = Objects.requireNonNull(marker, "marker");
+            return this;
+        }
+
+        /**
+         * Enables shimmer for the rail/top-bar title, subtitle and footer text.
+         *
+         * @return this builder
+         */
+        public @NotNull Builder shimmerTitles() {
+            return this.shimmerTitles(MuiShimmerable.ALWAYS);
+        }
+
+        /**
+         * Sets the marker used by the rail/top-bar title, subtitle and footer text.
+         *
+         * @param marker the marker
+         * @return this builder
+         */
+        public @NotNull Builder shimmerTitles(@NotNull MuiShimmerable marker) {
+            this.titlesShimmerable = Objects.requireNonNull(marker, "marker");
             return this;
         }
 
@@ -336,7 +381,7 @@ public final class MuiConfigScreen {
                 throw new IllegalStateException("Single-page mode needs exactly one page");
             }
 
-            return new Model(this.title, this.subtitle, this.footer, this.singlePage, this.navigation, this.theme, this.widgetFactory, this.shimmerProfile, this.contentWidth, this.background, List.copyOf(this.pages), this.initialPage, this.railHeader, this.railFooter, this.onCreated, this.onDestroyed);
+            return new Model(this.title, this.subtitle, this.footer, this.singlePage, this.navigation, this.theme, this.widgetFactory, this.shimmerProfile, this.navigationShimmerable, this.titlesShimmerable, this.contentWidth, this.background, List.copyOf(this.pages), this.initialPage, this.railHeader, this.railFooter, this.onCreated, this.onDestroyed);
         }
     }
 
@@ -403,6 +448,8 @@ public final class MuiConfigScreen {
      * @param theme       optional theme override
      * @param widgetFactory per-screen widget factory
      * @param shimmerProfile per-screen shimmer profile
+     * @param navigationShimmerable marker for navigation labels
+     * @param titlesShimmerable marker for rail/top-bar titles, subtitles and footers
      * @param contentWidth max page width in DP, or {@code <= 0}
      * @param background  background provider
      * @param pages       ordered page specs
@@ -412,7 +459,7 @@ public final class MuiConfigScreen {
      * @param onCreated   optional creation callback
      * @param onDestroyed optional destruction callback
      */
-    record Model(String title, String subtitle, String footer, boolean singlePage, MuiNavigation navigation, @Nullable MuiTheme theme, MuiWidgetFactory widgetFactory, MuiShimmerProfile shimmerProfile, int contentWidth, MuiBackground background, List<PageSpec> pages, int initialPage, @Nullable Function<Context, View> railHeader, @Nullable Function<Context, View> railFooter, @Nullable Consumer<MuiConfigFragment> onCreated, @Nullable Consumer<MuiConfigFragment> onDestroyed) {}
+    record Model(String title, String subtitle, String footer, boolean singlePage, MuiNavigation navigation, @Nullable MuiTheme theme, MuiWidgetFactory widgetFactory, MuiShimmerProfile shimmerProfile, MuiShimmerable navigationShimmerable, MuiShimmerable titlesShimmerable, int contentWidth, MuiBackground background, List<PageSpec> pages, int initialPage, @Nullable Function<Context, View> railHeader, @Nullable Function<Context, View> railFooter, @Nullable Consumer<MuiConfigFragment> onCreated, @Nullable Consumer<MuiConfigFragment> onDestroyed) {}
 
     /**
      * One page entry, either a low-level body callback or a custom root-view factory.

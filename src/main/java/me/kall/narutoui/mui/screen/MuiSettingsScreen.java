@@ -4,8 +4,9 @@ import icyllis.modernui.core.Context;
 import icyllis.modernui.view.View;
 import me.kall.narutoui.mui.background.MuiBackground;
 import me.kall.narutoui.mui.shimmer.MuiShimmerProfile;
+import me.kall.narutoui.mui.shimmer.MuiShimmerable;
 import me.kall.narutoui.mui.theme.MuiTheme;
-import me.kall.narutoui.mui.theme.MuiWidgetFactory;
+import me.kall.narutoui.mui.factory.MuiWidgetFactory;
 import net.minecraft.client.gui.screens.Screen;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -72,6 +73,10 @@ public final class MuiSettingsScreen {
         private MuiWidgetFactory widgetFactory = MuiWidgetFactory.modern();
         /** Per-screen shimmer profile. */
         private MuiShimmerProfile shimmerProfile = MuiShimmerProfile.defaultProfile();
+        /** Marker applied to every navigation label. */
+        private MuiShimmerable navigationShimmerable = MuiShimmerable.NEVER;
+        /** Marker applied to rail/top-bar titles, subtitles and footers. */
+        private MuiShimmerable titlesShimmerable = MuiShimmerable.NEVER;
         /** Maximum content width in DP. */
         private int contentWidth = MuiPage.DEFAULT_CONTENT_WIDTH;
         /** Background provider. */
@@ -183,6 +188,46 @@ public final class MuiSettingsScreen {
          */
         public @NotNull Builder shimmerProfile(@NotNull MuiShimmerProfile profile) {
             this.shimmerProfile = Objects.requireNonNull(profile, "profile");
+            return this;
+        }
+
+        /**
+         * Enables shimmer for every navigation label on this screen.
+         *
+         * @return this builder
+         */
+        public @NotNull Builder shimmerNavigation() {
+            return this.shimmerNavigation(MuiShimmerable.ALWAYS);
+        }
+
+        /**
+         * Sets the marker used by every navigation label on this screen.
+         *
+         * @param marker the marker
+         * @return this builder
+         */
+        public @NotNull Builder shimmerNavigation(@NotNull MuiShimmerable marker) {
+            this.navigationShimmerable = Objects.requireNonNull(marker, "marker");
+            return this;
+        }
+
+        /**
+         * Enables shimmer for the rail/top-bar title, subtitle and footer text.
+         *
+         * @return this builder
+         */
+        public @NotNull Builder shimmerTitles() {
+            return this.shimmerTitles(MuiShimmerable.ALWAYS);
+        }
+
+        /**
+         * Sets the marker used by the rail/top-bar title, subtitle and footer text.
+         *
+         * @param marker the marker
+         * @return this builder
+         */
+        public @NotNull Builder shimmerTitles(@NotNull MuiShimmerable marker) {
+            this.titlesShimmerable = Objects.requireNonNull(marker, "marker");
             return this;
         }
 
@@ -325,6 +370,8 @@ public final class MuiSettingsScreen {
                     .footer(this.footer)
                     .widgetFactory(this.widgetFactory)
                     .shimmerProfile(this.shimmerProfile)
+                    .shimmerNavigation(this.navigationShimmerable)
+                    .shimmerTitles(this.titlesShimmerable)
                     .contentWidth(this.contentWidth)
                     .background(this.background)
                     .initialPage(this.initialPage)

@@ -1,11 +1,16 @@
 package me.kall.narutoui.mui.widget;
 
+import me.kall.narutoui.mui.layout.MuiControls;
+
 import icyllis.modernui.core.Context;
 import icyllis.modernui.view.Gravity;
 import icyllis.modernui.widget.FrameLayout;
 import icyllis.modernui.widget.TextView;
 import me.kall.narutoui.mui.shimmer.MuiShimmer;
-import me.kall.narutoui.mui.shimmer.ShimmerCircleDrawable;
+import me.kall.narutoui.mui.shimmer.MuiShimmerContainer;
+import me.kall.narutoui.mui.shimmer.MuiShimmerScope;
+import me.kall.narutoui.mui.shimmer.MuiShimmerable;
+import me.kall.narutoui.mui.shimmer.drawable.ShimmerCircleDrawable;
 import me.kall.narutoui.mui.theme.MuiTheme;
 import me.kall.narutoui.mui.util.MuiLocalization;
 import org.jetbrains.annotations.NotNull;
@@ -17,7 +22,7 @@ import org.jetbrains.annotations.NotNull;
  * added to a full-width rail header with normal fill params. Shimmer registration is owned by the
  * logo itself; callers no longer need to track it through a screen host.
  */
-public final class MuiLogo extends FrameLayout {
+public final class MuiLogo extends FrameLayout implements MuiShimmerContainer {
     /** Default size in DP. */
     private static final int DEFAULT_SIZE = 36;
 
@@ -27,6 +32,8 @@ public final class MuiLogo extends FrameLayout {
     private final ShimmerCircleDrawable circle;
     /** Current size in DP. */
     private int size = DEFAULT_SIZE;
+    /** Marker applied to the glyph and circle. */
+    private MuiShimmerable shimmerable = MuiShimmerable.NEVER;
 
     /**
      * Creates a logo.
@@ -46,6 +53,14 @@ public final class MuiLogo extends FrameLayout {
         this.glyph.setBackground(this.circle);
 
         this.addView(this.glyph, new FrameLayout.LayoutParams(MuiControls.dp(context, DEFAULT_SIZE), MuiControls.dp(context, DEFAULT_SIZE), Gravity.CENTER_HORIZONTAL));
+    }
+
+    @Override
+    public void setShimmerable(@NotNull MuiShimmerable marker) {
+        this.shimmerable = marker;
+        MuiShimmerScope.apply(this.glyph, marker);
+        this.circle.setShimmerable(marker);
+        MuiShimmer.refresh();
     }
 
     /**

@@ -1,4 +1,9 @@
-package me.kall.narutoui.mui.shimmer;
+package me.kall.narutoui.mui.shimmer.widget;
+
+import me.kall.narutoui.mui.shimmer.MuiShimmer;
+import me.kall.narutoui.mui.shimmer.MuiShimmerProfile;
+import me.kall.narutoui.mui.shimmer.MuiShimmerable;
+import me.kall.narutoui.mui.shimmer.ShimmerTarget;
 
 import icyllis.modernui.core.Context;
 import icyllis.modernui.util.ColorStateList;
@@ -12,17 +17,40 @@ import org.jetbrains.annotations.NotNull;
  */
 public final class ShimmerTextView extends TextView implements ShimmerTarget {
     private int baseColor = 0xFFFFFFFF;
-    private boolean shimmer = true;
+    private MuiShimmerable marker = MuiShimmerable.NEVER;
     private final MuiShimmerProfile profile;
+
+    /**
+     * Creates a shimmer text view with shimmer disabled by default.
+     *
+     * @param context the screen context
+     */
+    public ShimmerTextView(@NotNull Context context) {
+        this(context, MuiShimmerable.NEVER);
+    }
 
     /**
      * Creates a shimmer text view.
      *
      * @param context the screen context
+     * @param marker  per-instance marker
      */
-    public ShimmerTextView(@NotNull Context context) {
+    public ShimmerTextView(@NotNull Context context, @NotNull MuiShimmerable marker) {
         super(context);
         this.profile = MuiShimmerProfile.current();
+        this.marker = marker;
+    }
+
+    /**
+     * Replaces the per-instance marker.
+     *
+     * @param marker the marker
+     * @return this text view, for chaining
+     */
+    public @NotNull ShimmerTextView shimmerable(@NotNull MuiShimmerable marker) {
+        this.marker = marker;
+        MuiShimmer.refresh();
+        return this;
     }
 
     /**
@@ -32,8 +60,7 @@ public final class ShimmerTextView extends TextView implements ShimmerTarget {
      * @return this text view, for chaining
      */
     public @NotNull ShimmerTextView setShimmerEnabled(boolean enabled) {
-        this.shimmer = enabled;
-        return this;
+        return this.shimmerable(MuiShimmerable.of(enabled));
     }
 
     @Override
@@ -67,7 +94,13 @@ public final class ShimmerTextView extends TextView implements ShimmerTarget {
 
     @Override
     public boolean shimmerEnabled() {
-        return this.shimmer && this.isEnabled() && this.profile.config().text() && this.profile.config().configText();
+        return this.marker.shimmer() && this.isEnabled();
+    }
+
+    @Override
+    public void setShimmerable(@NotNull MuiShimmerable marker) {
+        this.marker = marker;
+        MuiShimmer.refresh();
     }
 
     @Override

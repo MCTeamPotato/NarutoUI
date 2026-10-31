@@ -90,6 +90,23 @@ remapJar {
     exclude "LICENSE_MixinExtras"
 }
 
+tasks.register("commonJar", Jar) {
+    group = "build"
+    description = "Packages only me.kall.narutoui.mui for other mods to shadow; no mod entrypoint or metadata."
+    dependsOn tasks.named("remapJar")
+    archiveClassifier = "common"
+    from(zipTree(tasks.named("remapJar").flatMap { it.archiveFile })) {
+        include "me/kall/narutoui/mui/**"
+    }
+    from(rootProject.file("LICENSE")) {
+        into "META-INF"
+    }
+}
+
+tasks.named("assemble") {
+    dependsOn tasks.named("commonJar")
+}
+
 processResources {
     inputs.property 'version', project.version
     if (isNeo) {
@@ -147,3 +164,4 @@ tasks.register("publishCurseForge", TaskPublishCurseForge) {
         System.out.println("CurseForge project ID not found")
     }
 }
+

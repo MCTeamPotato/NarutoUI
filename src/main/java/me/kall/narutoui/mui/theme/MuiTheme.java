@@ -24,19 +24,7 @@ import org.jetbrains.annotations.NotNull;
  * @param cornerRadius     corner radius in density-independent pixels
  * @param spacing          page/content spacing in density-independent pixels
  */
-public record MuiTheme(
-        int primary,
-        int onPrimary,
-        int surface,
-        int surfaceLow,
-        int surfaceHigh,
-        int onSurface,
-        int onSurfaceVariant,
-        int outline,
-        int error,
-        int cornerRadius,
-        int spacing
-) {
+public record MuiTheme(int primary, int onPrimary, int surface, int surfaceLow, int surfaceHigh, int onSurface, int onSurfaceVariant, int outline, int error, int cornerRadius, int spacing) {
     /**
      * Resolves the current Modern UI theme attributes, falling back to a neutral dark palette.
      *

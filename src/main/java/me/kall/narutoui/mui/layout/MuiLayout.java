@@ -1,4 +1,4 @@
-package me.kall.narutoui.mui.widget;
+package me.kall.narutoui.mui.layout;
 
 import icyllis.modernui.core.Context;
 import icyllis.modernui.graphics.drawable.ColorDrawable;
@@ -97,13 +97,13 @@ public final class MuiLayout extends LinearLayout {
 
     /**
      * Applies the shared rounded, outlined card style. Used by {@link #card(Context, MuiTheme)} and
-     * {@link MuiCollapsibleCard} so all card-like containers stay visually identical.
+     * {@code MuiCollapsibleCard} so all card-like containers stay visually identical.
      *
      * @param layout  the layout to style
      * @param context the screen context
      * @param theme   active theme
      */
-    static void applyCardStyle(@NotNull LinearLayout layout, @NotNull Context context, @NotNull MuiTheme theme) {
+    public static void applyCardStyle(@NotNull LinearLayout layout, @NotNull Context context, @NotNull MuiTheme theme) {
         ShapeDrawable background = new ShapeDrawable();
         background.setCornerRadius(MuiControls.dp(context, theme.cornerRadius()));
         background.setColor(MuiControls.alpha(theme.surfaceLow(), 0.78F));

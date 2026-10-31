@@ -4,10 +4,12 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Settings and color ramp consumed by the generic shimmer engine.
+ * Global settings and color ramp consumed by the generic shimmer engine.
  * <p>
  * The API ships a neutral default; consumers install their own implementation through
- * {@link MuiShimmer#configure(MuiShimmerConfig)}.
+ * {@link MuiShimmer#configure(MuiShimmerConfig)}. This interface only controls whether shimmer
+ * exists at all and how it looks; whether an individual component shimmers is decided by its
+ * {@link MuiShimmerable} marker.
  */
 public interface MuiShimmerConfig {
     /**
@@ -15,21 +17,7 @@ public interface MuiShimmerConfig {
      *
      * @return the master switch
      */
-    boolean text();
-
-    /**
-     * Returns whether configuration-screen text should shimmer.
-     *
-     * @return the config-text switch
-     */
-    boolean configText();
-
-    /**
-     * Returns whether controls and decorations should shimmer.
-     *
-     * @return the controls switch
-     */
-    boolean controls();
+    boolean enabled();
 
     /**
      * Returns whether the active palette has an accent color. Shimmer is skipped when it does not.
@@ -104,17 +92,7 @@ public interface MuiShimmerConfig {
     static @NotNull MuiShimmerConfig defaults() {
         return new MuiShimmerConfig() {
             @Override
-            public boolean text() {
-                return true;
-            }
-
-            @Override
-            public boolean configText() {
-                return true;
-            }
-
-            @Override
-            public boolean controls() {
+            public boolean enabled() {
                 return true;
             }
         };

@@ -1,4 +1,9 @@
-package me.kall.narutoui.mui.shimmer;
+package me.kall.narutoui.mui.shimmer.widget;
+
+import me.kall.narutoui.mui.shimmer.MuiShimmer;
+import me.kall.narutoui.mui.shimmer.MuiShimmerProfile;
+import me.kall.narutoui.mui.shimmer.MuiShimmerable;
+import me.kall.narutoui.mui.shimmer.ShimmerTarget;
 
 import icyllis.modernui.R;
 import icyllis.modernui.core.Context;
@@ -26,6 +31,7 @@ public final class ShimmerSwitch extends Switch implements ShimmerTarget {
     private int offColor = 0xFF000000;
     private int offDisabledColor;
     private boolean bound;
+    private MuiShimmerable marker = MuiShimmerable.NEVER;
     private final MuiShimmerProfile profile;
 
     /**
@@ -58,6 +64,24 @@ public final class ShimmerSwitch extends Switch implements ShimmerTarget {
         return this;
     }
 
+    /**
+     * Replaces the per-instance marker.
+     *
+     * @param marker the marker
+     * @return this switch, for chaining
+     */
+    public @NotNull ShimmerSwitch shimmerable(@NotNull MuiShimmerable marker) {
+        this.marker = marker;
+        MuiShimmer.refresh();
+        return this;
+    }
+
+    @Override
+    public void setShimmerable(@NotNull MuiShimmerable marker) {
+        this.marker = marker;
+        MuiShimmer.refresh();
+    }
+
     @Override
     public int shimmerBaseColor() {
         return this.baseColor;
@@ -83,7 +107,7 @@ public final class ShimmerSwitch extends Switch implements ShimmerTarget {
 
     @Override
     public boolean shimmerEnabled() {
-        return this.bound && this.isEnabled() && this.profile.config().text() && this.profile.config().controls();
+        return this.marker.shimmer() && this.bound && this.isEnabled();
     }
 
     @Override

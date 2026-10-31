@@ -1,11 +1,14 @@
 package me.kall.narutoui.mui.widget;
 
+import me.kall.narutoui.mui.layout.MuiControls;
+
 import icyllis.modernui.core.Context;
 import icyllis.modernui.widget.FrameLayout;
 import icyllis.modernui.widget.TextView;
 import me.kall.narutoui.mui.theme.MuiTheme;
 import me.kall.narutoui.mui.util.MuiLocalization;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * A small primary-colored text action. The label is created through {@link MuiControls}, so it uses
@@ -19,6 +22,10 @@ public final class MuiTextAction extends FrameLayout {
     private final MuiTheme theme;
     /** Label view created by the active widget factory. */
     private final TextView text;
+    /** Pending flash restore callback, or {@code null} when no flash is running. */
+    private @Nullable Runnable pendingFlash;
+    /** Text to restore when the running flash ends, or {@code null} when no flash is running. */
+    private @Nullable CharSequence restoreLabel;
 
     /**
      * Creates a text action without a click callback. Use {@link #onClick(Runnable)} to attach one
@@ -119,6 +126,48 @@ public final class MuiTextAction extends FrameLayout {
             if (this.isEnabled()) action.run();
         });
         return this;
+    }
+
+    /**
+     * Temporarily replaces the label and restores the previous text after {@code millis}. Intended
+     * for click feedback such as "Copied", where the label changes immediately and reverts on its
+     * own. Must be called on the UI thread.
+     * <p>
+     * Calling this again while a flash is running restarts the countdown and keeps the text that
+     * was visible before the first call, so repeated clicks never pin the temporary label.
+     *
+     * @param label  temporary label or translation key
+     * @param millis how long the temporary label stays visible, in milliseconds
+     * @return this action, for chaining
+     */
+    public @NotNull MuiTextAction flash(@NotNull CharSequence label, int millis) {
+        if (this.restoreLabel == null) this.restoreLabel = this.label();
+        this.text(label);
+
+        if (this.pendingFlash != null) this.removeCallbacks(this.pendingFlash);
+
+        Runnable restore = () -> {
+            this.pendingFlash = null;
+            CharSequence previous = this.restoreLabel;
+            this.restoreLabel = null;
+            if (previous != null) this.text.setText(previous);
+        };
+        this.pendingFlash = restore;
+        this.postDelayed(restore, Math.max(1, millis));
+        return this;
+    }
+
+    /**
+     * Cancels a pending {@link #flash(CharSequence, int)} restore.
+     */
+    @Override
+    protected void onDetachedFromWindow() {
+        if (this.pendingFlash != null) {
+            this.removeCallbacks(this.pendingFlash);
+            this.pendingFlash = null;
+        }
+        this.restoreLabel = null;
+        super.onDetachedFromWindow();
     }
 
     /**

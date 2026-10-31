@@ -11,8 +11,10 @@ import icyllis.modernui.view.View;
 import icyllis.modernui.view.ViewGroup;
 import icyllis.modernui.widget.*;
 import me.kall.narutoui.mui.shimmer.MuiShimmerProfile;
+import me.kall.narutoui.mui.shimmer.MuiShimmerScope;
+import me.kall.narutoui.mui.shimmer.MuiShimmerable;
 import me.kall.narutoui.mui.theme.MuiTheme;
-import me.kall.narutoui.mui.widget.MuiControls;
+import me.kall.narutoui.mui.layout.MuiControls;
 import net.minecraft.client.Minecraft;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -243,13 +245,16 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost {
 
         if (this.model.railHeader() != null) {
             View header = this.model.railHeader().apply(context);
-            if (header != null) rail.addView(header, MuiControls.fill());
+            if (header != null) {
+                if (this.model.titlesShimmerable() != MuiShimmerable.NEVER) MuiShimmerScope.apply(header, this.model.titlesShimmerable());
+                rail.addView(header, MuiControls.fill());
+            }
         } else {
-            TextView title = MuiControls.heading(context, theme, this.model.title(), 16, theme.onSurface());
+            TextView title = MuiControls.heading(context, theme, this.model.title(), 16, theme.onSurface(), this.model.titlesShimmerable());
             rail.addView(title, MuiControls.fill());
 
             if (!this.model.subtitle().isBlank()) {
-                TextView subtitle = MuiControls.text(context, theme, this.model.subtitle(), 10, theme.onSurfaceVariant());
+                TextView subtitle = MuiControls.text(context, theme, this.model.subtitle(), 10, theme.onSurfaceVariant(), this.model.titlesShimmerable());
                 LinearLayout.LayoutParams params = MuiControls.fill();
                 params.topMargin = MuiControls.dp(context, 4);
                 rail.addView(subtitle, params);
@@ -273,9 +278,12 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost {
 
         if (this.model.railFooter() != null) {
             View footer = this.model.railFooter().apply(context);
-            if (footer != null) rail.addView(footer, MuiControls.fill());
+            if (footer != null) {
+                if (this.model.titlesShimmerable() != MuiShimmerable.NEVER) MuiShimmerScope.apply(footer, this.model.titlesShimmerable());
+                rail.addView(footer, MuiControls.fill());
+            }
         } else if (!this.model.footer().isBlank()) {
-            TextView footer = MuiControls.text(context, theme, this.model.footer(), 10, theme.onSurfaceVariant());
+            TextView footer = MuiControls.text(context, theme, this.model.footer(), 10, theme.onSurfaceVariant(), this.model.titlesShimmerable());
             rail.addView(footer, MuiControls.fill());
         }
 
@@ -298,13 +306,16 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost {
 
         if (this.model.railHeader() != null) {
             View header = this.model.railHeader().apply(context);
-            if (header != null) bar.addView(header, MuiControls.wrap());
+            if (header != null) {
+                if (this.model.titlesShimmerable() != MuiShimmerable.NEVER) MuiShimmerScope.apply(header, this.model.titlesShimmerable());
+                bar.addView(header, MuiControls.wrap());
+            }
         } else {
             LinearLayout titleBlock = MuiControls.column(context);
-            titleBlock.addView(MuiControls.heading(context, theme, this.model.title(), 16, theme.onSurface()), MuiControls.fill());
+            titleBlock.addView(MuiControls.heading(context, theme, this.model.title(), 16, theme.onSurface(), this.model.titlesShimmerable()), MuiControls.fill());
 
             if (!this.model.subtitle().isBlank()) {
-                TextView subtitle = MuiControls.text(context, theme, this.model.subtitle(), 10, theme.onSurfaceVariant());
+                TextView subtitle = MuiControls.text(context, theme, this.model.subtitle(), 10, theme.onSurfaceVariant(), this.model.titlesShimmerable());
                 LinearLayout.LayoutParams params = MuiControls.fill();
                 params.topMargin = MuiControls.dp(context, 2);
                 titleBlock.addView(subtitle, params);
@@ -336,12 +347,13 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost {
         if (this.model.railFooter() != null) {
             View footer = this.model.railFooter().apply(context);
             if (footer != null) {
+                if (this.model.titlesShimmerable() != MuiShimmerable.NEVER) MuiShimmerScope.apply(footer, this.model.titlesShimmerable());
                 LinearLayout.LayoutParams params = MuiControls.wrap();
                 params.leftMargin = MuiControls.dp(context, 8);
                 bar.addView(footer, params);
             }
         } else if (!this.model.footer().isBlank()) {
-            TextView footer = MuiControls.text(context, theme, this.model.footer(), 10, theme.onSurfaceVariant());
+            TextView footer = MuiControls.text(context, theme, this.model.footer(), 10, theme.onSurfaceVariant(), this.model.titlesShimmerable());
             LinearLayout.LayoutParams params = MuiControls.wrap();
             params.leftMargin = MuiControls.dp(context, 8);
             bar.addView(footer, params);
@@ -362,7 +374,7 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost {
      * @return the navigation item
      */
     private @NotNull TextView createNavItem(@NotNull Context context, @NotNull MuiTheme theme, @NotNull MuiConfigScreen.PageSpec spec, int index, boolean top) {
-        TextView item = MuiControls.text(context, theme, spec.navLabel(), 13, theme.onSurfaceVariant());
+        TextView item = MuiControls.text(context, theme, spec.navLabel(), 13, theme.onSurfaceVariant(), this.model.navigationShimmerable());
         item.setGravity(top ? Gravity.CENTER : Gravity.CENTER_VERTICAL);
         item.setPadding(MuiControls.dp(context, top ? 12 : 10), MuiControls.dp(context, top ? 7 : 9), MuiControls.dp(context, top ? 12 : 10), MuiControls.dp(context, top ? 7 : 9));
         item.setOnClickListener(view -> this.showPage(index));

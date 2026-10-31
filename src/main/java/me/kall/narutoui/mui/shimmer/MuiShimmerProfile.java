@@ -104,6 +104,7 @@ public final class MuiShimmerProfile {
      */
     public void configure(@Nullable MuiShimmerConfig config) {
         this.config = config == null ? MuiShimmerConfig.defaults() : config;
+        MuiShimmer.refresh();
     }
 
     /**
@@ -120,18 +121,8 @@ public final class MuiShimmerProfile {
      */
     private final class ClockConfig implements MuiShimmerConfig {
         @Override
-        public boolean text() {
-            return MuiShimmerProfile.this.config.text();
-        }
-
-        @Override
-        public boolean configText() {
-            return MuiShimmerProfile.this.config.configText();
-        }
-
-        @Override
-        public boolean controls() {
-            return MuiShimmerProfile.this.config.controls();
+        public boolean enabled() {
+            return MuiShimmerProfile.this.config.enabled();
         }
 
         @Override

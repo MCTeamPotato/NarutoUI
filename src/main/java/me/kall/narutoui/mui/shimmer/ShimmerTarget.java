@@ -28,11 +28,21 @@ public interface ShimmerTarget {
     void applyBaseColor();
 
     /**
-     * Returns whether this target should shimmer right now.
+     * Returns whether this target is locally able to shimmer right now. This must not consult the
+     * global config; the engine combines that in one place. Implementations normally also check
+     * their {@link MuiShimmerable} marker here.
      *
-     * @return {@code true} when active
+     * @return {@code true} when attached, enabled, marked and otherwise eligible
      */
     boolean shimmerEnabled();
+
+    /**
+     * Replaces this target's per-instance marker.
+     *
+     * @param marker the marker
+     */
+    default void setShimmerable(@NotNull MuiShimmerable marker) {
+    }
 
     /**
      * Returns how strongly the shimmer color is applied.

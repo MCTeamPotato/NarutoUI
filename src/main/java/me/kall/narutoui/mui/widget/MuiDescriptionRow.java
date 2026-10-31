@@ -1,8 +1,14 @@
 package me.kall.narutoui.mui.widget;
 
+import me.kall.narutoui.mui.layout.MuiControls;
+
 import icyllis.modernui.core.Context;
 import icyllis.modernui.widget.LinearLayout;
 import icyllis.modernui.widget.TextView;
+import me.kall.narutoui.mui.shimmer.MuiShimmer;
+import me.kall.narutoui.mui.shimmer.MuiShimmerContainer;
+import me.kall.narutoui.mui.shimmer.MuiShimmerScope;
+import me.kall.narutoui.mui.shimmer.MuiShimmerable;
 import me.kall.narutoui.mui.theme.MuiTheme;
 import me.kall.narutoui.mui.util.MuiLocalization;
 import org.jetbrains.annotations.NotNull;
@@ -12,11 +18,13 @@ import org.jetbrains.annotations.Nullable;
  * A title with an optional description line. Useful for usage hints, explanatory rows and
  * read-only settings entries that are not a control.
  */
-public final class MuiDescriptionRow extends LinearLayout {
+public final class MuiDescriptionRow extends LinearLayout implements MuiShimmerContainer {
     /** Title line. */
     private final TextView titleView;
     /** Description line. */
     private final TextView descriptionView;
+    /** Marker applied to both text lines. */
+    private MuiShimmerable shimmerable = MuiShimmerable.NEVER;
 
     /**
      * Creates a description row.
@@ -39,6 +47,14 @@ public final class MuiDescriptionRow extends LinearLayout {
         params.topMargin = MuiControls.dp(context, 3);
         this.descriptionView.setVisibility(description == null || description.isEmpty() ? GONE : VISIBLE);
         this.addView(this.descriptionView, params);
+    }
+
+    @Override
+    public void setShimmerable(@NotNull MuiShimmerable marker) {
+        this.shimmerable = marker;
+        MuiShimmerScope.apply(this.titleView, marker);
+        MuiShimmerScope.apply(this.descriptionView, marker);
+        MuiShimmer.refresh();
     }
 
     /**

@@ -1,4 +1,10 @@
-package me.kall.narutoui.mui.shimmer;
+package me.kall.narutoui.mui.shimmer.widget;
+
+import me.kall.narutoui.mui.shimmer.ShimmerColor;
+import me.kall.narutoui.mui.shimmer.MuiShimmer;
+import me.kall.narutoui.mui.shimmer.MuiShimmerProfile;
+import me.kall.narutoui.mui.shimmer.MuiShimmerable;
+import me.kall.narutoui.mui.shimmer.ShimmerTarget;
 
 import icyllis.modernui.core.Context;
 import icyllis.modernui.graphics.drawable.ShapeDrawable;
@@ -19,8 +25,8 @@ public final class ShimmerButton extends Button implements ShimmerTarget {
     private int baseColor = 0xFFFFFFFF;
     private @Nullable ShapeDrawable backgroundShape;
     private int backgroundBaseColor;
-    private boolean shimmer = true;
     private boolean shimmerText = true;
+    private MuiShimmerable marker = MuiShimmerable.NEVER;
     private final MuiShimmerProfile profile;
 
     /**
@@ -76,8 +82,25 @@ public final class ShimmerButton extends Button implements ShimmerTarget {
      * @return this button, for chaining
      */
     public @NotNull ShimmerButton setShimmerEnabled(boolean shimmer) {
-        this.shimmer = shimmer;
+        return this.shimmerable(MuiShimmerable.of(shimmer));
+    }
+
+    /**
+     * Replaces the per-instance marker.
+     *
+     * @param marker the marker
+     * @return this button, for chaining
+     */
+    public @NotNull ShimmerButton shimmerable(@NotNull MuiShimmerable marker) {
+        this.marker = marker;
+        MuiShimmer.refresh();
         return this;
+    }
+
+    @Override
+    public void setShimmerable(@NotNull MuiShimmerable marker) {
+        this.marker = marker;
+        MuiShimmer.refresh();
     }
 
     private void applyBackground(int color) {
@@ -112,7 +135,7 @@ public final class ShimmerButton extends Button implements ShimmerTarget {
         } else {
             super.setTextColor(this.baseColors);
         }
-        this.applyBackground(blend(this.backgroundBaseColor, color, 0.62F));
+        this.applyBackground(ShimmerColor.blend(this.backgroundBaseColor, color, 0.62F));
     }
 
     @Override
@@ -121,18 +144,9 @@ public final class ShimmerButton extends Button implements ShimmerTarget {
         this.applyBackground(this.backgroundBaseColor);
     }
 
-    @SuppressWarnings("SameParameterValue")
-    static int blend(int from, int to, float amount) {
-        int a = (int) (((from >>> 24) & 0xFF) + (((to >>> 24) & 0xFF) - ((from >>> 24) & 0xFF)) * amount);
-        int r = (int) (((from >> 16) & 0xFF) + (((to >> 16) & 0xFF) - ((from >> 16) & 0xFF)) * amount);
-        int g = (int) (((from >> 8) & 0xFF) + (((to >> 8) & 0xFF) - ((from >> 8) & 0xFF)) * amount);
-        int b = (int) ((from & 0xFF) + ((to & 0xFF) - (from & 0xFF)) * amount);
-        return (a << 24) | (r << 16) | (g << 8) | b;
-    }
-
     @Override
     public boolean shimmerEnabled() {
-        return this.shimmer && this.isAttachedToWindow() && this.profile.config().text() && this.profile.config().configText();
+        return this.marker.shimmer() && this.isAttachedToWindow();
     }
 
     @Override

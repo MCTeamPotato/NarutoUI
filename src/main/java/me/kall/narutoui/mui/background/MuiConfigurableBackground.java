@@ -21,6 +21,7 @@ import org.jetbrains.annotations.Nullable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -32,6 +33,14 @@ import java.util.concurrent.CompletableFuture;
  * <p>
  * The controller only depends on the screen services in {@link MuiScreenHost}; it can therefore be
  * owned by a host adapter without creating a dependency cycle.
+ * <p>
+ * Instances are created with {@link #builder}:
+ * <pre>{@code
+ * MuiConfigurableBackground background = MuiConfigurableBackground
+ *         .builder(settings, labels, files)
+ *         .cropFactory(customCropFactory)
+ *         .build();
+ * }</pre>
  */
 public final class MuiConfigurableBackground implements MuiBackground, MuiBackgroundActions {
     private static final Logger LOGGER = LogManager.getLogger("Mui");
@@ -51,30 +60,64 @@ public final class MuiConfigurableBackground implements MuiBackground, MuiBackgr
     private int loadToken;
 
     /**
-     * Creates a controller with the default Modern UI crop overlay.
+     * Starts a builder for a configurable background controller.
      *
      * @param settings persistence adapter
      * @param labels   localized labels
      * @param files    file helper rooted at the game directory
+     * @return a new builder
      */
-    public MuiConfigurableBackground(@NotNull MuiBackgroundSettings settings, @NotNull MuiBackgroundLabels labels, @NotNull MuiBackgroundFiles files) {
-        this(settings, labels, files, MuiCropOverlayFactory.modern());
+    public static @NotNull Builder builder(@NotNull MuiBackgroundSettings settings, @NotNull MuiBackgroundLabels labels, @NotNull MuiBackgroundFiles files) {
+        return new Builder(settings, labels, files);
     }
 
-    /**
-     * Creates a controller with a custom crop overlay factory.
-     *
-     * @param settings    persistence adapter
-     * @param labels      localized labels
-     * @param files       file helper rooted at the game directory
-     * @param cropFactory crop overlay factory
-     */
-    public MuiConfigurableBackground(@NotNull MuiBackgroundSettings settings, @NotNull MuiBackgroundLabels labels, @NotNull MuiBackgroundFiles files, @NotNull MuiCropOverlayFactory cropFactory) {
+    private MuiConfigurableBackground(@NotNull MuiBackgroundSettings settings, @NotNull MuiBackgroundLabels labels, @NotNull MuiBackgroundFiles files, @NotNull MuiCropOverlayFactory cropFactory) {
         this.settings = settings;
         this.labels = labels;
         this.files = files;
         this.cropFactory = cropFactory;
         this.state = settings.load();
+    }
+
+    /**
+     * Mutable builder for {@link MuiConfigurableBackground}. All setter methods return {@code this}
+     * for chaining.
+     */
+    public static final class Builder {
+        /** Persistence adapter. */
+        private final MuiBackgroundSettings settings;
+        /** Localized labels. */
+        private final MuiBackgroundLabels labels;
+        /** File helper rooted at the game directory. */
+        private final MuiBackgroundFiles files;
+        /** Crop overlay factory; defaults to the unstyled Modern UI overlay. */
+        private MuiCropOverlayFactory cropFactory = MuiCropOverlayFactory.modern();
+
+        private Builder(@NotNull MuiBackgroundSettings settings, @NotNull MuiBackgroundLabels labels, @NotNull MuiBackgroundFiles files) {
+            this.settings = Objects.requireNonNull(settings, "settings");
+            this.labels = Objects.requireNonNull(labels, "labels");
+            this.files = Objects.requireNonNull(files, "files");
+        }
+
+        /**
+         * Sets the factory used to create the crop overlay after a picture is picked.
+         *
+         * @param cropFactory crop overlay factory
+         * @return this builder
+         */
+        public @NotNull Builder cropFactory(@NotNull MuiCropOverlayFactory cropFactory) {
+            this.cropFactory = Objects.requireNonNull(cropFactory, "cropFactory");
+            return this;
+        }
+
+        /**
+         * Creates the controller from the current builder values.
+         *
+         * @return a new controller
+         */
+        public @NotNull MuiConfigurableBackground build() {
+            return new MuiConfigurableBackground(this.settings, this.labels, this.files, this.cropFactory);
+        }
     }
 
     /**

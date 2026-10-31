@@ -6,8 +6,6 @@ import icyllis.modernui.animation.MotionEasingUtils;
 import icyllis.modernui.animation.ValueAnimator;
 import icyllis.modernui.core.Context;
 import icyllis.modernui.graphics.*;
-import icyllis.modernui.graphics.Canvas;
-import icyllis.modernui.graphics.Paint;
 import icyllis.modernui.graphics.drawable.ColorDrawable;
 import icyllis.modernui.graphics.drawable.ShapeDrawable;
 import icyllis.modernui.util.ColorStateList;
@@ -19,7 +17,7 @@ import icyllis.modernui.widget.FrameLayout;
 import icyllis.modernui.widget.LinearLayout;
 import icyllis.modernui.widget.TextView;
 import me.kall.narutoui.mui.theme.MuiTheme;
-import me.kall.narutoui.mui.widget.MuiControls;
+import me.kall.narutoui.mui.layout.MuiControls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -151,10 +149,7 @@ public final class MuiColorPickerOverlay extends FrameLayout {
         buttons.addView(MuiControls.button(context, this.theme, labels.apply(), false, view -> this.confirm()), MuiControls.wrap());
 
         this.refresh();
-        this.slideIn();
-    }
 
-    private void slideIn() {
         float offset = MuiControls.dp(this.getContext(), 10);
         this.setTranslationY(offset);
         this.post(() -> {
@@ -267,16 +262,13 @@ public final class MuiColorPickerOverlay extends FrameLayout {
         }
 
         private void ensureShaders(float cx, float cy, float radius) {
-            if (this.saturationShader != null && cx == this.shaderCenterX && cy == this.shaderCenterY
-                    && radius == this.shaderRadius) {
-                return;
-            }
+            if (this.saturationShader != null && cx == this.shaderCenterX && cy == this.shaderCenterY && radius == this.shaderRadius) return;
+
             this.shaderCenterX = cx;
             this.shaderCenterY = cy;
             this.shaderRadius = radius;
 
-            this.saturationShader = new RadialGradient(cx, cy, Math.max(1.0F, radius),
-                    0xFFFFFFFF, 0x00FFFFFF, Shader.TileMode.CLAMP, null);
+            this.saturationShader = new RadialGradient(cx, cy, Math.max(1.0F, radius), 0xFFFFFFFF, 0x00FFFFFF, Shader.TileMode.CLAMP, null);
         }
 
         @Override
@@ -385,15 +377,12 @@ public final class MuiColorPickerOverlay extends FrameLayout {
         }
 
         private void ensureShader(int width) {
-            if (this.shader != null && width == this.shaderWidth && this.startColor == this.shaderStart && this.endColor == this.shaderEnd) {
-                return;
-            }
+            if (this.shader != null && width == this.shaderWidth && this.startColor == this.shaderStart && this.endColor == this.shaderEnd) return;
+
             this.shaderWidth = width;
             this.shaderStart = this.startColor;
             this.shaderEnd = this.endColor;
-            this.shader =
-                    new LinearGradient(0.0F, 0.0F, Math.max(1, width), 0.0F, this.startColor, this.endColor,
-                            Shader.TileMode.CLAMP, null);
+            this.shader = new LinearGradient(0.0F, 0.0F, Math.max(1, width), 0.0F, this.startColor, this.endColor, Shader.TileMode.CLAMP, null);
         }
 
         @Override

@@ -1,11 +1,16 @@
 package me.kall.narutoui.mui.widget;
 
+import me.kall.narutoui.mui.layout.MuiControls;
+
 import icyllis.modernui.core.Context;
 import icyllis.modernui.view.Gravity;
 import icyllis.modernui.widget.FrameLayout;
 import icyllis.modernui.widget.TextView;
 import me.kall.narutoui.mui.shimmer.MuiShimmer;
-import me.kall.narutoui.mui.shimmer.ShimmerHintDrawable;
+import me.kall.narutoui.mui.shimmer.MuiShimmerContainer;
+import me.kall.narutoui.mui.shimmer.MuiShimmerScope;
+import me.kall.narutoui.mui.shimmer.MuiShimmerable;
+import me.kall.narutoui.mui.shimmer.drawable.ShimmerHintDrawable;
 import me.kall.narutoui.mui.theme.MuiTheme;
 import me.kall.narutoui.mui.util.MuiLocalization;
 import org.jetbrains.annotations.NotNull;
@@ -15,11 +20,13 @@ import org.jetbrains.annotations.NotNull;
  * so the badge matches the navigation logo without the caller having to register shimmer targets
  * manually.
  */
-public final class MuiHintBadge extends FrameLayout {
+public final class MuiHintBadge extends FrameLayout implements MuiShimmerContainer {
     /** Hint text. */
     private final TextView text;
     /** Shimmering outline. */
     private final ShimmerHintDrawable outline;
+    /** Marker applied to the text and outline. */
+    private MuiShimmerable shimmerable = MuiShimmerable.NEVER;
 
     /**
      * Creates a hint badge.
@@ -40,6 +47,14 @@ public final class MuiHintBadge extends FrameLayout {
         this.outline = new ShimmerHintDrawable(this.text, theme.primary());
         this.outline.setCornerRadius(MuiControls.dp(context, 8));
         this.setBackground(this.outline);
+    }
+
+    @Override
+    public void setShimmerable(@NotNull MuiShimmerable marker) {
+        this.shimmerable = marker;
+        MuiShimmerScope.apply(this.text, marker);
+        this.outline.setShimmerable(marker);
+        MuiShimmer.refresh();
     }
 
     /**

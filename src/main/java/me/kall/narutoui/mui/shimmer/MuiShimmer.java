@@ -37,7 +37,6 @@ public final class MuiShimmer {
      */
     public static void configure(@Nullable MuiShimmerConfig config) {
         MuiShimmerProfile.defaultProfile().configure(config);
-        refresh();
     }
 
     /**
@@ -76,7 +75,7 @@ public final class MuiShimmer {
     public static void refresh() {
         boolean active = false;
         for (ShimmerTarget target : TARGETS) {
-            if (target.shimmerEnabled()) {
+            if (active(target)) {
                 active = true;
                 break;
             }
@@ -128,7 +127,7 @@ public final class MuiShimmer {
         long now = System.currentTimeMillis();
         int fps = 30;
         for (ShimmerTarget target : TARGETS) {
-            if (target.shimmerEnabled()) {
+            if (active(target)) {
                 fps = Math.max(fps, target.shimmerProfile().config().fps());
             }
         }
@@ -142,14 +141,15 @@ public final class MuiShimmer {
 
         for (ShimmerTarget target : TARGETS) {
             MuiShimmerProfile profile = target.shimmerProfile();
-            MuiShimmerConfig config = profile.config();
-            View host = target.shimmerHost();
-            if (!target.shimmerEnabled() || host == null || !config.text()
-                    || !config.hasAccent()) {
+            if (!active(target)) {
                 target.applyBaseColor();
                 continue;
             }
             active = true;
+
+            MuiShimmerConfig config = profile.config();
+            View host = target.shimmerHost();
+            if (host == null) continue;
 
             MuiShimmerClock clock = profile.clock();
             clock.update();
@@ -187,6 +187,24 @@ public final class MuiShimmer {
         }
     }
 
+    /**
+     * Returns whether a target participates right now. This is the single place that combines the
+     * target's local eligibility (including its marker), the global config and the profile clock.
+     *
+     * @param target the target
+     * @return {@code true} when the target should animate
+     */
+    private static boolean active(@NotNull ShimmerTarget target) {
+        if (!target.shimmerEnabled()) return false;
+
+        View host = target.shimmerHost();
+        if (host == null || !host.isAttachedToWindow()) return false;
+
+        MuiShimmerProfile profile = target.shimmerProfile();
+        MuiShimmerConfig config = profile.config();
+        return config.enabled() && config.hasAccent();
+    }
+
     private static float wave(float x, float y, float time, float scale) {
         float t = time * TIME_SCALE;
         float a = (float) Math.sin((x * SPATIAL_X + y * SPATIAL_Y) * scale - t);
@@ -208,6 +226,6 @@ public final class MuiShimmer {
     }
 
     private static int lerp(int from, int to, float fraction) {
-        return ShimmerButton.blend(from, to, Math.max(0.0F, Math.min(1.0F, fraction)));
+        return ShimmerColor.blend(from, to, Math.max(0.0F, Math.min(1.0F, fraction)));
     }
 }

@@ -14,7 +14,7 @@ import icyllis.modernui.widget.FrameLayout;
 import icyllis.modernui.widget.LinearLayout;
 import icyllis.modernui.widget.TextView;
 import me.kall.narutoui.mui.theme.MuiTheme;
-import me.kall.narutoui.mui.widget.MuiControls;
+import me.kall.narutoui.mui.layout.MuiControls;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -131,8 +131,7 @@ public final class MuiCropOverlay extends FrameLayout {
         private float startRight;
         private float startBottom;
 
-        CropView(@NotNull Context context, @NotNull Image image, int imageWidth, int imageHeight,
-                 float aspect) {
+        CropView(@NotNull Context context, @NotNull Image image, int imageWidth, int imageHeight, float aspect) {
             super(context);
             this.image = image;
             this.imageWidth = Math.max(1, imageWidth);
