@@ -24,8 +24,16 @@ import me.kall.narutoui.mui.shimmer.widget.ShimmerRadioButton;
 import me.kall.narutoui.mui.shimmer.widget.ShimmerSeekBar;
 import me.kall.narutoui.mui.shimmer.widget.ShimmerSwitch;
 import me.kall.narutoui.mui.shimmer.widget.ShimmerTextView;
+import me.kall.narutoui.mui.choice.MuiChoiceGrid;
+import me.kall.narutoui.mui.choice.MuiDropdown;
+import me.kall.narutoui.mui.choice.MuiOption;
+import me.kall.narutoui.mui.field.MuiListEditor;
+import me.kall.narutoui.mui.field.MuiNumberField;
+import me.kall.narutoui.mui.field.MuiTextField;
 import me.kall.narutoui.mui.layout.MuiControls;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
 
 /**
  * Widget factory that creates shimmer-capable text, switch, slider, button, checkbox, radio button
@@ -174,5 +182,30 @@ public final class MuiShimmerFactory implements MuiWidgetFactory {
         bar.setSecondaryProgressTintList(secondary);
         bar.setIndeterminateTintList(indeterminate);
         return bar.bind(progress, background, secondary, indeterminate).shimmerable(marker);
+    }
+
+    @Override
+    public @NotNull MuiTextField textField(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence text) {
+        return MuiTextField.create(context, theme, text);
+    }
+
+    @Override
+    public @NotNull MuiNumberField numberField(@NotNull Context context, @NotNull MuiTheme theme, long value) {
+        return MuiNumberField.create(context, theme, value);
+    }
+
+    @Override
+    public <T> @NotNull MuiDropdown<T> dropdown(@NotNull Context context, @NotNull MuiTheme theme, @NotNull List<MuiOption<T>> options) {
+        return MuiControls.withFactory(this, () -> MuiDropdown.create(context, theme, options));
+    }
+
+    @Override
+    public <T> @NotNull MuiChoiceGrid<T> choiceGrid(@NotNull Context context, @NotNull MuiTheme theme, @NotNull List<MuiOption<T>> options) {
+        return MuiControls.withFactory(this, () -> MuiChoiceGrid.create(context, theme, options));
+    }
+
+    @Override
+    public @NotNull MuiListEditor listEditor(@NotNull Context context, @NotNull MuiTheme theme, @NotNull List<String> values) {
+        return MuiControls.withFactory(this, () -> MuiListEditor.create(context, theme, values));
     }
 }

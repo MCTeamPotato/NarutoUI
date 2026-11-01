@@ -7,7 +7,13 @@ import icyllis.modernui.core.Context;
 import icyllis.modernui.graphics.drawable.ShapeDrawable;
 import icyllis.modernui.text.Editable;
 import icyllis.modernui.text.TextWatcher;
+import icyllis.modernui.util.ColorStateList;
+import icyllis.modernui.view.View;
 import icyllis.modernui.widget.EditText;
+import me.kall.narutoui.mui.shimmer.MuiShimmer;
+import me.kall.narutoui.mui.shimmer.MuiShimmerProfile;
+import me.kall.narutoui.mui.shimmer.MuiShimmerable;
+import me.kall.narutoui.mui.shimmer.ShimmerTarget;
 import me.kall.narutoui.mui.theme.MuiTheme;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -32,13 +38,21 @@ import java.util.function.LongConsumer;
  * {@link #onChangeLong(LongConsumer)} for {@link Mode#INTEGER}, {@link #onChangeLong(LongConsumer)}
  * for {@link Mode#LONG}, and {@link #onChangeDouble(DoubleConsumer)} for {@link Mode#DECIMAL}.
  */
-public final class MuiNumberField extends EditText {
+public final class MuiNumberField extends EditText implements ShimmerTarget {
     /** Context used for density conversion. */
     private final Context context;
     /** Active visual tokens. */
     private final MuiTheme theme;
+    /** Shimmer profile captured when the field was created. */
+    private final MuiShimmerProfile shimmerProfile;
     /** Rounded input background. */
     private final ShapeDrawable background;
+    /** Per-instance shimmer marker. */
+    private MuiShimmerable shimmerable = MuiShimmerable.NEVER;
+    /** Base text colors used when shimmer stops. */
+    private @Nullable ColorStateList baseTextColors;
+    /** Whether constructor styling has finished and color interception is safe. */
+    private boolean shimmerReady;
     /** Numeric interpretation of the text. */
     private final Mode mode;
     /** Inclusive lower bound, or {@code null} for no bound. */
@@ -110,6 +124,7 @@ public final class MuiNumberField extends EditText {
 
         this.context = context;
         this.theme = theme;
+        this.shimmerProfile = MuiShimmerProfile.current();
         this.mode = mode;
         this.scale = mode == Mode.DECIMAL ? (scale < 0 ? -1 : scale) : 0;
         this.current = this.normalize(value);
@@ -119,6 +134,8 @@ public final class MuiNumberField extends EditText {
         this.background = MuiInputSupport.style(this, context, theme, MuiControls.dp(context, 6));
         this.setText(this.format(this.current));
         this.installListeners();
+        this.baseTextColors = this.getTextColors();
+        this.shimmerReady = true;
     }
 
     private static @NotNull Mode integerOrLong(@NotNull Mode mode) {
@@ -501,11 +518,86 @@ public final class MuiNumberField extends EditText {
     }
 
     /**
+     * Replaces the per-instance shimmer marker.
+     *
+     * @param marker the marker
+     * @return this field, for chaining
+     */
+    public @NotNull MuiNumberField shimmerable(@NotNull MuiShimmerable marker) {
+        this.shimmerable = marker;
+        MuiShimmer.refresh();
+        return this;
+    }
+
+    @Override
+    public void setShimmerable(@NotNull MuiShimmerable marker) {
+        this.shimmerable = marker;
+        MuiShimmer.refresh();
+    }
+
+    @Override
+    public void setTextColor(int color) {
+        if (!this.shimmerReady) {
+            super.setTextColor(color);
+            return;
+        }
+        this.baseTextColors = ColorStateList.valueOf(color);
+        if (!MuiShimmer.isRunning()) super.setTextColor(color);
+    }
+
+    @Override
+    public void setTextColor(@NotNull ColorStateList colors) {
+        if (!this.shimmerReady) {
+            super.setTextColor(colors);
+            return;
+        }
+        this.baseTextColors = colors;
+        if (!MuiShimmer.isRunning()) super.setTextColor(colors);
+    }
+
+    @Override
+    public int shimmerBaseColor() {
+        return this.baseTextColors == null ? this.getCurrentTextColor() : this.baseTextColors.getDefaultColor();
+    }
+
+    @Override
+    public void applyShimmerColor(int color) {
+        super.setTextColor(color);
+    }
+
+    @Override
+    public void applyBaseColor() {
+        if (this.baseTextColors != null) super.setTextColor(this.baseTextColors);
+    }
+
+    @Override
+    public boolean shimmerEnabled() {
+        return this.shimmerable.shimmer() && this.isAttachedToWindow() && this.isEnabled();
+    }
+
+    @Override
+    public @NotNull MuiShimmerProfile shimmerProfile() {
+        return this.shimmerProfile;
+    }
+
+    @Override
+    public @NotNull View shimmerHost() {
+        return this;
+    }
+
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        MuiShimmer.attach(this);
+    }
+
+    /**
      * Commits a pending edit when the field leaves the window, so closing or switching a page does
      * not silently drop typed text.
      */
     @Override
     protected void onDetachedFromWindow() {
+        MuiShimmer.detach(this);
         this.commit();
         super.onDetachedFromWindow();
     }

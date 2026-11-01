@@ -14,7 +14,7 @@ NarutoUI 是一个面向 Minecraft 客户端模组的 **Modern UI 配置界面�
 - 通用组件：`MuiChip`、`MuiTextAction`、`MuiLogo`、`MuiHintBadge`、`MuiColorField`、`MuiDescriptionRow`、`MuiCollapsibleCard`
 - 可配置主题：强调色、背景色、圆角、间距、内容宽度
 - 背景：纯色、透明、黑色、单图、裁剪图、幻灯片
-- 实例级 shimmer：`MuiShimmerable` + `shimmerNext()`，按行 / 页面 / 导航栏 / 标题开启
+- 实例级 shimmer：`MuiShimmerable` + `shimmerNext()`，按行 / 页面 / 导航栏 / 标题开启；输入框和 `MuiTextAction` 也可参与
 - 文件/文件夹选择、颜色选择、图片裁剪
 - 每屏独立的 `MuiWidgetFactory` 与 `MuiShimmerProfile`
 - 进程内页面恢复与 stable recipe 注册
@@ -57,6 +57,7 @@ build/libs/narutoui-xxx-xxx-common.jar  仅 me/kall/narutoui/mui/**
 - `toggle` / `slider` / `value` 的 supplier 每 100 ms 轮询一次，不是事件推送。
 - 文本输入保持焦点时暂停 supplier 轮询；`textField` 只在 Enter 或失焦时提交。
 - `MuiDropdown` 是页面内展开面板，不是弹窗；选项很多时建议改用独立搜索页面。
+- `MuiWidgetFactory` 的方法全部是 abstract；自定义工厂需要完整实现，内置 `modern()` / `shimmer()` 已提供完整实现。
 - `MuiListEditor` 没有虚拟化或内部滚动；很长的列表建议使用独立页面。
 - 数值滑杆最多映射 100,000 个进度步；更大范围由数值输入框补足精度。
 - stable recipe 不是配置持久化；进程重启后需要在客户端初始化时重新注册。

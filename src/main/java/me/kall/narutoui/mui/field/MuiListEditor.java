@@ -8,6 +8,10 @@ import icyllis.modernui.view.Gravity;
 import icyllis.modernui.widget.Button;
 import icyllis.modernui.widget.LinearLayout;
 import icyllis.modernui.widget.TextView;
+import me.kall.narutoui.mui.shimmer.MuiShimmer;
+import me.kall.narutoui.mui.shimmer.MuiShimmerContainer;
+import me.kall.narutoui.mui.shimmer.MuiShimmerScope;
+import me.kall.narutoui.mui.shimmer.MuiShimmerable;
 import me.kall.narutoui.mui.theme.MuiTheme;
 import me.kall.narutoui.mui.util.MuiLocalization;
 import org.jetbrains.annotations.Contract;
@@ -30,11 +34,13 @@ import java.util.function.Consumer;
  * The editor grows with its content. It is intended for short lists (up to a few dozen entries);
  * very long lists should use a dedicated page with a scrolling list.
  */
-public final class MuiListEditor extends LinearLayout {
+public final class MuiListEditor extends LinearLayout implements MuiShimmerContainer {
     /** Context used for density conversion. */
     private final Context context;
     /** Active visual tokens. */
     private final MuiTheme theme;
+    /** Marker applied to existing and future rows. */
+    private MuiShimmerable shimmerable = MuiShimmerable.NEVER;
     /** Current entries. */
     private final List<String> values = new ArrayList<>();
     /** Column that receives one row per entry. */
@@ -150,6 +156,19 @@ public final class MuiListEditor extends LinearLayout {
     }
 
     /**
+     * Replaces the per-instance shimmer marker. Existing and future rows inherit it.
+     *
+     * @param marker the marker
+     */
+    @Override
+    public void setShimmerable(@NotNull MuiShimmerable marker) {
+        this.shimmerable = marker;
+        MuiShimmerScope.apply(this.items, marker);
+        MuiShimmerScope.apply(this.addButton, marker);
+        MuiShimmer.refresh();
+    }
+
+    /**
      * Returns the current entries.
      *
      * @return a copy of the entries
@@ -245,6 +264,8 @@ public final class MuiListEditor extends LinearLayout {
         }
 
         this.addButton.setEnabled(this.enabled && this.values.size() < this.maxEntries);
+        MuiShimmerScope.apply(this.items, this.shimmerable);
+        MuiShimmerScope.apply(this.addButton, this.shimmerable);
     }
 
     /**

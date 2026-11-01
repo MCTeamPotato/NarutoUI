@@ -3,8 +3,13 @@ package me.kall.narutoui.mui.widget;
 import me.kall.narutoui.mui.layout.MuiControls;
 
 import icyllis.modernui.core.Context;
+import icyllis.modernui.view.View;
 import icyllis.modernui.widget.FrameLayout;
 import icyllis.modernui.widget.TextView;
+import me.kall.narutoui.mui.shimmer.MuiShimmer;
+import me.kall.narutoui.mui.shimmer.MuiShimmerProfile;
+import me.kall.narutoui.mui.shimmer.MuiShimmerable;
+import me.kall.narutoui.mui.shimmer.ShimmerTarget;
 import me.kall.narutoui.mui.theme.MuiTheme;
 import me.kall.narutoui.mui.util.MuiLocalization;
 import org.jetbrains.annotations.NotNull;
@@ -17,11 +22,17 @@ import org.jetbrains.annotations.Nullable;
  * The action is a small container instead of a raw {@link TextView}; this keeps the click target
  * stable and allows the label to be replaced after the action is created.
  */
-public final class MuiTextAction extends FrameLayout {
+public final class MuiTextAction extends FrameLayout implements ShimmerTarget {
     /** Active visual tokens. */
     private final MuiTheme theme;
+    /** Shimmer profile captured when the action was created. */
+    private final MuiShimmerProfile shimmerProfile;
     /** Label view created by the active widget factory. */
     private final TextView text;
+    /** Per-instance shimmer marker. */
+    private MuiShimmerable shimmerable = MuiShimmerable.NEVER;
+    /** Base label color used when the label is not a shimmer target. */
+    private int baseTextColor;
     /** Pending flash restore callback, or {@code null} when no flash is running. */
     private @Nullable Runnable pendingFlash;
     /** Text to restore when the running flash ends, or {@code null} when no flash is running. */
@@ -50,7 +61,9 @@ public final class MuiTextAction extends FrameLayout {
     public MuiTextAction(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence label, @NotNull Runnable action) {
         super(context);
         this.theme = theme;
+        this.shimmerProfile = MuiShimmerProfile.current();
         this.text = MuiControls.text(context, theme, label, 12, theme.primary());
+        this.baseTextColor = this.text.getCurrentTextColor();
         this.text.setPadding(MuiControls.dp(context, 8), MuiControls.dp(context, 4), MuiControls.dp(context, 8), MuiControls.dp(context, 4));
         this.addView(this.text, new FrameLayout.LayoutParams(MuiControls.WRAP, MuiControls.WRAP));
         this.setOnClickListener(view -> {
@@ -84,6 +97,71 @@ public final class MuiTextAction extends FrameLayout {
     }
 
     /**
+     * Replaces the per-instance shimmer marker.
+     *
+     * @param marker the marker
+     * @return this action, for chaining
+     */
+    public @NotNull MuiTextAction shimmerable(@NotNull MuiShimmerable marker) {
+        this.shimmerable = marker;
+        if (this.text instanceof ShimmerTarget target) target.setShimmerable(marker);
+        MuiShimmer.refresh();
+        return this;
+    }
+
+    @Override
+    public void setShimmerable(@NotNull MuiShimmerable marker) {
+        this.shimmerable = marker;
+        if (this.text instanceof ShimmerTarget target) target.setShimmerable(marker);
+        MuiShimmer.refresh();
+    }
+
+    @Override
+    public int shimmerBaseColor() {
+        if (this.text instanceof ShimmerTarget target) return target.shimmerBaseColor();
+        return this.baseTextColor;
+    }
+
+    @Override
+    public void applyShimmerColor(int color) {
+        if (this.text instanceof ShimmerTarget target) {
+            target.applyShimmerColor(color);
+        } else {
+            this.text.setTextColor(color);
+        }
+    }
+
+    @Override
+    public void applyBaseColor() {
+        if (this.text instanceof ShimmerTarget target) {
+            target.applyBaseColor();
+        } else {
+            this.text.setTextColor(this.baseTextColor);
+        }
+    }
+
+    @Override
+    public boolean shimmerEnabled() {
+        return this.shimmerable.shimmer() && this.isAttachedToWindow() && this.isEnabled();
+    }
+
+    @Override
+    public @NotNull MuiShimmerProfile shimmerProfile() {
+        return this.shimmerProfile;
+    }
+
+    @Override
+    public @NotNull View shimmerHost() {
+        return this;
+    }
+
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        MuiShimmer.attach(this);
+    }
+
+    /**
      * Replaces the label.
      *
      * @param label label or translation key
@@ -92,6 +170,12 @@ public final class MuiTextAction extends FrameLayout {
     public @NotNull MuiTextAction text(@NotNull CharSequence label) {
         this.text.setText(MuiLocalization.resolve(label));
         return this;
+    }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
+        if (this.text != null) this.text.setEnabled(enabled);
     }
 
     /**
@@ -103,6 +187,7 @@ public final class MuiTextAction extends FrameLayout {
     public @NotNull MuiTextAction enabled(boolean enabled) {
         this.setEnabled(enabled);
         this.text.setTextColor(enabled ? this.theme.primary() : MuiControls.alpha(this.theme.primary(), 0.38F));
+        this.baseTextColor = this.text.getCurrentTextColor();
         return this;
     }
 
@@ -162,6 +247,7 @@ public final class MuiTextAction extends FrameLayout {
      */
     @Override
     protected void onDetachedFromWindow() {
+        MuiShimmer.detach(this);
         if (this.pendingFlash != null) {
             this.removeCallbacks(this.pendingFlash);
             this.pendingFlash = null;

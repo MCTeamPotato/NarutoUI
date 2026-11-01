@@ -36,8 +36,10 @@ import java.util.List;
  * animated or otherwise custom controls without the API depending on it.
  * <p>
  * Install a factory through {@link MuiControls#setWidgetFactory(MuiWidgetFactory)}. The default is
- * {@link #modern()}; use {@link #shimmer()} for the API's animated controls. Shimmer controls default
- * to {@link MuiShimmerable#NEVER}; enable them with a marker or {@code MuiSettingsSection.shimmerNext()}.
+ * {@link #modern()}; use {@link #shimmer()} for the API's animated controls. Every method is
+ * abstract: a custom factory must implement the complete contract instead of relying on fallback
+ * widget construction. Shimmer controls default to {@link MuiShimmerable#NEVER}; enable them with a
+ * marker or {@code MuiSettingsSection.shimmerNext()}.
  */
 public interface MuiWidgetFactory {
     /**
@@ -53,7 +55,7 @@ public interface MuiWidgetFactory {
 
     /**
      * Creates a text view with a per-instance shimmer marker. Factories that do not support
-     * shimmering can ignore the marker; the default implementation does exactly that.
+     * shimmering can ignore the marker.
      *
      * @param context the screen context
      * @param text    text content
@@ -62,9 +64,7 @@ public interface MuiWidgetFactory {
      * @param marker  shimmer marker
      * @return the text view
      */
-    default @NotNull TextView text(@NotNull Context context, @NotNull CharSequence text, float size, int color, @NotNull MuiShimmerable marker) {
-        return this.text(context, text, size, color);
-    }
+    @NotNull TextView text(@NotNull Context context, @NotNull CharSequence text, float size, int color, @NotNull MuiShimmerable marker);
 
     /**
      * Creates a configured switch.
@@ -83,9 +83,7 @@ public interface MuiWidgetFactory {
      * @param marker  shimmer marker
      * @return the switch
      */
-    default @NotNull Switch switchControl(@NotNull Context context, @NotNull MuiTheme theme, @NotNull MuiShimmerable marker) {
-        return this.switchControl(context, theme);
-    }
+    @NotNull Switch switchControl(@NotNull Context context, @NotNull MuiTheme theme, @NotNull MuiShimmerable marker);
 
     /**
      * Creates a configured slider.
@@ -108,9 +106,7 @@ public interface MuiWidgetFactory {
      * @param marker   shimmer marker
      * @return the slider
      */
-    default @NotNull SeekBar slider(@NotNull Context context, @NotNull MuiTheme theme, int max, int progress, @NotNull MuiShimmerable marker) {
-        return this.slider(context, theme, max, progress);
-    }
+    @NotNull SeekBar slider(@NotNull Context context, @NotNull MuiTheme theme, int max, int progress, @NotNull MuiShimmerable marker);
 
     /**
      * Creates a configured button.
@@ -135,78 +131,60 @@ public interface MuiWidgetFactory {
      * @param marker   shimmer marker
      * @return the button
      */
-    default @NotNull Button button(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence label, boolean outlined, @NotNull View.OnClickListener onClick, @NotNull MuiShimmerable marker) {
-        return this.button(context, theme, label, outlined, onClick);
-    }
+    @NotNull Button button(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence label, boolean outlined, @NotNull View.OnClickListener onClick, @NotNull MuiShimmerable marker);
 
     /**
-     * Creates a checkbox. The default implementation returns a plain Modern UI checkbox and ignores
-     * the marker.
+     * Creates a checkbox.
      *
      * @param context the screen context
      * @param theme   active theme
      * @param marker  shimmer marker
      * @return the checkbox
      */
-    default @NotNull CheckBox checkBox(@NotNull Context context, @NotNull MuiTheme theme, @NotNull MuiShimmerable marker) {
-        return new CheckBox(context);
-    }
+    @NotNull CheckBox checkBox(@NotNull Context context, @NotNull MuiTheme theme, @NotNull MuiShimmerable marker);
 
     /**
-     * Creates a radio button. The default implementation returns a plain Modern UI radio button and
-     * ignores the marker.
+     * Creates a radio button.
      *
      * @param context the screen context
      * @param theme   active theme
      * @param marker  shimmer marker
      * @return the radio button
      */
-    default @NotNull RadioButton radioButton(@NotNull Context context, @NotNull MuiTheme theme, @NotNull MuiShimmerable marker) {
-        return new RadioButton(context);
-    }
+    @NotNull RadioButton radioButton(@NotNull Context context, @NotNull MuiTheme theme, @NotNull MuiShimmerable marker);
 
     /**
-     * Creates a progress bar. The default implementation returns a plain Modern UI progress bar and
-     * ignores the marker.
+     * Creates a progress bar.
      *
      * @param context the screen context
      * @param theme   active theme
      * @param marker  shimmer marker
      * @return the progress bar
      */
-    default @NotNull ProgressBar progressBar(@NotNull Context context, @NotNull MuiTheme theme, @NotNull MuiShimmerable marker) {
-        return new ProgressBar(context);
-    }
+    @NotNull ProgressBar progressBar(@NotNull Context context, @NotNull MuiTheme theme, @NotNull MuiShimmerable marker);
 
     /**
-     * Creates a text input. The default implementation returns a {@link MuiTextField}; override it
-     * to apply additional styling to string-valued configuration entries.
+     * Creates a text input.
      *
      * @param context the screen context
      * @param theme   active theme
      * @param text    initial text
      * @return the text field
      */
-    default @NotNull MuiTextField textField(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence text) {
-        return MuiTextField.create(context, theme, text);
-    }
+    @NotNull MuiTextField textField(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence text);
 
     /**
-     * Creates a numeric input. The default implementation returns a {@link MuiNumberField}; override
-     * it to apply additional styling to integer and long configuration entries.
+     * Creates a numeric input.
      *
      * @param context the screen context
      * @param theme   active theme
      * @param value   initial value
      * @return the number field
      */
-    default @NotNull MuiNumberField numberField(@NotNull Context context, @NotNull MuiTheme theme, long value) {
-        return MuiNumberField.create(context, theme, value);
-    }
+    @NotNull MuiNumberField numberField(@NotNull Context context, @NotNull MuiTheme theme, long value);
 
     /**
-     * Creates a select control. The default implementation returns a {@link MuiDropdown}; override
-     * it to apply additional styling to enum-valued configuration entries.
+     * Creates a select control.
      *
      * @param context the screen context
      * @param theme   active theme
@@ -214,13 +192,10 @@ public interface MuiWidgetFactory {
      * @param <T>     option value type
      * @return the dropdown
      */
-    default <T> @NotNull MuiDropdown<T> dropdown(@NotNull Context context, @NotNull MuiTheme theme, @NotNull List<MuiOption<T>> options) {
-        return MuiDropdown.create(context, theme, options);
-    }
+    <T> @NotNull MuiDropdown<T> dropdown(@NotNull Context context, @NotNull MuiTheme theme, @NotNull List<MuiOption<T>> options);
 
     /**
-     * Creates a card-style selection control. The default implementation returns a
-     * {@link MuiChoiceGrid}; override it to apply additional styling to visual option sets.
+     * Creates a card-style selection control.
      *
      * @param context the screen context
      * @param theme   active theme
@@ -228,22 +203,17 @@ public interface MuiWidgetFactory {
      * @param <T>     option value type
      * @return the choice grid
      */
-    default <T> @NotNull MuiChoiceGrid<T> choiceGrid(@NotNull Context context, @NotNull MuiTheme theme, @NotNull List<MuiOption<T>> options) {
-        return MuiChoiceGrid.create(context, theme, options);
-    }
+    <T> @NotNull MuiChoiceGrid<T> choiceGrid(@NotNull Context context, @NotNull MuiTheme theme, @NotNull List<MuiOption<T>> options);
 
     /**
-     * Creates a list editor. The default implementation returns a {@link MuiListEditor}; override it
-     * to apply additional styling to list-valued configuration entries.
+     * Creates a list editor.
      *
      * @param context the screen context
      * @param theme   active theme
      * @param values  initial entries
      * @return the list editor
      */
-    default @NotNull MuiListEditor listEditor(@NotNull Context context, @NotNull MuiTheme theme, @NotNull List<String> values) {
-        return MuiListEditor.create(context, theme, values);
-    }
+    @NotNull MuiListEditor listEditor(@NotNull Context context, @NotNull MuiTheme theme, @NotNull List<String> values);
 
     /**
      * Returns the default Modern UI widget factory.
@@ -383,6 +353,51 @@ public interface MuiWidgetFactory {
             bar.setSecondaryProgressTintList(ColorStateList.valueOf(MuiControls.alpha(accent, 0.5F)));
             bar.setIndeterminateTintList(ColorStateList.valueOf(accent));
             return bar;
+        }
+
+        @Override
+        public @NotNull TextView text(@NotNull Context context, @NotNull CharSequence text, float size, int color, @NotNull MuiShimmerable marker) {
+            return this.text(context, text, size, color);
+        }
+
+        @Override
+        public @NotNull Switch switchControl(@NotNull Context context, @NotNull MuiTheme theme, @NotNull MuiShimmerable marker) {
+            return this.switchControl(context, theme);
+        }
+
+        @Override
+        public @NotNull SeekBar slider(@NotNull Context context, @NotNull MuiTheme theme, int max, int progress, @NotNull MuiShimmerable marker) {
+            return this.slider(context, theme, max, progress);
+        }
+
+        @Override
+        public @NotNull Button button(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence label, boolean outlined, @NotNull View.OnClickListener onClick, @NotNull MuiShimmerable marker) {
+            return this.button(context, theme, label, outlined, onClick);
+        }
+
+        @Override
+        public @NotNull MuiTextField textField(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence text) {
+            return MuiTextField.create(context, theme, text);
+        }
+
+        @Override
+        public @NotNull MuiNumberField numberField(@NotNull Context context, @NotNull MuiTheme theme, long value) {
+            return MuiNumberField.create(context, theme, value);
+        }
+
+        @Override
+        public <T> @NotNull MuiDropdown<T> dropdown(@NotNull Context context, @NotNull MuiTheme theme, @NotNull List<MuiOption<T>> options) {
+            return MuiControls.withFactory(this, () -> MuiDropdown.create(context, theme, options));
+        }
+
+        @Override
+        public <T> @NotNull MuiChoiceGrid<T> choiceGrid(@NotNull Context context, @NotNull MuiTheme theme, @NotNull List<MuiOption<T>> options) {
+            return MuiControls.withFactory(this, () -> MuiChoiceGrid.create(context, theme, options));
+        }
+
+        @Override
+        public @NotNull MuiListEditor listEditor(@NotNull Context context, @NotNull MuiTheme theme, @NotNull List<String> values) {
+            return MuiControls.withFactory(this, () -> MuiListEditor.create(context, theme, values));
         }
     }
 }

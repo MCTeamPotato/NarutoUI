@@ -570,6 +570,12 @@ MuiShimmerable.when(MyConfig::glowEnabled)
 
 否则 `MuiShimmerScope` 只能沿 View 树找到普通子控件，找不到不可见的内部 target。
 
+### 输入框和 MuiTextAction
+
+`MuiTextField`、`MuiNumberField` 和 `MuiTextAction` 现在都实现了 `ShimmerTarget`，默认 `NEVER`。给所在行加 `shimmerNext()` 后，输入框里的文字、列表编辑器的删除文字都会跟着流动。
+
+`MuiListEditor` 同时是 `MuiShimmerContainer`，所以之后点击 Add 新建的行也会继承当前行的 marker，不会只让初始行闪光。
+
 ---
 
 ## 10. 我想选文件、选颜色、裁剪图片
@@ -712,6 +718,10 @@ fragment.reloadCurrentPage();
 ### 配置保存 / Apply 是谁做的
 
 是你。NarutoUI 只提供字段回调，不碰持久化。
+
+### 自定义 `MuiWidgetFactory`
+
+`MuiWidgetFactory` 的所有方法都是 abstract，不再提供“返回默认组件”的 fallback。自定义工厂需要实现完整接口；如果只是想换某几种控件，可以写一个委托包装器，把大部分方法转发给 `MuiWidgetFactory.modern()` 或 `MuiWidgetFactory.shimmer()` 的实例，再覆盖需要改的方法。
 
 ---
 
