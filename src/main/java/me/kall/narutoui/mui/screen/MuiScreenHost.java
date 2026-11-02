@@ -40,6 +40,28 @@ public interface MuiScreenHost {
     void reloadCurrentPage();
 
     /**
+     * Asks the host to close through the normal back path. The close guard registered with
+     * {@link MuiConfigScreen.Builder#onCloseRequested} runs first and may keep the screen open.
+     * <p>
+     * Hosts that do not own a Minecraft screen may leave this unsupported.
+     *
+     * @throws UnsupportedOperationException when the host cannot close itself
+     */
+    default void requestClose() {
+        throw new UnsupportedOperationException("This MuiScreenHost does not support closing");
+    }
+
+    /**
+     * Closes the host immediately, bypassing the close guard. Call this after an unsaved-changes
+     * confirmation has been accepted. Prefer {@link #requestClose()} for normal back navigation.
+     *
+     * @throws UnsupportedOperationException when the host cannot close itself
+     */
+    default void close() {
+        throw new UnsupportedOperationException("This MuiScreenHost does not support closing");
+    }
+
+    /**
      * Called after a theme change. The default rebuilds the current page so page-local colors and
      * custom previews are resolved again. Hosts with additional theme state can override it.
      */

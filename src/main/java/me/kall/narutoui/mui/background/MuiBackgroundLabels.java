@@ -20,6 +20,7 @@ import org.jetbrains.annotations.NotNull;
  * @param crop               labels of the crop overlay
  */
 public record MuiBackgroundLabels(@NotNull String pickerTitle, @NotNull String imageFilter, @NotNull String pickerFailed, @NotNull String folderPickerTitle, @NotNull String folderPickerFailed, @NotNull String failed, @NotNull String saved, @NotNull MuiCropOverlay.Labels crop) {
+    /** Resolves every supplied label through the current language table. */
     public MuiBackgroundLabels {
         pickerTitle = MuiLocalization.resolve(pickerTitle);
         imageFilter = MuiLocalization.resolve(imageFilter);

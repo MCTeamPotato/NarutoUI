@@ -20,9 +20,13 @@ import org.jetbrains.annotations.Nullable;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.DoubleConsumer;
 import java.util.function.IntConsumer;
 import java.util.function.LongConsumer;
+import java.util.function.Predicate;
 
 /**
  * A themed numeric input that understands integer, long and decimal configuration values.
@@ -38,7 +42,7 @@ import java.util.function.LongConsumer;
  * {@link #onChangeLong(LongConsumer)} for {@link Mode#INTEGER}, {@link #onChangeLong(LongConsumer)}
  * for {@link Mode#LONG}, and {@link #onChangeDouble(DoubleConsumer)} for {@link Mode#DECIMAL}.
  */
-public final class MuiNumberField extends EditText implements ShimmerTarget {
+public final class MuiNumberField extends EditText implements ShimmerTarget, MuiValidatable {
     /** Context used for density conversion. */
     private final Context context;
     /** Active visual tokens. */
@@ -67,6 +71,10 @@ public final class MuiNumberField extends EditText implements ShimmerTarget {
     private boolean guard;
     /** Last applied validity, used to avoid redundant stroke updates. */
     private boolean valid = true;
+    /** Optional external validity predicate applied after parsing and bounds. */
+    private @Nullable Predicate<BigDecimal> validator;
+    /** Listeners notified when the validity changes. */
+    private final List<Consumer<Boolean>> validityListeners = new ArrayList<>();
     /** Optional integer edit listener. */
     private @Nullable IntConsumer intListener;
     /** Optional integer or long edit listener. */
@@ -209,7 +217,7 @@ public final class MuiNumberField extends EditText implements ShimmerTarget {
                     return;
                 }
 
-                if (!MuiNumberField.this.inBounds(parsed)) {
+                if (!MuiNumberField.this.inBounds(parsed) || !MuiNumberField.this.isExternallyValid(parsed)) {
                     MuiNumberField.this.setValid(false);
                     return;
                 }
@@ -236,6 +244,66 @@ public final class MuiNumberField extends EditText implements ShimmerTarget {
     public @NotNull MuiNumberField enabled(boolean enabled) {
         MuiInputSupport.applyEnabled(this, this.background, this.theme, enabled);
         return this;
+    }
+
+    /**
+     * Sets an external validity predicate applied after parsing and bounds checking. Invalid text
+     * is outlined with the theme error color and is never reported through the edit listeners; a
+     * commit restores the last valid value.
+     * <p>
+     * This is useful when the accepted range cannot be expressed with {@link #bounds}: for example
+     * a config value that only accepts multiples of ten.
+     *
+     * @param validator predicate returning {@code true} for an acceptable value, or {@code null}
+     * @return this field, for chaining
+     */
+    public @NotNull MuiNumberField validator(@Nullable Predicate<BigDecimal> validator) {
+        this.validator = validator;
+
+        String text = this.getText().toString();
+        if (text.isEmpty() || text.equals("-") || text.equals("-.") || text.endsWith(".")) {
+            this.setValid(true);
+            return this;
+        }
+
+        try {
+            BigDecimal parsed = new BigDecimal(text);
+            this.setValid(this.inBounds(parsed) && this.isExternallyValid(parsed));
+        } catch (NumberFormatException ignored) {
+            this.setValid(false);
+        }
+        return this;
+    }
+
+    /**
+     * Returns whether the text currently shown in the field is valid.
+     *
+     * @return {@code true} when the text parses, is in bounds and passes the external validator
+     */
+    public boolean isValid() {
+        return this.valid;
+    }
+
+    /**
+     * Registers a listener invoked when the field's validity changes. The listener is invoked
+     * immediately with the current state.
+     *
+     * @param listener validity listener
+     */
+    @Override
+    public void onValidityChanged(@NotNull Consumer<Boolean> listener) {
+        this.validityListeners.add(listener);
+        listener.accept(this.valid);
+    }
+
+    /**
+     * Applies the optional external validator.
+     *
+     * @param value the parsed value
+     * @return {@code true} when no validator is set or the validator accepts the value
+     */
+    private boolean isExternallyValid(@NotNull BigDecimal value) {
+        return this.validator == null || this.validator.test(value);
     }
 
     /**
@@ -416,7 +484,7 @@ public final class MuiNumberField extends EditText implements ShimmerTarget {
     public @NotNull MuiNumberField value(@NotNull BigDecimal value) {
         this.current = this.clamp(this.normalize(value));
         this.setTextSilently(this.format(this.current));
-        this.setValid(true);
+        this.setValid(this.isExternallyValid(this.current));
         return this;
     }
 
@@ -434,14 +502,15 @@ public final class MuiNumberField extends EditText implements ShimmerTarget {
         } catch (NumberFormatException ignored) {
         }
 
-        BigDecimal next = parsed == null ? this.current : this.clamp(this.normalize(parsed));
+        BigDecimal normalized = parsed == null ? null : this.normalize(parsed);
+        BigDecimal next = normalized == null || !this.isExternallyValid(normalized) ? this.current : this.clamp(normalized);
         if (next.compareTo(this.current) != 0) {
             this.current = next;
             this.fire(next);
         }
 
         this.setTextSilently(this.format(this.current));
-        this.setValid(true);
+        this.setValid(this.isExternallyValid(this.current));
         return this;
     }
 
@@ -609,6 +678,9 @@ public final class MuiNumberField extends EditText implements ShimmerTarget {
      */
     private void setValid(boolean valid) {
         this.valid = MuiInputSupport.applyValid(this.background, this.context, this.theme, valid, this.valid);
+        for (Consumer<Boolean> listener : this.validityListeners) {
+            listener.accept(this.valid);
+        }
     }
 
     /**

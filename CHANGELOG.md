@@ -14,3 +14,6 @@
 # 1.4.1
 - Add page-wide shimmer defaults for headers and content, plus supplier-backed sliders with descriptions. 
 - Update chip theming and separate the logo glyph from its shimmering background
+# 1.5.0
+- Add fixed action bars, guarded close handling, lazy page construction, scrollable navigation, and searchable rows.
+- Add field validation for text, numbers, and list entries, with validation hints, and document the new APIs.

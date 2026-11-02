@@ -22,6 +22,7 @@ import org.jetbrains.annotations.Unmodifiable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 /**
  * A themed editor for a list of strings, used by list-valued configuration entries.
@@ -57,6 +58,8 @@ public final class MuiListEditor extends LinearLayout implements MuiShimmerConta
     private CharSequence itemPlaceholder = "";
     /** Whether the editor accepts interaction. */
     private boolean enabled = true;
+    /** Optional per-entry validator; invalid entries are outlined and never committed. */
+    private @Nullable Predicate<String> validator;
     /** Guards programmatic list updates. */
     private boolean guard;
 
@@ -140,6 +143,20 @@ public final class MuiListEditor extends LinearLayout implements MuiShimmerConta
      */
     public @NotNull MuiListEditor enabled(boolean enabled) {
         this.enabled = enabled;
+        this.rebuild();
+        return this;
+    }
+
+    /**
+     * Sets a per-entry validator. Entries that fail validation keep a red outline and are not
+     * reported through {@link #onChanged}; callers can use this to reject unparsable numbers,
+     * unknown enum names or out-of-range values without replacing the whole editor.
+     *
+     * @param validator predicate returning {@code true} for an acceptable entry, or {@code null}
+     * @return this editor, for chaining
+     */
+    public @NotNull MuiListEditor validator(@Nullable Predicate<String> validator) {
+        this.validator = validator;
         this.rebuild();
         return this;
     }
@@ -244,6 +261,10 @@ public final class MuiListEditor extends LinearLayout implements MuiShimmerConta
                         this.values.set(index, value);
                         this.fire();
                     });
+
+            if (this.validator != null) {
+                field.validator(this.validator);
+            }
 
             row.addView(field, MuiControls.weight());
 

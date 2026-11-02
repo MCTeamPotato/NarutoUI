@@ -14,7 +14,9 @@ import me.kall.narutoui.mui.shimmer.MuiShimmerable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.*;
 
 /**
@@ -35,6 +37,10 @@ public final class MuiPageContext {
     private @Nullable TextView headerTitle;
     /** Page subtitle view, or {@code null}. */
     private @Nullable TextView headerSubtitle;
+    /** Rows registered for client-side filtering. */
+    private final List<SearchEntry> searchEntries = new ArrayList<>();
+    /** Current lowercase filter; empty shows every registered row. */
+    private String searchQuery = "";
 
     /**
      * Creates a page context. Called by {@link MuiPage}.
@@ -151,6 +157,62 @@ public final class MuiPageContext {
     public void add(@NotNull View view) {
         this.content.addView(view, MuiControls.fill());
     }
+
+    /**
+     * Registers a row for client-side filtering. The row is hidden with {@link View#GONE} when the
+     * current filter does not match its keywords.
+     * <p>
+     * This is a low-level primitive: the caller owns the search field and calls
+     * {@link #filter(String)} from its change listener. The keywords should include the row label
+     * and any description the player is likely to search for. Only the registered row is hidden;
+     * surrounding section headers and cards remain visible.
+     *
+     * @param keywords searchable text, usually label plus description
+     * @param row      row to show or hide
+     */
+    public void searchable(@NotNull CharSequence keywords, @NotNull View row) {
+        SearchEntry entry = new SearchEntry(keywords.toString().toLowerCase(Locale.ROOT), row);
+        this.searchEntries.add(entry);
+        this.applySearch(entry);
+    }
+
+    /**
+     * Applies a filter to every row registered with {@link #searchable}. An empty or {@code null}
+     * query shows all rows.
+     *
+     * @param query search query, or {@code null} to clear the filter
+     */
+    public void filter(@Nullable String query) {
+        this.searchQuery = query == null ? "" : query.trim().toLowerCase(Locale.ROOT);
+        for (SearchEntry entry : this.searchEntries) {
+            this.applySearch(entry);
+        }
+    }
+
+    /**
+     * Clears the current filter and shows every registered row.
+     */
+    public void clearFilter() {
+        this.filter(null);
+    }
+
+    /**
+     * Applies the current query to one entry.
+     *
+     * @param entry the registered row
+     */
+    private void applySearch(@NotNull SearchEntry entry) {
+        boolean visible = this.searchQuery.isEmpty() || entry.keywords().contains(this.searchQuery);
+        entry.row().setVisibility(visible ? View.VISIBLE : View.GONE);
+    }
+
+    /**
+     * One searchable row and its lowercase keywords.
+     *
+     * @param keywords lowercase search text
+     * @param row      the row view
+     */
+    private record SearchEntry(@NotNull String keywords, @NotNull View row) {}
 
     /**
      * Creates a switch row using a static initial value.

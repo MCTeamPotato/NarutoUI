@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -33,12 +34,17 @@ import java.util.function.Function;
  *         .create(parent);
  * }</pre>
  *
- * <p>The screen owns a left navigation rail, one scrollable page per {@link Builder#page} call, and an
- * optional footer. Pages are built when the screen is created and retained while it is open.
- * Custom pages can supply their own root view with {@link Builder#customPage}; rail header/footer
- * factories and lifecycle callbacks cover the advanced shell cases.
+ * <p>The screen owns a left navigation rail, one scrollable page per {@link Builder#page} call, an
+ * optional footer and an optional fixed action bar. Pages are built lazily when first shown and
+ * retained while the screen is open. Custom pages can supply their own root view with
+ * {@link Builder#customPage}; rail header/footer factories, the action bar and lifecycle callbacks
+ * cover the advanced shell cases.
  * Single-page mode removes the rail entirely and lets the caller fill one page. For multi-page
  * screens, {@link Builder#navigation(MuiNavigation)} places the navigation on the left or top.
+ * The rail scrolls when it contains more items than fit, and {@link Builder#onCloseRequested}
+ * can veto a user-initiated close (for example while there are unsaved changes). Use
+ * {@link Builder#actionBar} for a fixed Save/Cancel row and
+ * {@link MuiScreenHost#requestClose()} / {@link MuiScreenHost#close()} to drive the close flow.
  * All widgets use the supplied {@link MuiTheme}, which defaults to
  * {@link MuiTheme#modern(icyllis.modernui.core.Context)}.
  */
@@ -91,10 +97,14 @@ public final class MuiConfigScreen {
         private Function<Context, View> railHeader;
         /** Optional custom rail footer factory. */
         private Function<Context, View> railFooter;
+        /** Optional fixed bottom action bar factory. */
+        private Function<Context, View> actionBar;
         /** Optional creation callback. */
         private Consumer<MuiConfigFragment> onCreated;
         /** Optional destruction callback. */
         private Consumer<MuiConfigFragment> onDestroyed;
+        /** Optional guard consulted before a user-initiated close. */
+        private BooleanSupplier closeGuard;
 
         private Builder(@NotNull String title) {
             this.title = Objects.requireNonNull(title, "title");
@@ -295,6 +305,41 @@ public final class MuiConfigScreen {
         }
 
         /**
+         * Adds a fixed action bar below the page content and above the window edge. The bar is
+         * hosted on the active theme's surface, so callers normally return a horizontal row of
+         * {@link me.kall.narutoui.mui.layout.MuiControls#button} controls. Returning {@code null}
+         * omits the bar for this screen.
+         * <p>
+         * The bar does not scroll with the page. Use {@link MuiScreenHost#requestClose()} for a
+         * normal back close (which still consults {@link #onCloseRequested}) and
+         * {@link MuiScreenHost#close()} once a confirmation flow has completed.
+         *
+         * @param factory action-bar factory, or {@code null} for no action bar
+         * @return this builder
+         */
+        public @NotNull Builder actionBar(@Nullable Function<Context, View> factory) {
+            this.actionBar = factory;
+            return this;
+        }
+
+        /**
+         * Registers a guard that runs when the player presses back/Escape. Returning {@code false}
+         * keeps the screen open, which lets the caller show an unsaved-changes overlay from the
+         * guard. Returning {@code true} allows the normal close to continue.
+         * <p>
+         * The guard runs on the UI thread and may safely call {@link MuiScreenHost#showOverlay}.
+         * Programmatic closes through {@link MuiScreenHost#close()} bypass the guard; closes through
+         * {@link MuiScreenHost#requestClose()} consult it.
+         *
+         * @param guard close guard, or {@code null} to always allow closing
+         * @return this builder
+         */
+        public @NotNull Builder onCloseRequested(@Nullable BooleanSupplier guard) {
+            this.closeGuard = guard;
+            return this;
+        }
+
+        /**
          * Called after the shell has been created. The argument implements {@link MuiScreenHost}, so
          * it can be handed to background controllers or used to show overlays and reload a page.
          *
@@ -381,7 +426,7 @@ public final class MuiConfigScreen {
                 throw new IllegalStateException("Single-page mode needs exactly one page");
             }
 
-            return new Model(this.title, this.subtitle, this.footer, this.singlePage, this.navigation, this.theme, this.widgetFactory, this.shimmerProfile, this.navigationShimmerable, this.titlesShimmerable, this.contentWidth, this.background, List.copyOf(this.pages), this.initialPage, this.railHeader, this.railFooter, this.onCreated, this.onDestroyed);
+            return new Model(this.title, this.subtitle, this.footer, this.singlePage, this.navigation, this.theme, this.widgetFactory, this.shimmerProfile, this.navigationShimmerable, this.titlesShimmerable, this.contentWidth, this.background, List.copyOf(this.pages), this.initialPage, this.railHeader, this.railFooter, this.actionBar, this.onCreated, this.onDestroyed, this.closeGuard);
         }
     }
 
@@ -434,7 +479,9 @@ public final class MuiConfigScreen {
 
         MuiConfigFragment fragment = new MuiConfigFragment();
         fragment.setArguments(args);
-        return MuiModApi.get().createScreen(fragment, null, parent);
+        var screen = MuiModApi.get().createScreen(fragment, fragment, parent, model.title());
+        fragment.attachScreen(screen, parent);
+        return screen;
     }
 
     /**
@@ -456,10 +503,12 @@ public final class MuiConfigScreen {
      * @param initialPage initial page index
      * @param railHeader  optional custom rail header factory
      * @param railFooter  optional custom rail footer factory
+     * @param actionBar   optional fixed bottom action-bar factory
      * @param onCreated   optional creation callback
      * @param onDestroyed optional destruction callback
+     * @param closeGuard  optional guard consulted before a user-initiated close
      */
-    record Model(String title, String subtitle, String footer, boolean singlePage, MuiNavigation navigation, @Nullable MuiTheme theme, MuiWidgetFactory widgetFactory, MuiShimmerProfile shimmerProfile, MuiShimmerable navigationShimmerable, MuiShimmerable titlesShimmerable, int contentWidth, MuiBackground background, List<PageSpec> pages, int initialPage, @Nullable Function<Context, View> railHeader, @Nullable Function<Context, View> railFooter, @Nullable Consumer<MuiConfigFragment> onCreated, @Nullable Consumer<MuiConfigFragment> onDestroyed) {}
+    record Model(String title, String subtitle, String footer, boolean singlePage, MuiNavigation navigation, @Nullable MuiTheme theme, MuiWidgetFactory widgetFactory, MuiShimmerProfile shimmerProfile, MuiShimmerable navigationShimmerable, MuiShimmerable titlesShimmerable, int contentWidth, MuiBackground background, List<PageSpec> pages, int initialPage, @Nullable Function<Context, View> railHeader, @Nullable Function<Context, View> railFooter, @Nullable Function<Context, View> actionBar, @Nullable Consumer<MuiConfigFragment> onCreated, @Nullable Consumer<MuiConfigFragment> onDestroyed, @Nullable BooleanSupplier closeGuard) {}
 
     /**
      * One page entry, either a low-level body callback or a custom root-view factory.

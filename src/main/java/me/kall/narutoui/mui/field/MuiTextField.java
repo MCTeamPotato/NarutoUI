@@ -21,6 +21,8 @@ import me.kall.narutoui.mui.util.MuiLocalization;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -37,7 +39,7 @@ import java.util.function.Predicate;
  * never fires {@code onChange} or {@code onCommit}; the last valid text remains available through
  * {@link #text()}.
  */
-public final class MuiTextField extends EditText implements ShimmerTarget {
+public final class MuiTextField extends EditText implements ShimmerTarget, MuiValidatable {
     /** Context used for density conversion. */
     private final Context context;
     /** Active visual tokens. */
@@ -66,6 +68,8 @@ public final class MuiTextField extends EditText implements ShimmerTarget {
     private @Nullable Consumer<String> onCommit;
     /** Optional validity predicate. */
     private @Nullable Predicate<String> validator;
+    /** Listeners notified when the validity changes. */
+    private final List<Consumer<Boolean>> validityListeners = new ArrayList<>();
 
     /**
      * Creates a text field.
@@ -183,6 +187,29 @@ public final class MuiTextField extends EditText implements ShimmerTarget {
         this.validator = validator;
         this.setValid(validator == null || validator.test(this.getText().toString()));
         return this;
+    }
+
+    /**
+     * Returns whether the text currently shown in the field is valid.
+     *
+     * @return {@code true} when no validator is set or the validator accepts the text
+     */
+    @Override
+    public boolean isValid() {
+        return this.valid;
+    }
+
+    /**
+     * Registers a listener invoked when the field's validity changes. The listener is invoked
+     * immediately with the current state, which makes it convenient for showing or hiding an error
+     * label.
+     *
+     * @param listener validity listener
+     */
+    @Override
+    public void onValidityChanged(@NotNull Consumer<Boolean> listener) {
+        this.validityListeners.add(listener);
+        listener.accept(this.valid);
     }
 
     /**
@@ -368,5 +395,8 @@ public final class MuiTextField extends EditText implements ShimmerTarget {
      */
     private void setValid(boolean valid) {
         this.valid = MuiInputSupport.applyValid(this.background, this.context, this.theme, valid, this.valid);
+        for (Consumer<Boolean> listener : this.validityListeners) {
+            listener.accept(this.valid);
+        }
     }
 }

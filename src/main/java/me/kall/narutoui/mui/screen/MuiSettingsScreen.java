@@ -15,6 +15,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -87,10 +88,14 @@ public final class MuiSettingsScreen {
         private Function<Context, View> railHeader;
         /** Optional custom rail footer factory. */
         private Function<Context, View> railFooter;
+        /** Optional fixed bottom action bar factory. */
+        private Function<Context, View> actionBar;
         /** Optional creation callback. */
         private Consumer<MuiConfigFragment> onCreated;
         /** Optional destruction callback. */
         private Consumer<MuiConfigFragment> onDestroyed;
+        /** Optional guard consulted before a user-initiated close. */
+        private BooleanSupplier closeGuard;
 
         private Builder(@NotNull String title) {
             this.title = Objects.requireNonNull(title, "title");
@@ -287,6 +292,32 @@ public final class MuiSettingsScreen {
         }
 
         /**
+         * Adds a fixed action bar below the page content. The bar is hosted on the active theme's
+         * surface and does not scroll with the page. This is the usual place for Save, Apply,
+         * Reset and Cancel actions.
+         *
+         * @param factory action-bar factory, or {@code null} for no action bar
+         * @return this builder
+         */
+        public @NotNull Builder actionBar(@Nullable Function<Context, View> factory) {
+            this.actionBar = factory;
+            return this;
+        }
+
+        /**
+         * Registers a guard consulted when the player presses back/Escape. Return {@code false} to
+         * keep the screen open and show an unsaved-changes overlay; use
+         * {@link MuiScreenHost#close()} after the player confirms.
+         *
+         * @param guard close guard, or {@code null} to always allow closing
+         * @return this builder
+         */
+        public @NotNull Builder onCloseRequested(@Nullable BooleanSupplier guard) {
+            this.closeGuard = guard;
+            return this;
+        }
+
+        /**
          * Receives the shell fragment after its view is created. The fragment implements
          * {@link MuiScreenHost}.
          *
@@ -378,6 +409,8 @@ public final class MuiSettingsScreen {
                     .navigation(this.navigation)
                     .railHeader(this.railHeader)
                     .railFooter(this.railFooter)
+                    .actionBar(this.actionBar)
+                    .onCloseRequested(this.closeGuard)
                     .onCreated(this.onCreated)
                     .onDestroyed(this.onDestroyed);
 

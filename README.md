@@ -11,7 +11,9 @@ NarutoUI 是一个面向 Minecraft 客户端模组的 **Modern UI 配置界面�
 - 声明式页面 / section / 字段 DSL
 - 可链式构建的 `MuiLayout` 与 `MuiControls`
 - 常用控件：开关、整数/小数滑杆、文本输入、整数/长整数/小数输入、下拉框、卡片选择、列表编辑、按钮、只读值
-- 通用组件：`MuiChip`、`MuiTextAction`、`MuiLogo`、`MuiHintBadge`、`MuiColorField`、`MuiDescriptionRow`、`MuiCollapsibleCard`
+- 外壳能力：固定底部 action bar、关闭守卫（未保存确认）、可滚动导航栏、按需构建页面、`MuiPageContext#searchable` 过滤原语
+- 输入校验：数值字段支持外部 `Predicate<BigDecimal>`，列表编辑器支持逐项 `Predicate<String>`，`MuiValidationHint` 显示错误文案
+- 通用组件：`MuiChip`、`MuiTextAction`、`MuiLogo`、`MuiHintBadge`、`MuiValidationHint`、`MuiColorField`、`MuiDescriptionRow`、`MuiCollapsibleCard`
 - 可配置主题：强调色、背景色、圆角、间距、内容宽度
 - 背景：纯色、透明、黑色、单图、裁剪图、幻灯片
 - 实例级 shimmer：`MuiShimmerable` + `shimmerNext()`，按行 / 页面 / 导航栏 / 标题开启；输入框和 `MuiTextAction` 也可参与
@@ -53,7 +55,7 @@ build/libs/narutoui-xxx-xxx-common.jar  仅 me/kall/narutoui/mui/**
 
 ## 设计边界
 
-- 页面在 screen 创建时构建一次；需要重建当前页时使用 `MuiScreenHost.reloadCurrentPage()`。
+- 页面在第一次切换到时构建，之后保留；页面 body 在首次打开时执行，不要依赖它在 screen 创建时产生副作用。需要重建当前页时使用 `MuiScreenHost.reloadCurrentPage()`。
 - `toggle` / `slider` / `value` 的 supplier 每 100 ms 轮询一次，不是事件推送。
 - 文本输入保持焦点时暂停 supplier 轮询；`textField` 只在 Enter 或失焦时提交。
 - `MuiDropdown` 是页面内展开面板，不是弹窗；选项很多时建议改用独立搜索页面。

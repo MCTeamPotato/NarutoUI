@@ -4,8 +4,11 @@ import icyllis.modernui.core.Context;
 import icyllis.modernui.fragment.Fragment;
 import icyllis.modernui.graphics.drawable.ColorDrawable;
 import icyllis.modernui.graphics.drawable.ShapeDrawable;
+import icyllis.modernui.mc.MuiScreen;
+import icyllis.modernui.mc.ScreenCallback;
 import icyllis.modernui.util.DataSet;
 import icyllis.modernui.view.Gravity;
+import icyllis.modernui.view.KeyEvent;
 import icyllis.modernui.view.LayoutInflater;
 import icyllis.modernui.view.View;
 import icyllis.modernui.view.ViewGroup;
@@ -16,11 +19,13 @@ import me.kall.narutoui.mui.shimmer.MuiShimmerable;
 import me.kall.narutoui.mui.theme.MuiTheme;
 import me.kall.narutoui.mui.layout.MuiControls;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * Host fragment for a {@link MuiConfigScreen}. The shell is deliberately small: a left navigation
@@ -31,10 +36,12 @@ import java.util.List;
  * {@link MuiConfigFragment#ARG_MODEL}. This makes it safe for a FragmentManager to recreate.
  * <p>
  * It implements {@link MuiScreenHost}, so background controllers and other shell collaborators can
- * depend on the narrow host contract instead of the concrete fragment.
+ * depend on the narrow host contract instead of the concrete fragment. It also implements
+ * {@link ScreenCallback} so the shell can veto a user-initiated close through
+ * {@link MuiConfigScreen.Builder#onCloseRequested}.
  */
 @SuppressWarnings("DataFlowIssue")
-public final class MuiConfigFragment extends Fragment implements MuiScreenHost {
+public final class MuiConfigFragment extends Fragment implements MuiScreenHost, ScreenCallback {
     /** Fragment argument containing the registry key. */
     public static final String ARG_MODEL = "mui:model";
     private static final String ARG_SELECTED_PAGE = "mui:selected_page";
@@ -49,7 +56,7 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost {
     private @Nullable String modelKey;
     /** Navigation item views, parallel to {@link #pages}. */
     private final List<TextView> navItems = new ArrayList<>();
-    /** Built page roots, retained across tab switches. */
+    /** Page roots, built on first visit and retained across tab switches; {@code null} means unbuilt. */
     private final List<View> pages = new ArrayList<>();
 
     /** Shell root that also hosts overlays. */
@@ -60,11 +67,28 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost {
     private MuiTheme theme;
     /** Currently selected page index, or {@code -1}. */
     private int selected = -1;
+    /** Backing Minecraft screen, used for back navigation. */
+    private @Nullable Screen screen;
+    /** Screen to return to when the backing screen cannot close itself. */
+    private @Nullable Screen parent;
+    /** Set once a confirmed close bypasses the close guard. */
+    private boolean allowClose;
 
     /**
      * No-arg constructor required by {@code FragmentFactory} and FragmentManager recreation.
      */
     public MuiConfigFragment() {}
+
+    /**
+     * Links this fragment to the screen that hosts it.
+     *
+     * @param screen the backing screen
+     * @param parent the screen to return to, or {@code null}
+     */
+    void attachScreen(@NotNull Screen screen, @Nullable Screen parent) {
+        this.screen = screen;
+        this.parent = parent;
+    }
 
     /**
      * Resolves the shell model from arguments or a registered stable recipe.
@@ -83,7 +107,7 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost {
     }
 
     /**
-     * Builds the rail, content frame, pages and initial page.
+     * Builds the rail, content frame, action bar and initial page. Other pages are built on first visit.
      *
      * @param inflater           layout inflater supplied by the fragment manager
      * @param container          optional parent container
@@ -95,25 +119,29 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost {
         Context context = this.requireContext();
         if (this.model == null) return this.buildRecoveryView(context);
 
+        this.allowClose = false;
         this.theme = this.model.theme() != null ? this.model.theme() : MuiTheme.modern(context);
 
         FrameLayout root = new FrameLayout(context);
         this.root = root;
         this.model.background().attach(this, root);
 
+        LinearLayout body = new LinearLayout(context);
+        body.setOrientation(LinearLayout.VERTICAL);
+        root.addView(body, new FrameLayout.LayoutParams(MuiControls.MATCH, MuiControls.MATCH));
+
         LinearLayout shell = null;
         if (!this.model.singlePage()) {
+            shell = new LinearLayout(context);
+            body.addView(shell, new LinearLayout.LayoutParams(MuiControls.MATCH, 0, 1.0F));
+
             if (this.model.navigation() == MuiNavigation.TOP) {
-                shell = new LinearLayout(context);
                 shell.setOrientation(LinearLayout.VERTICAL);
-                root.addView(shell, new FrameLayout.LayoutParams(MuiControls.MATCH, MuiControls.MATCH));
 
                 View topBar = MuiShimmerProfile.withCurrent(this.model.shimmerProfile(), () -> MuiControls.withFactory(this.model.widgetFactory(), () -> this.buildTopBar(context, this.theme)));
                 shell.addView(topBar, new LinearLayout.LayoutParams(MuiControls.MATCH, MuiControls.WRAP));
             } else {
-                shell = new LinearLayout(context);
                 shell.setOrientation(LinearLayout.HORIZONTAL);
-                root.addView(shell, new FrameLayout.LayoutParams(MuiControls.MATCH, MuiControls.MATCH));
 
                 shell.addView(MuiShimmerProfile.withCurrent(this.model.shimmerProfile(), () -> MuiControls.withFactory(this.model.widgetFactory(), () -> this.buildRail(context, this.theme))), new LinearLayout.LayoutParams(MuiControls.dp(context, RAIL_WIDTH), MuiControls.MATCH));
             }
@@ -121,13 +149,27 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost {
 
         this.content = new FrameLayout(context);
         if (shell == null) {
-            root.addView(this.content, new FrameLayout.LayoutParams(MuiControls.MATCH, MuiControls.MATCH));
+            body.addView(this.content, new LinearLayout.LayoutParams(MuiControls.MATCH, 0, 1.0F));
+        } else if (this.model.navigation() == MuiNavigation.TOP) {
+            shell.addView(this.content, new LinearLayout.LayoutParams(MuiControls.MATCH, 0, 1.0F));
         } else {
             shell.addView(this.content, new LinearLayout.LayoutParams(0, MuiControls.MATCH, 1.0F));
         }
 
-        for (MuiConfigScreen.PageSpec spec : this.model.pages()) {
-            this.pages.add(this.createPage(context, spec));
+        Function<Context, View> actionBar = this.model.actionBar();
+        if (actionBar != null) {
+            View bar = MuiShimmerProfile.withCurrent(this.model.shimmerProfile(), () -> MuiControls.withFactory(this.model.widgetFactory(), () -> actionBar.apply(context)));
+            if (bar != null) {
+                FrameLayout host = new FrameLayout(context);
+                host.setBackground(new ColorDrawable(MuiControls.alpha(this.theme.surface(), 0.96F)));
+                host.setPadding(MuiControls.dp(context, 12), MuiControls.dp(context, 8), MuiControls.dp(context, 12), MuiControls.dp(context, 8));
+                host.addView(bar, new FrameLayout.LayoutParams(MuiControls.MATCH, MuiControls.WRAP));
+                body.addView(host, new LinearLayout.LayoutParams(MuiControls.MATCH, MuiControls.WRAP));
+            }
+        }
+
+        for (int i = 0; i < this.model.pages().size(); i++) {
+            this.pages.add(null);
         }
 
         int initialPage = this.model.initialPage();
@@ -165,7 +207,8 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost {
 
         int[] scroll = new int[this.pages.size()];
         for (int i = 0; i < this.pages.size(); i++) {
-            scroll[i] = this.pages.get(i).getScrollY();
+            View page = this.pages.get(i);
+            scroll[i] = page == null ? 0 : page.getScrollY();
         }
         outState.putIntArray(ARG_SCROLL, scroll);
     }
@@ -191,6 +234,7 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost {
 
         for (int i = 0; i < this.pages.size() && i < scroll.length; i++) {
             View page = this.pages.get(i);
+            if (page == null) continue;
             int y = scroll[i];
             page.post(() -> page.scrollTo(0, y));
         }
@@ -232,6 +276,81 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost {
     }
 
     /**
+     * Only Escape is a back key for configuration screens. The inventory key must keep its normal
+     * meaning instead of closing the screen.
+     *
+     * @param keyCode the key code
+     * @param event   the key event
+     * @return {@code true} for Escape
+     */
+    @Override
+    public boolean isBackKey(int keyCode, @NotNull KeyEvent event) {
+        return keyCode == KeyEvent.KEY_ESCAPE;
+    }
+
+    /**
+     * Consults the close guard registered on the builder.
+     *
+     * @return {@code true} when the screen may close
+     */
+    @Override
+    public boolean shouldClose() {
+        if (this.allowClose) return true;
+        return this.model == null || this.model.closeGuard() == null || this.model.closeGuard().getAsBoolean();
+    }
+
+    /**
+     * Configuration screens pause the game in single-player, matching the vanilla screen behavior.
+     *
+     * @return {@code true}
+     */
+    @Override
+    public boolean isPauseScreen() {
+        return true;
+    }
+
+    /**
+     * Asks the screen to perform its normal back action, including the close guard.
+     */
+    @Override
+    public void requestClose() {
+        this.performClose(false);
+    }
+
+    /**
+     * Closes the screen after a confirmed close flow, bypassing the close guard.
+     */
+    @Override
+    public void close() {
+        this.performClose(true);
+    }
+
+    /**
+     * Closes the backing Modern UI screen, falling back to the previous screen when the fragment was
+     * recreated without its original screen reference.
+     *
+     * @param force {@code true} to bypass the close guard
+     */
+    private void performClose(boolean force) {
+        if (force) {
+            this.allowClose = true;
+        }
+
+        MuiScreen mui = null;
+        if (this.screen instanceof MuiScreen attached) {
+            mui = attached;
+        } else if (Minecraft.getInstance().screen instanceof MuiScreen visible) {
+            mui = visible;
+        }
+
+        if (mui != null) {
+            mui.onBackPressed();
+        } else {
+            Minecraft.getInstance().setScreen(this.parent);
+        }
+    }
+
+    /**
      * Builds the navigation rail.
      *
      * @param context the screen context
@@ -264,17 +383,21 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost {
         View gap = new View(context);
         rail.addView(gap, new LinearLayout.LayoutParams(0, MuiControls.dp(context, 18)));
 
+        ScrollView scroll = new ScrollView(context);
+        scroll.setFillViewport(true);
+        scroll.setVerticalScrollBarEnabled(true);
+
+        LinearLayout nav = MuiControls.column(context);
         for (int i = 0; i < this.model.pages().size(); i++) {
             MuiConfigScreen.PageSpec spec = this.model.pages().get(i);
             TextView item = this.createNavItem(context, theme, spec, i, false);
 
             LinearLayout.LayoutParams params = MuiControls.fill();
             params.topMargin = MuiControls.dp(context, 4);
-            rail.addView(item, params);
+            nav.addView(item, params);
         }
-
-        View spacer = new View(context);
-        rail.addView(spacer, new LinearLayout.LayoutParams(0, 0, 1.0F));
+        scroll.addView(nav, new FrameLayout.LayoutParams(MuiControls.MATCH, MuiControls.WRAP));
+        rail.addView(scroll, new LinearLayout.LayoutParams(MuiControls.MATCH, 0, 1.0F));
 
         if (this.model.railFooter() != null) {
             View footer = this.model.railFooter().apply(context);
@@ -392,6 +515,10 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost {
 
         int clamped = Math.max(0, Math.min(this.pages.size() - 1, index));
         View page = this.pages.get(clamped);
+        if (page == null) {
+            page = this.createPage(this.requireContext(), this.model.pages().get(clamped));
+            this.pages.set(clamped, page);
+        }
         this.content.removeAllViews();
         this.content.addView(page, new FrameLayout.LayoutParams(MuiControls.MATCH, MuiControls.MATCH, Gravity.CENTER_HORIZONTAL));
         this.selected = clamped;
@@ -436,7 +563,7 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost {
         messageParams.topMargin = MuiControls.dp(context, 8);
         column.addView(message, messageParams);
 
-        Button close = MuiControls.button(context, theme, "Close", false, view -> Minecraft.getInstance().setScreen(null));
+        Button close = MuiControls.button(context, theme, "Close", false, view -> this.performClose(true));
         LinearLayout.LayoutParams closeParams = MuiControls.wrap();
         closeParams.topMargin = MuiControls.dp(context, 18);
         column.addView(close, closeParams);

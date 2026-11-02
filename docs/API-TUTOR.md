@@ -96,7 +96,7 @@ MuiSettingsScreen.builder("My Mod")
 - 不生成导航栏
 - 只允许一个页面，多了会抛 `IllegalStateException`
 - 页面直接占满内容区
-- `subtitle` / `footer` / `railHeader` / `railFooter` 不再显示
+- `subtitle` / `footer` / `railHeader` / `railFooter` 不再显示；`actionBar` 仍然显示
 
 ### 顶部导航
 
@@ -196,6 +196,17 @@ supplier 版本：
 
 文本字段在 **Enter** 或 **失焦** 时提交，不是每次按键都写配置。
 
+需要把校验失败原因显示出来时，把 `MuiValidationHint` 放在字段下面：
+
+```java
+MuiTextField field = MuiControls.textField(ctx, theme, MyConfig.name())
+        .validator(value -> !value.isBlank());
+MuiValidationHint hint = MuiValidationHint.create(
+        ctx, theme, field, "名字不能为空");
+```
+
+`MuiValidationHint` 观察 `MuiValidatable`（`MuiTextField` / `MuiNumberField` 都实现了它），字段有效时自动隐藏。
+
 ### 数字
 
 ```java
@@ -209,6 +220,17 @@ supplier 版本：
 - `decimal` 是 `double`
 - 都带上下限；越界/非法输入会按控件规则处理
 
+需要 DSL 之外的校验（例如只允许偶数、只允许某个倍数）时，直接拿 `MuiNumberField`：
+
+```java
+MuiNumberField field = MuiControls.numberField(ctx, theme, MyConfig.width())
+        .bounds(1, 1920)
+        .validator(value -> value.intValue() % 2 == 0)
+        .onChangeInt(MyConfig::setWidth);
+```
+
+`validator` 在解析和上下限之后执行；不通过时输入框显示主题错误色，且不会触发 `onChange`。提交时非法文本会回到上一个有效值。
+
 ### 字符串列表
 
 ```java
@@ -218,6 +240,16 @@ supplier 版本：
 ```
 
 列表编辑器自己维护一份副本，用户增删改后通过 `onChanged` 把完整 `List<String>` 给你。
+
+需要逐项校验（数字列表、枚举列表、非空字符串）时：
+
+```java
+MuiControls.listEditor(ctx, theme, MyConfig.ids())
+        .validator(id -> id.matches("[a-z0-9_]+"))
+        .onChanged(values -> MyConfig.setIds(values));
+```
+
+不通过的项会保持红框，且不会通过 `onChanged` 上报；解析成目标类型（例如 `Integer`/枚举）也放在 `onChanged` 或 `validator` 里做。
 
 ### 下拉框
 
@@ -305,7 +337,7 @@ MyConfig config = ...;
 
 ### 草稿 / Apply / Cancel
 
-DSL 没有内置 Apply 按钮，你需要自己维护草稿：
+DSL 不替你决定草稿/保存语义。简单场景可以放在页面里，正式配置屏更推荐用下面的 `actionBar` 维护草稿：
 
 ```java
 MyConfig draft = MyConfig.copyOf(MyConfig.current());
@@ -323,6 +355,43 @@ MuiSettingsScreen.builder("My Mod")
                         })))
         .create(parent);
 ```
+
+### 固定保存栏与未保存确认
+
+`actionBar` 在页面下方放一个不随内容滚动的固定栏；`onCloseRequested` 在玩家按 ESC/返回时执行：
+
+```java
+MuiScreenHost[] host = new MuiScreenHost[1];
+boolean[] dirty = {false};
+
+MuiSettingsScreen.builder("My Mod")
+        .onCreated(fragment -> host[0] = fragment)
+        .onCloseRequested(() -> {
+            if (!dirty[0]) return true;
+            // 在这里 showOverlay 一个确认框；返回 false 先把界面留住
+            return false;
+        })
+        .actionBar(ctx -> {
+            MuiTheme theme = MuiTheme.modern(ctx);
+            LinearLayout bar = MuiControls.row(ctx);
+            bar.setGravity(Gravity.CENTER_VERTICAL);
+            bar.addView(MuiControls.button(ctx, theme, "Save", false, view -> {
+                MyConfig.save();
+                host[0].close();          // 确认后关闭，绕过守卫
+            }), MuiControls.wrap());
+            bar.addView(MuiControls.button(ctx, theme, "Cancel", true,
+                    view -> host[0].requestClose()), MuiControls.wrap());
+            return bar;
+        })
+        .page("General", page -> page
+                .section("General", section -> section
+                        .toggle("Enabled", MyConfig::enabled, MyConfig::setEnabled)))
+        .create(parent);
+```
+
+- `MuiScreenHost#requestClose()` 走正常返回路径，会执行 `onCloseRequested`；
+- `MuiScreenHost#close()` 直接关闭，用于确认框里“放弃修改”；
+- 守卫运行在 UI 线程，可以安全调用 `showOverlay`。
 
 ### supplier 的刷新
 
@@ -380,6 +449,28 @@ MuiSettingsScreen.builder("My Mod")
 ```
 
 `ui.content()` 是页面的内容列，`ui.contentLayout()` 是同一列的 `MuiLayout` 包装。
+
+### 搜索 / 过滤
+
+`MuiPageContext#searchable(text, row)` 把一行登记为可过滤项，`filter(query)` 按关键字显示/隐藏：
+
+```java
+.page("General", page -> page.custom(ui -> {
+    MuiTextField search = MuiControls.textField(ui.context(), ui.theme(), "")
+            .hint("Search");
+    ui.content().addView(search, MuiControls.fill());
+
+    LinearLayout row = ui.switchRow(
+            "Enabled", "Shows the HUD",
+            MyConfig::enabled, MyConfig::setEnabled);
+    ui.add(row);
+    ui.searchable("Enabled HUD", row);
+
+    search.onChange(ui::filter);
+}))
+```
+
+这是低层原语：只隐藏登记过的行，section 标题和卡片不会自动收起；需要“无结果”提示或整卡折叠时，自己在 `filter` 回调旁边处理。
 
 ### 完全自定义一个页面
 
@@ -710,7 +801,7 @@ supplier 默认 100 ms 轮询；文本输入框聚焦时会暂停。不是事件
 
 ### 页面内容不会自动刷新
 
-页面在 screen 创建时构建一次。需要重新构建当前页面时：
+页面在第一次切换到时构建，之后保留。需要重新构建当前页面时：
 
 ```java
 .onCreated(fragment -> ...) // 保存 fragment 引用

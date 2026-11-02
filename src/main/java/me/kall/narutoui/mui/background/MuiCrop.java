@@ -15,6 +15,7 @@ public record MuiCrop(double x, double y, double width, double height) {
     /** Full picture, no cropping. */
     public static final MuiCrop FULL = new MuiCrop(0.0D, 0.0D, 1.0D, 1.0D);
 
+    /** Clamps the rectangle into the normalized {@code 0..1} range. */
     public MuiCrop {
         x = Math.min(0.99D, clamp01(x));
         y = Math.min(0.99D, clamp01(y));
