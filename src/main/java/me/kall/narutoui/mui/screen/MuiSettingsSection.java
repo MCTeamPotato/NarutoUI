@@ -12,6 +12,7 @@ import me.kall.narutoui.mui.layout.MuiLayout;
 import me.kall.narutoui.mui.shimmer.MuiShimmerScope;
 import me.kall.narutoui.mui.shimmer.MuiShimmerable;
 import me.kall.narutoui.mui.theme.MuiTheme;
+import me.kall.narutoui.mui.util.MuiLocalization;
 import me.kall.narutoui.mui.widget.MuiDescriptionRow;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -149,6 +150,46 @@ public final class MuiSettingsSection {
      */
     public @NotNull MuiSettingsSection slider(@NotNull CharSequence title, double min, double max, double step, @NotNull DoubleSupplier value, @NotNull DoubleConsumer onChange, @NotNull DoubleFunction<CharSequence> format) {
         return this.add(MuiControls.sliderRow(this.page.context(), this.page.theme(), title, format, min, max, step, value, onChange));
+    }
+
+    /**
+     * Adds a supplier-backed integer slider with a description and custom formatter.
+     *
+     * @param title       row title
+     * @param description optional description
+     * @param min         minimum value (inclusive)
+     * @param max         maximum value (inclusive)
+     * @param value       live value supplier
+     * @param onChange    value callback
+     * @param format      value formatter
+     * @return this section, for chaining
+     */
+    public @NotNull MuiSettingsSection slider(@NotNull CharSequence title, @Nullable CharSequence description, int min, int max, @NotNull IntSupplier value, @NotNull IntConsumer onChange, @NotNull IntFunction<CharSequence> format) {
+        LinearLayout row = MuiControls.sliderRow(this.page.context(), this.page.theme(), this.sliderTitle(title, description), format, min, max, value, onChange);
+        return this.add(row);
+    }
+
+    /**
+     * Adds a supplier-backed decimal slider with a description and a fixed step.
+     *
+     * @param title       row title
+     * @param description optional description
+     * @param min         minimum value (inclusive)
+     * @param max         maximum value (inclusive)
+     * @param step        value increment, greater than {@code 0}
+     * @param value       live value supplier
+     * @param onChange    value callback
+     * @param format      value formatter
+     * @return this section, for chaining
+     */
+    public @NotNull MuiSettingsSection slider(@NotNull CharSequence title, @Nullable CharSequence description, double min, double max, double step, @NotNull DoubleSupplier value, @NotNull DoubleConsumer onChange, @NotNull DoubleFunction<CharSequence> format) {
+        LinearLayout row = MuiControls.sliderRow(this.page.context(), this.page.theme(), this.sliderTitle(title, description), format, min, max, step, value, onChange);
+        return this.add(row);
+    }
+
+    private @NotNull CharSequence sliderTitle(@NotNull CharSequence title, @Nullable CharSequence description) {
+        if (description == null || description.length() == 0) return title;
+        return MuiLocalization.resolve(title) + " - " + MuiLocalization.resolve(description);
     }
 
     /**

@@ -21,9 +21,6 @@ import org.jetbrains.annotations.Nullable;
  * background wave animates.
  */
 public final class MuiChip extends TextView implements MuiShimmerContainer {
-    /** Black label color. */
-    private static final int LABEL_COLOR = 0xFF000000;
-
     /** Active visual tokens. */
     private final MuiTheme theme;
     /** Shimmering fill. */
@@ -50,13 +47,13 @@ public final class MuiChip extends TextView implements MuiShimmerContainer {
 
         this.setText(MuiLocalization.resolve(label));
         this.setTextSize(11);
-        this.setTextColor(LABEL_COLOR);
         this.setGravity(Gravity.CENTER);
         this.setPadding(MuiControls.dp(context, 10), MuiControls.dp(context, 4), MuiControls.dp(context, 10), MuiControls.dp(context, 4));
 
         this.fill = new ShimmerCircleDrawable(this, this.fillColor());
         this.fill.setCornerRadius(MuiControls.dp(context, 14));
         this.setBackground(this.fill);
+        this.applyStyle();
 
         this.setOnClickListener(view -> {
             if (!this.isEnabled()) return;
@@ -69,8 +66,7 @@ public final class MuiChip extends TextView implements MuiShimmerContainer {
     @Override
     public void setShimmerable(@NotNull MuiShimmerable marker) {
         this.shimmerable = marker;
-        this.fill.setShimmerable(marker);
-        MuiShimmer.refresh();
+        this.applyStyle();
     }
 
     /**
@@ -154,8 +150,16 @@ public final class MuiChip extends TextView implements MuiShimmerContainer {
      * Applies the themed fill and label colors.
      */
     private void applyStyle() {
-        this.fill.setBaseColor(this.fillColor());
-        this.setTextColor(this.isEnabled() ? LABEL_COLOR : MuiControls.alpha(LABEL_COLOR, 0.38F));
+        boolean enabled = this.isEnabled();
+        int fill = this.fillColor();
+        int label = this.checked ? this.theme.onPrimary() : this.theme.onSurface();
+        int stroke = this.checked ? this.theme.onPrimary() : 0x00000000;
+
+        this.fill.setBaseColor(fill);
+        this.fill.setStroke(MuiControls.dp(this.getContext(), 1), enabled ? stroke : MuiControls.alpha(stroke, 0.38F));
+        this.fill.setShimmerable(this.checked ? this.shimmerable : MuiShimmerable.NEVER);
+        this.setTextColor(enabled ? label : MuiControls.alpha(label, 0.38F));
+        MuiShimmer.refresh();
     }
 
     /**
@@ -164,7 +168,7 @@ public final class MuiChip extends TextView implements MuiShimmerContainer {
      * @return an ARGB color
      */
     private int fillColor() {
-        int color = this.checked ? this.theme.primary() : this.theme.onSurfaceVariant();
+        int color = this.checked ? this.theme.primary() : this.theme.surfaceHigh();
         return this.isEnabled() ? color : MuiControls.alpha(color, 0.38F);
     }
 

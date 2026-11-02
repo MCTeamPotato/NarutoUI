@@ -530,6 +530,17 @@ MuiSettingsScreen.builder("My Mod")
 - `text(...)`：该段落
 - `custom(...)` / `customLayout(...)`：回调中新加的子视图
 
+如果整页都要闪，可以在页面开头直接：
+
+```java
+.page("About", page -> page
+        .shimmerAll()
+        .section("Info", section -> section.value(...))
+        .section("Usage", section -> section.note(...)))
+```
+
+`shimmerAll()` 会带上页面 header，并让之后添加的所有 section / text / custom 都继承这个 marker。单独某一块不想闪时，再用 `shimmerNext(MuiShimmerable.NEVER)` 覆盖。
+
 如果只想让 section 里某一行闪，用 section 自己的 `shimmerNext()`，不要用页面级 `shimmerNext()`。
 
 ### 导航栏和外壳标题

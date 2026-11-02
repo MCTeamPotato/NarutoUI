@@ -19,9 +19,37 @@ public final class MuiSettingsPage {
     private final MuiPageContext context;
     /** Marker applied to the next page block, or {@code null}. */
     private MuiShimmerable nextShimmerable;
+    /** Marker applied to every page block and the header by default, or {@code null}. */
+    private MuiShimmerable allShimmerable;
 
     MuiSettingsPage(@NotNull MuiPageContext context) {
         this.context = context;
+    }
+
+    /**
+     * Enables shimmer for the whole page: the header, already-added content and every later block.
+     * Use {@link #shimmerNext()} before a block to override the default for that block.
+     *
+     * @return this page, for chaining
+     */
+    public @NotNull MuiSettingsPage shimmerAll() {
+        return this.shimmerAll(MuiShimmerable.ALWAYS);
+    }
+
+    /**
+     * Sets the default marker for the whole page.
+     *
+     * @param marker the marker
+     * @return this page, for chaining
+     */
+    public @NotNull MuiSettingsPage shimmerAll(@NotNull MuiShimmerable marker) {
+        this.allShimmerable = marker;
+        this.nextShimmerable = null;
+        this.context.shimmerHeader(marker);
+        for (int i = 0; i < this.context.content().getChildCount(); i++) {
+            MuiShimmerScope.apply(this.context.content().getChildAt(i), marker);
+        }
+        return this;
     }
 
     /**
@@ -77,7 +105,7 @@ public final class MuiSettingsPage {
         MuiLayout card = this.context.sectionLayout(title);
         body.accept(new MuiSettingsSection(this.context, card));
 
-        MuiShimmerable marker = this.consume();
+        MuiShimmerable marker = this.resolve();
         if (marker != null) {
             // sectionLayout adds the heading and the card as siblings; apply to both.
             for (int i = start; i < this.context.content().getChildCount(); i++) {
@@ -95,7 +123,7 @@ public final class MuiSettingsPage {
      */
     public @NotNull MuiSettingsPage text(@NotNull CharSequence text) {
         TextView view = MuiControls.text(this.context.context(), this.context.theme(), text, 12, this.context.theme().onSurfaceVariant());
-        MuiShimmerable marker = this.consume();
+        MuiShimmerable marker = this.resolve();
         if (marker != null) MuiShimmerScope.apply(view, marker);
         this.context.add(view);
         return this;
@@ -133,8 +161,13 @@ public final class MuiSettingsPage {
         return marker;
     }
 
-    private void applyToNewChildren(int start) {
+    private @Nullable MuiShimmerable resolve() {
         MuiShimmerable marker = this.consume();
+        return marker == null ? this.allShimmerable : marker;
+    }
+
+    private void applyToNewChildren(int start) {
+        MuiShimmerable marker = this.resolve();
         if (marker == null) return;
         for (int i = start; i < this.context.content().getChildCount(); i++) {
             MuiShimmerScope.apply(this.context.content().getChildAt(i), marker);

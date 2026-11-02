@@ -1,4 +1,3 @@
-
 # 1.0.0
 - Initial release.
 # 1.1.0
@@ -12,3 +11,6 @@
 - Expose screen-host services for overlays and page refreshes.
 # 1.4.0
 - Huge refactor and re-design. 
+# 1.4.1
+- Add page-wide shimmer defaults for headers and content, plus supplier-backed sliders with descriptions. 
+- Update chip theming and separate the logo glyph from its shimmering background
