@@ -40,6 +40,15 @@ public interface MuiScreenHost {
     void reloadCurrentPage();
 
     /**
+     * Rebuilds every page from its original factory/body. Use this after a reset that changes
+     * values on pages other than the visible one. The current page is rebuilt immediately; other
+     * pages are rebuilt on their next visit.
+     */
+    default void reloadAllPages() {
+        this.reloadCurrentPage();
+    }
+
+    /**
      * Asks the host to close through the normal back path. The close guard registered with
      * {@link MuiConfigScreen.Builder#onCloseRequested} runs first and may keep the screen open.
      * <p>

@@ -186,6 +186,17 @@ public final class MuiListEditor extends LinearLayout implements MuiShimmerConta
     }
 
     /**
+     * Commits every visible row, so a pending edit is written before the caller saves. Rows that
+     * fail validation keep their text and are not written.
+     *
+     * @return this editor, for chaining
+     */
+    public @NotNull MuiListEditor commit() {
+        this.commitAll();
+        return this;
+    }
+
+    /**
      * Returns the current entries.
      *
      * @return a copy of the entries

@@ -5,6 +5,7 @@ import me.kall.narutoui.mui.layout.MuiControls;
 import me.kall.narutoui.mui.layout.MuiLayout;
 import me.kall.narutoui.mui.shimmer.MuiShimmerScope;
 import me.kall.narutoui.mui.shimmer.MuiShimmerable;
+import me.kall.narutoui.mui.widget.MuiCollapsibleCard;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -94,6 +95,27 @@ public final class MuiSettingsPage {
     }
 
     /**
+     * Adds an untitled section card and invokes {@code body} with its field builder. Use this for
+     * source models whose groups have no display name.
+     *
+     * @param body section field callback
+     * @return this page, for chaining
+     */
+    public @NotNull MuiSettingsPage section(@NotNull Consumer<MuiSettingsSection> body) {
+        int start = this.context.content().getChildCount();
+        MuiLayout card = this.context.untitledSectionLayout();
+        body.accept(new MuiSettingsSection(this.context, card));
+
+        MuiShimmerable marker = this.resolve();
+        if (marker != null) {
+            for (int i = start; i < this.context.content().getChildCount(); i++) {
+                MuiShimmerScope.apply(this.context.content().getChildAt(i), marker);
+            }
+        }
+        return this;
+    }
+
+    /**
      * Adds a titled section card and invokes {@code body} with its field builder.
      *
      * @param title section heading
@@ -108,6 +130,42 @@ public final class MuiSettingsPage {
         MuiShimmerable marker = this.resolve();
         if (marker != null) {
             // sectionLayout adds the heading and the card as siblings; apply to both.
+            for (int i = start; i < this.context.content().getChildCount(); i++) {
+                MuiShimmerScope.apply(this.context.content().getChildAt(i), marker);
+            }
+        }
+        return this;
+    }
+
+    /**
+     * Adds a paragraph of text directly to the page column, outside a card.
+     *
+     * @param text paragraph text
+     * @return this page, for chaining
+     */
+    /**
+     * Adds a collapsible card and exposes its body as a regular field section. Useful for long
+     * pages with independently expandable categories.
+     *
+     * @param title    card title
+     * @param summary  optional summary; empty hides it
+     * @param expanded whether the card starts expanded
+     * @param body     section field callback
+     * @return this page, for chaining
+     */
+    public @NotNull MuiSettingsPage collapsibleSection(@NotNull CharSequence title, @Nullable CharSequence summary, boolean expanded, @NotNull Consumer<MuiSettingsSection> body) {
+        int start = this.context.content().getChildCount();
+
+        MuiCollapsibleCard card = MuiCollapsibleCard.card(
+                this.context.context(), this.context.theme(), title, summary, expanded);
+        icyllis.modernui.widget.LinearLayout.LayoutParams params = MuiControls.fill();
+        params.topMargin = MuiControls.dp(this.context.context(), 12);
+        this.context.content().addView(card, params);
+
+        body.accept(new MuiSettingsSection(this.context, card.body()));
+
+        MuiShimmerable marker = this.resolve();
+        if (marker != null) {
             for (int i = start; i < this.context.content().getChildCount(); i++) {
                 MuiShimmerScope.apply(this.context.content().getChildAt(i), marker);
             }

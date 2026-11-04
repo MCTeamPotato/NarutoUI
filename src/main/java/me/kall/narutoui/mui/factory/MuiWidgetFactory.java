@@ -1,6 +1,7 @@
 package me.kall.narutoui.mui.factory;
 
 import me.kall.narutoui.mui.theme.MuiTheme;
+import me.kall.narutoui.mui.util.MuiFormatting;
 
 import icyllis.modernui.R;
 import icyllis.modernui.core.Context;
@@ -244,9 +245,12 @@ public interface MuiWidgetFactory {
         @Override
         public @NotNull TextView text(@NotNull Context context, @NotNull CharSequence text, float size, int color) {
             TextView view = new TextView(context);
-            view.setText(text);
+            // Use the normal buffer. Forcing BufferType.SPANNABLE makes even plain text a
+            // SpannableString, and Modern UI's setSingleLine() then crashes inside setSpan.
+            view.setText(MuiFormatting.parse(text));
             view.setTextSize(size);
-            view.setTextColor(color);
+            int solid = MuiFormatting.solidColor(text);
+            view.setTextColor(solid != 0 ? solid : color);
             return view;
         }
 

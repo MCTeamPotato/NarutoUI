@@ -10,6 +10,7 @@ import me.kall.narutoui.mui.shimmer.MuiShimmerContainer;
 import me.kall.narutoui.mui.shimmer.MuiShimmerScope;
 import me.kall.narutoui.mui.shimmer.MuiShimmerable;
 import me.kall.narutoui.mui.theme.MuiTheme;
+import me.kall.narutoui.mui.util.MuiFormatting;
 import me.kall.narutoui.mui.util.MuiLocalization;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -23,6 +24,10 @@ public final class MuiDescriptionRow extends LinearLayout implements MuiShimmerC
     private final TextView titleView;
     /** Description line. */
     private final TextView descriptionView;
+    /** Default title color. */
+    private final int titleColor;
+    /** Default description color. */
+    private final int descriptionColor;
     /** Marker applied to both text lines. */
     private MuiShimmerable shimmerable = MuiShimmerable.NEVER;
 
@@ -39,10 +44,12 @@ public final class MuiDescriptionRow extends LinearLayout implements MuiShimmerC
         this.setOrientation(VERTICAL);
         this.setPadding(MuiControls.dp(context, 2), MuiControls.dp(context, 8), MuiControls.dp(context, 2), MuiControls.dp(context, 8));
 
-        this.titleView = MuiControls.text(context, theme, title, 13, theme.onSurface());
+        this.titleColor = theme.onSurface();
+        this.descriptionColor = theme.onSurfaceVariant();
+        this.titleView = MuiControls.text(context, theme, title, 13, this.titleColor);
         this.addView(this.titleView, MuiControls.fill());
 
-        this.descriptionView = MuiControls.text(context, theme, description == null ? "" : description, 11, theme.onSurfaceVariant());
+        this.descriptionView = MuiControls.text(context, theme, description == null ? "" : description, 11, this.descriptionColor);
         LinearLayout.LayoutParams params = MuiControls.fill();
         params.topMargin = MuiControls.dp(context, 3);
         this.descriptionView.setVisibility(description == null || description.isEmpty() ? GONE : VISIBLE);
@@ -77,7 +84,10 @@ public final class MuiDescriptionRow extends LinearLayout implements MuiShimmerC
      * @return this row, for chaining
      */
     public @NotNull MuiDescriptionRow title(@NotNull CharSequence title) {
-        this.titleView.setText(MuiLocalization.resolve(title));
+        CharSequence resolved = MuiLocalization.resolve(title);
+        this.titleView.setText(MuiFormatting.parse(resolved));
+        int solid = MuiFormatting.solidColor(resolved);
+        this.titleView.setTextColor(solid != 0 ? solid : this.titleColor);
         return this;
     }
 
@@ -104,7 +114,9 @@ public final class MuiDescriptionRow extends LinearLayout implements MuiShimmerC
         }
 
         String resolved = MuiLocalization.resolve(description);
-        this.descriptionView.setText(resolved);
+        this.descriptionView.setText(MuiFormatting.parse(resolved));
+        int solid = MuiFormatting.solidColor(resolved);
+        this.descriptionView.setTextColor(solid != 0 ? solid : this.descriptionColor);
         this.descriptionView.setVisibility(resolved.isEmpty() ? GONE : VISIBLE);
         return this;
     }

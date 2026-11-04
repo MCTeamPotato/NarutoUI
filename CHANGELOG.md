@@ -17,3 +17,6 @@
 # 1.5.0
 - Add fixed action bars, guarded close handling, lazy page construction, scrollable navigation, and searchable rows.
 - Add field validation for text, numbers, and list entries, with validation hints, and document the new APIs.
+# 1.5.1
+- Add dialogs, collapsible sections, tooltips, dynamic navigation sizing, and runtime row enablement. 
+- Parse legacy text formatting and improve screen lifecycle, resize handling, and list-editor commits.

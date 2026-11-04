@@ -1,6 +1,7 @@
 package me.kall.narutoui.mui.factory;
 
 import me.kall.narutoui.mui.theme.MuiTheme;
+import me.kall.narutoui.mui.util.MuiFormatting;
 
 import icyllis.modernui.R;
 import icyllis.modernui.core.Context;
@@ -64,9 +65,10 @@ public final class MuiShimmerFactory implements MuiWidgetFactory {
     @Override
     public @NotNull TextView text(@NotNull Context context, @NotNull CharSequence text, float size, int color, @NotNull MuiShimmerable marker) {
         TextView view = new ShimmerTextView(context, marker);
-        view.setText(text);
+        view.setText(MuiFormatting.parse(text));
         view.setTextSize(size);
-        view.setTextColor(color);
+        int solid = MuiFormatting.solidColor(text);
+        view.setTextColor(solid != 0 ? solid : color);
         return view;
     }
 

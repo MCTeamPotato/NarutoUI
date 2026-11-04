@@ -4,12 +4,15 @@ import icyllis.modernui.core.Context;
 import icyllis.modernui.fragment.Fragment;
 import icyllis.modernui.graphics.drawable.ColorDrawable;
 import icyllis.modernui.graphics.drawable.ShapeDrawable;
+import icyllis.modernui.mc.MuiModApi;
 import icyllis.modernui.mc.MuiScreen;
 import icyllis.modernui.mc.ScreenCallback;
+import icyllis.modernui.text.TextUtils;
 import icyllis.modernui.util.DataSet;
 import icyllis.modernui.view.Gravity;
 import icyllis.modernui.view.KeyEvent;
 import icyllis.modernui.view.LayoutInflater;
+import icyllis.modernui.view.MeasureSpec;
 import icyllis.modernui.view.View;
 import icyllis.modernui.view.ViewGroup;
 import icyllis.modernui.widget.*;
@@ -17,6 +20,7 @@ import me.kall.narutoui.mui.shimmer.MuiShimmerProfile;
 import me.kall.narutoui.mui.shimmer.MuiShimmerScope;
 import me.kall.narutoui.mui.shimmer.MuiShimmerable;
 import me.kall.narutoui.mui.theme.MuiTheme;
+import me.kall.narutoui.mui.util.MuiFormatting;
 import me.kall.narutoui.mui.layout.MuiControls;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -47,8 +51,12 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost, 
     private static final String ARG_SELECTED_PAGE = "mui:selected_page";
     private static final String ARG_SCROLL = "mui:scroll";
 
-    /** Rail width in DP. */
-    private static final int RAIL_WIDTH = 120;
+    /** Minimum rail width in DP. The rail grows for long page labels. */
+    private static final int RAIL_MIN_WIDTH = 120;
+    /** Maximum rail width in DP; longer labels are ellipsized instead of stealing the page. */
+    private static final int RAIL_MAX_WIDTH = 220;
+    /** Navigation label text size in SP, shared by measurement and the real item. */
+    private static final float NAV_LABEL_SIZE = 13;
 
     /** Shell model, resolved in {@link #onCreate(DataSet)}. */
     private @Nullable MuiConfigScreen.Model model;
@@ -63,6 +71,13 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost, 
     private @Nullable FrameLayout root;
     /** Content frame that swaps page roots. */
     private @Nullable FrameLayout content;
+    /** Rebuilds the shell after a window/GUI-scale resize so dp sizes and the rail width refresh. */
+    private final Runnable resizeRebuild = this::rebuildForResize;
+    /** Registered while the view exists. */
+    private final MuiModApi.OnWindowResizeListener resizeListener = (width, height, guiScale, oldGuiScale) ->
+            MuiModApi.postToUiThread(this::scheduleResizeRebuild);
+    /** Guards duplicate listener registration. */
+    private boolean resizeListenerRegistered;
     /** Resolved or overridden theme. */
     private MuiTheme theme;
     /** Currently selected page index, or {@code -1}. */
@@ -73,6 +88,8 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost, 
     private @Nullable Screen parent;
     /** Set once a confirmed close bypasses the close guard. */
     private boolean allowClose;
+    /** Keep the model registered while a child screen (for example Oculus' pack screen) is open. */
+    private boolean retainModelForChild;
 
     /**
      * No-arg constructor required by {@code FragmentFactory} and FragmentManager recreation.
@@ -88,6 +105,18 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost, 
     void attachScreen(@NotNull Screen screen, @Nullable Screen parent) {
         this.screen = screen;
         this.parent = parent;
+    }
+
+    /**
+     * Keeps this screen's model registered while a child screen is opened from it. Without this,
+     * the fragment is destroyed when the child screen replaces the shell and the model is removed;
+     * returning from the child then recreates the fragment without a model.
+     * <p>
+     * The flag is cleared when the view is created again, so a normal close after returning still
+     * removes the model.
+     */
+    public void retainModelForChildScreen() {
+        this.retainModelForChild = true;
     }
 
     /**
@@ -122,9 +151,36 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost, 
         this.allowClose = false;
         this.theme = this.model.theme() != null ? this.model.theme() : MuiTheme.modern(context);
 
+        if (!this.resizeListenerRegistered) {
+            MuiModApi.addOnWindowResizeListener(this.resizeListener);
+            this.resizeListenerRegistered = true;
+        }
+
         FrameLayout root = new FrameLayout(context);
         this.root = root;
         this.model.background().attach(this, root);
+
+        int initialPage = this.model.initialPage();
+        if (savedInstanceState != null) {
+            initialPage = savedInstanceState.getInt(ARG_SELECTED_PAGE, initialPage);
+        }
+        this.buildShell(context, root, initialPage);
+        this.restoreScroll(savedInstanceState);
+        return root;
+    }
+
+    /**
+     * Builds the rail, content frame, action bar and initial page into an existing root. Called on
+     * first view creation and again after a window/GUI-scale resize. The callbacks that own staged
+     * values live in the model, so rebuilding the view preserves unsaved edits.
+     *
+     * @param context     screen context
+     * @param root        shell root to fill
+     * @param initialPage page index to select
+     */
+    private void buildShell(@NotNull Context context, @NotNull FrameLayout root, int initialPage) {
+        this.pages.clear();
+        this.navItems.clear();
 
         LinearLayout body = new LinearLayout(context);
         body.setOrientation(LinearLayout.VERTICAL);
@@ -143,7 +199,9 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost, 
             } else {
                 shell.setOrientation(LinearLayout.HORIZONTAL);
 
-                shell.addView(MuiShimmerProfile.withCurrent(this.model.shimmerProfile(), () -> MuiControls.withFactory(this.model.widgetFactory(), () -> this.buildRail(context, this.theme))), new LinearLayout.LayoutParams(MuiControls.dp(context, RAIL_WIDTH), MuiControls.MATCH));
+                int railWidth = MuiControls.withFactory(this.model.widgetFactory(), () -> this.resolveRailWidth(context));
+                View rail = MuiShimmerProfile.withCurrent(this.model.shimmerProfile(), () -> MuiControls.withFactory(this.model.widgetFactory(), () -> this.buildRail(context, this.theme)));
+                shell.addView(rail, new LinearLayout.LayoutParams(railWidth, MuiControls.MATCH));
             }
         }
 
@@ -172,13 +230,35 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost, 
             this.pages.add(null);
         }
 
-        int initialPage = this.model.initialPage();
-        if (savedInstanceState != null) {
-            initialPage = savedInstanceState.getInt(ARG_SELECTED_PAGE, initialPage);
-        }
         this.showPage(initialPage);
-        this.restoreScroll(savedInstanceState);
-        return root;
+    }
+
+    private void scheduleResizeRebuild() {
+        FrameLayout current = this.root;
+        if (current == null) {
+            return;
+        }
+
+        // Debounce continuous window dragging; the shell is rebuilt once after the size settles.
+        current.removeCallbacks(this.resizeRebuild);
+        current.postDelayed(this.resizeRebuild, 120L);
+    }
+
+    private void rebuildForResize() {
+        FrameLayout current = this.root;
+        if (current == null || this.model == null) {
+            return;
+        }
+
+        int page = Math.max(0, this.selected);
+        Context context = this.requireContext();
+        this.theme = this.model.theme() != null ? this.model.theme() : MuiTheme.modern(context);
+        this.model.background().detach();
+        current.removeAllViews();
+        this.content = null;
+        this.selected = -1;
+        this.model.background().attach(this, current);
+        this.buildShell(context, current, page);
     }
 
     /**
@@ -190,6 +270,7 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost, 
     @Override
     public void onViewCreated(@NotNull View view, @Nullable DataSet savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        this.retainModelForChild = false;
         if (this.model != null && this.model.onCreated() != null) {
             this.model.onCreated().accept(this);
         }
@@ -250,6 +331,21 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost, 
 
         int index = this.selected;
         this.pages.set(index, this.createPage(this.requireContext(), this.model.pages().get(index)));
+        this.showPage(index);
+    }
+
+    /**
+     * Rebuilds every page. The current page is rebuilt immediately; other pages are rebuilt lazily
+     * on their next visit.
+     */
+    @Override
+    public void reloadAllPages() {
+        if (this.model == null || this.pages.isEmpty()) return;
+
+        int index = Math.max(0, this.selected);
+        for (int i = 0; i < this.pages.size(); i++) {
+            this.pages.set(i, null);
+        }
         this.showPage(index);
     }
 
@@ -348,6 +444,37 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost, 
         } else {
             Minecraft.getInstance().setScreen(this.parent);
         }
+    }
+
+    /**
+     * Resolves the rail width from the longest page label. The label is measured with the same text
+     * factory, size and horizontal padding as the real navigation item, then the rail padding and a
+     * small safety margin are added. Short labels keep the minimum width; very long labels are
+     * capped and ellipsized by {@link #createNavItem} instead of widening the rail indefinitely.
+     *
+     * @param context the screen context
+     * @return the rail width in pixels
+     */
+    private int resolveRailWidth(@NotNull Context context) {
+        int minWidth = MuiControls.dp(context, RAIL_MIN_WIDTH);
+        int maxWidth = MuiControls.dp(context, RAIL_MAX_WIDTH);
+        int itemPadding = MuiControls.dp(context, 10);
+        int widest = 0;
+
+        for (MuiConfigScreen.PageSpec spec : this.model.pages()) {
+            TextView probe = MuiControls.text(context, this.theme, MuiFormatting.strip(spec.navLabel()), NAV_LABEL_SIZE, this.theme.onSurfaceVariant());
+            probe.setSingleLine(true);
+            probe.setPadding(itemPadding, 0, itemPadding, 0);
+
+            int unspecified = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
+            probe.measure(unspecified, unspecified);
+            widest = Math.max(widest, probe.getMeasuredWidth());
+        }
+
+        // Rail horizontal padding (12 + 12) plus a few DP so the longest label never sits flush
+        // against the scrollbar or the selected-item outline.
+        int wanted = widest + MuiControls.dp(context, 24 + 8);
+        return Math.max(minWidth, Math.min(maxWidth, wanted));
     }
 
     /**
@@ -497,7 +624,11 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost, 
      * @return the navigation item
      */
     private @NotNull TextView createNavItem(@NotNull Context context, @NotNull MuiTheme theme, @NotNull MuiConfigScreen.PageSpec spec, int index, boolean top) {
-        TextView item = MuiControls.text(context, theme, spec.navLabel(), 13, theme.onSurfaceVariant(), this.model.navigationShimmerable());
+        TextView item = MuiControls.text(context, theme, MuiFormatting.strip(spec.navLabel()), NAV_LABEL_SIZE, theme.onSurfaceVariant(), this.model.navigationShimmerable());
+        item.setSingleLine(true);
+        if (!top) {
+            item.setEllipsize(TextUtils.TruncateAt.END);
+        }
         item.setGravity(top ? Gravity.CENTER : Gravity.CENTER_VERTICAL);
         item.setPadding(MuiControls.dp(context, top ? 12 : 10), MuiControls.dp(context, top ? 7 : 9), MuiControls.dp(context, top ? 12 : 10), MuiControls.dp(context, top ? 7 : 9));
         item.setOnClickListener(view -> this.showPage(index));
@@ -579,6 +710,13 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost, 
      */
     @Override
     public void onDestroyView() {
+        if (this.resizeListenerRegistered) {
+            MuiModApi.removeOnWindowResizeListener(this.resizeListener);
+            this.resizeListenerRegistered = false;
+        }
+        if (this.root != null) {
+            this.root.removeCallbacks(this.resizeRebuild);
+        }
         if (this.model != null) {
             this.model.background().detach();
             if (this.model.onDestroyed() != null) this.model.onDestroyed().accept(this);
@@ -596,7 +734,7 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost, 
      */
     @Override
     public void onDestroy() {
-        if (this.modelKey != null && this.model != null) {
+        if (this.modelKey != null && this.model != null && !this.retainModelForChild) {
             MuiConfigRegistry.removeModel(this.modelKey, this.model);
         }
         super.onDestroy();

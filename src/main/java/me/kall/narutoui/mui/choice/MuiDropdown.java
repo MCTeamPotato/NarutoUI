@@ -14,6 +14,7 @@ import me.kall.narutoui.mui.shimmer.MuiShimmerContainer;
 import me.kall.narutoui.mui.shimmer.MuiShimmerScope;
 import me.kall.narutoui.mui.shimmer.MuiShimmerable;
 import me.kall.narutoui.mui.theme.MuiTheme;
+import me.kall.narutoui.mui.util.MuiFormatting;
 import me.kall.narutoui.mui.util.MuiLocalization;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -307,8 +308,17 @@ public final class MuiDropdown<T> extends LinearLayout implements MuiShimmerCont
      */
     private void refreshHeader() {
         CharSequence label = this.selectedIndex < 0 ? MuiLocalization.resolve(this.placeholder) : MuiLocalization.resolve(this.options.get(this.selectedIndex).label());
-        this.header.setText(label + "  " + (this.expanded ? "^" : "v"));
-        this.header.setTextColor(this.enabled ? this.theme.primary() : MuiControls.alpha(this.theme.primary(), 0.38F));
+        // The header is a button; keep it plain text and carry the selected value's solid color
+        // through setTextColor instead of raw § codes or spans.
+        int solid = MuiFormatting.solidColor(label);
+        this.header.setText(MuiFormatting.strip(label) + "  " + (this.expanded ? "^" : "v"));
+        if (!this.enabled) {
+            this.header.setTextColor(solid != 0
+                    ? MuiControls.alpha(solid, 0.38F)
+                    : MuiControls.alpha(this.theme.primary(), 0.38F));
+        } else {
+            this.header.setTextColor(solid != 0 ? solid : this.theme.primary());
+        }
     }
 
     /**

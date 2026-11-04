@@ -9,10 +9,10 @@ import me.kall.narutoui.mui.choice.MuiOption;
 import me.kall.narutoui.mui.choice.MuiThemePicker;
 import me.kall.narutoui.mui.layout.MuiControls;
 import me.kall.narutoui.mui.layout.MuiLayout;
+import me.kall.narutoui.mui.widget.MuiCollapsibleCard;
 import me.kall.narutoui.mui.shimmer.MuiShimmerScope;
 import me.kall.narutoui.mui.shimmer.MuiShimmerable;
 import me.kall.narutoui.mui.theme.MuiTheme;
-import me.kall.narutoui.mui.util.MuiLocalization;
 import me.kall.narutoui.mui.widget.MuiDescriptionRow;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -23,6 +23,11 @@ import java.util.function.*;
 /**
  * Section-level builder for {@link MuiSettingsScreen}. Every method accepts raw state accessors and
  * appends the fully-styled row; the caller never sees layout params, dividers or value labels.
+ * <p>
+ * A {@code description} passed to a row is shown as a tooltip when the pointer hovers over that
+ * row's title. Long descriptions therefore no longer make the page taller or mix into the title
+ * line. Use {@link #description(CharSequence, CharSequence)} or {@link #note(CharSequence, CharSequence)}
+ * for text that should stay visible.
  */
 public final class MuiSettingsSection {
     /** Owning page context. */
@@ -37,6 +42,8 @@ public final class MuiSettingsSection {
     private @Nullable MuiShimmerable nextShimmerable;
     /** Marker applied to rows added to the current note block. */
     private MuiShimmerable noteShimmerable = MuiShimmerable.NEVER;
+    /** Most recently added row, used by {@link #enabledWhen(BooleanSupplier)}. */
+    private @Nullable View lastRow;
 
     MuiSettingsSection(@NotNull MuiPageContext page, @NotNull MuiLayout card) {
         this.page = page;
@@ -165,7 +172,7 @@ public final class MuiSettingsSection {
      * @return this section, for chaining
      */
     public @NotNull MuiSettingsSection slider(@NotNull CharSequence title, @Nullable CharSequence description, int min, int max, @NotNull IntSupplier value, @NotNull IntConsumer onChange, @NotNull IntFunction<CharSequence> format) {
-        LinearLayout row = MuiControls.sliderRow(this.page.context(), this.page.theme(), this.sliderTitle(title, description), format, min, max, value, onChange);
+        LinearLayout row = MuiControls.sliderRow(this.page.context(), this.page.theme(), title, description, format, min, max, value, onChange);
         return this.add(row);
     }
 
@@ -183,13 +190,8 @@ public final class MuiSettingsSection {
      * @return this section, for chaining
      */
     public @NotNull MuiSettingsSection slider(@NotNull CharSequence title, @Nullable CharSequence description, double min, double max, double step, @NotNull DoubleSupplier value, @NotNull DoubleConsumer onChange, @NotNull DoubleFunction<CharSequence> format) {
-        LinearLayout row = MuiControls.sliderRow(this.page.context(), this.page.theme(), this.sliderTitle(title, description), format, min, max, step, value, onChange);
+        LinearLayout row = MuiControls.sliderRow(this.page.context(), this.page.theme(), title, description, format, min, max, step, value, onChange);
         return this.add(row);
-    }
-
-    private @NotNull CharSequence sliderTitle(@NotNull CharSequence title, @Nullable CharSequence description) {
-        if (description == null || description.length() == 0) return title;
-        return MuiLocalization.resolve(title) + " - " + MuiLocalization.resolve(description);
     }
 
     /**
@@ -492,6 +494,22 @@ public final class MuiSettingsSection {
     }
 
     /**
+     * Keeps the most recently added row enabled or disabled from an external predicate. Call this
+     * immediately after the row it refers to; it is useful for options that an external mod or a
+     * hardware capability can make unavailable at runtime.
+     *
+     * @param enabled availability predicate
+     * @return this section, for chaining
+     */
+    public @NotNull MuiSettingsSection enabledWhen(@NotNull BooleanSupplier enabled) {
+        View row = this.lastRow;
+        if (row != null) {
+            MuiControls.enabledWhen(row, enabled);
+        }
+        return this;
+    }
+
+    /**
      * Adds an explicit divider. Automatic dividers are normally sufficient.
      *
      * @return this section, for chaining
@@ -510,6 +528,26 @@ public final class MuiSettingsSection {
      */
     public @NotNull MuiSettingsSection custom(@NotNull View view) {
         return this.add(view);
+    }
+
+    /**
+     * Adds a nested collapsible card as one row and exposes its body as another field section.
+     * This keeps the native multi-level shader option menus readable without flattening them.
+     *
+     * @param title    card title
+     * @param summary  optional summary; empty hides it
+     * @param expanded whether the nested card starts expanded
+     * @param body     nested section body
+     * @return the nested section
+     */
+    public @NotNull MuiSettingsSection collapsible(@NotNull CharSequence title, @Nullable CharSequence summary, boolean expanded, @NotNull Consumer<MuiSettingsSection> body) {
+        MuiCollapsibleCard card = MuiCollapsibleCard.card(
+                this.page.context(), this.page.theme(), title, summary, expanded);
+        this.add(card);
+
+        MuiSettingsSection nested = new MuiSettingsSection(this.page, card.body());
+        body.accept(nested);
+        return nested;
     }
 
     /**
@@ -561,8 +599,20 @@ public final class MuiSettingsSection {
         this.nextShimmerable = null;
         if (marker != null) MuiShimmerScope.apply(row, marker);
 
-        if (this.fields++ > 0) this.card.addView(MuiControls.divider(this.page.context(), this.page.theme()), MuiControls.fill());
-        this.card.addView(row, MuiControls.fill());
+        boolean first = this.fields == 0;
+        if (!first) {
+            LinearLayout.LayoutParams dividerParams = MuiControls.fill();
+            dividerParams.topMargin = MuiControls.dp(this.page.context(), 10);
+            this.card.addView(MuiControls.divider(this.page.context(), this.page.theme()), dividerParams);
+        }
+        this.fields++;
+
+        LinearLayout.LayoutParams params = MuiControls.fill();
+        if (!first) {
+            params.topMargin = MuiControls.dp(this.page.context(), 10);
+        }
+        this.card.addView(row, params);
+        this.lastRow = row;
         return this;
     }
 

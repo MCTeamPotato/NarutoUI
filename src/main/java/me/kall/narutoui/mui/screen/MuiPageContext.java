@@ -150,6 +150,20 @@ public final class MuiPageContext {
     }
 
     /**
+     * Adds a card without a section heading. This is useful when the source model has unnamed
+     * groups (for example an external options screen) but the card layout is still wanted.
+     *
+     * @return the card's vertical body
+     */
+    public @NotNull MuiLayout untitledSectionLayout() {
+        MuiLayout card = MuiLayout.card(this.context, this.theme);
+        LinearLayout.LayoutParams params = MuiControls.fill();
+        params.topMargin = MuiControls.dp(this.context, 12);
+        this.content.addView(card, params);
+        return card;
+    }
+
+    /**
      * Adds a full-width view to the page column.
      *
      * @param view the view to add

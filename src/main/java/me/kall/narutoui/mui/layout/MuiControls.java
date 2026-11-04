@@ -19,6 +19,7 @@ import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import me.kall.narutoui.mui.shimmer.MuiShimmerable;
 import me.kall.narutoui.mui.theme.MuiTheme;
 import me.kall.narutoui.mui.factory.MuiWidgetFactory;
+import me.kall.narutoui.mui.util.MuiFormatting;
 import me.kall.narutoui.mui.util.MuiLocalization;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -230,24 +231,37 @@ public final class MuiControls {
     }
 
     /**
-     * Creates the title and optional description column used by every field row.
+     * Creates the title column used by every field row. The optional description is attached as a
+     * tooltip on the title instead of being rendered as a second line.
      *
      * @param context     the screen context
      * @param theme       active theme
      * @param title       row title
-     * @param description optional description
+     * @param description optional tooltip text
      * @return the label column
      */
     private static @NotNull LinearLayout labelBlock(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence title, @Nullable CharSequence description) {
         LinearLayout texts = column(context);
-        texts.addView(text(context, theme, title, 14, theme.onSurface()), fill());
-        if (description != null) {
-            TextView hint = text(context, theme, description, 11, theme.onSurfaceVariant());
-            LinearLayout.LayoutParams params = fill();
-            params.topMargin = dp(context, 2);
-            texts.addView(hint, params);
-        }
+        TextView titleView = text(context, theme, title, 14, theme.onSurface());
+        applyTitleTooltip(titleView, description);
+        texts.addView(titleView, fill());
         return texts;
+    }
+
+    /**
+     * Shows a description when the pointer hovers over a row title. Descriptions are intentionally
+     * not rendered inline: long tooltips would otherwise make a settings page much taller and
+     * visually noisy. Modern UI also shows the same text on long press.
+     *
+     * @param titleView  title view that receives the tooltip
+     * @param description tooltip text, or {@code null}
+     */
+    public static void applyTitleTooltip(@NotNull View titleView, @Nullable CharSequence description) {
+        if (description == null || description.length() == 0) {
+            titleView.setTooltipText(null);
+            return;
+        }
+        titleView.setTooltipText(MuiFormatting.strip(MuiLocalization.resolve(description)));
     }
 
     /**
@@ -271,6 +285,7 @@ public final class MuiControls {
     public static @NotNull View divider(@NotNull Context context, @NotNull MuiTheme theme) {
         View view = new View(context);
         view.setBackground(new ColorDrawable(alpha(theme.outline(), 0.6F)));
+        view.setMinimumHeight(dp(context, 1));
         return view;
     }
 
@@ -864,7 +879,7 @@ public final class MuiControls {
      */
     public static @NotNull LinearLayout sliderRow(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence title, @NotNull CharSequence value, int max, int progress, @NotNull IntConsumer onChange) {
         LinearLayout block = column(context);
-        sliderHeader(context, theme, title, value, block);
+        sliderHeader(context, theme, title, null, value, block);
 
         SeekBar bar = slider(context, theme, max, progress);
         bar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -891,22 +906,25 @@ public final class MuiControls {
      * @return the composed row
      */
     public static @NotNull LinearLayout sliderRow(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence title, @NotNull IntFunction<CharSequence> format, int max, @NotNull IntSupplier value, @NotNull IntConsumer onChange) {
-        return sliderRow(context, theme, title, format, 0, max, value, onChange);
+        return sliderRow(context, theme, title, null, format, 0, max, value, onChange);
     }
 
     /**
      * Adds the title/value header shared by the int and double slider rows.
      *
-     * @param context the screen context
-     * @param theme   active theme
-     * @param title   row title
-     * @param value   formatted value text
-     * @param block   slider column that receives the header
+     * @param context     the screen context
+     * @param theme       active theme
+     * @param title       row title
+     * @param description optional tooltip shown when the title is hovered
+     * @param value       formatted value text
+     * @param block       slider column that receives the header
      * @return the value text view
      */
-    private static @NotNull TextView sliderHeader(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence title, @NotNull CharSequence value, @NotNull LinearLayout block) {
+    private static @NotNull TextView sliderHeader(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence title, @Nullable CharSequence description, @NotNull CharSequence value, @NotNull LinearLayout block) {
         LinearLayout header = row(context);
-        header.addView(text(context, theme, title, 14, theme.onSurface()), weight());
+        TextView titleView = text(context, theme, title, 14, theme.onSurface());
+        applyTitleTooltip(titleView, description);
+        header.addView(titleView, weight());
         TextView valueView = text(context, theme, value, 12, theme.primary());
         header.addView(valueView, wrap());
         block.addView(header, fill());
@@ -926,11 +944,31 @@ public final class MuiControls {
      * @param onChange value callback
      * @return the composed row
      */
-    @SuppressWarnings("UnnecessaryLocalVariable")
     public static @NotNull LinearLayout sliderRow(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence title, @NotNull IntFunction<CharSequence> format, int min, int max, @NotNull IntSupplier value, @NotNull IntConsumer onChange) {
+        return sliderRow(context, theme, title, null, format, min, max, value, onChange);
+    }
+
+    /**
+     * Creates a supplier-backed slider row with an arbitrary inclusive range and a title tooltip.
+     *
+     * @param context     the screen context
+     * @param theme       active theme
+     * @param title       row title
+     * @param description optional tooltip shown when the title is hovered
+     * @param format      value formatter
+     * @param min         minimum value (inclusive)
+     * @param max         maximum value (inclusive)
+     * @param value       live value supplier
+     * @param onChange    value callback
+     * @return the composed row
+     */
+    @SuppressWarnings("UnnecessaryLocalVariable")
+    public static @NotNull LinearLayout sliderRow(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence title, @Nullable CharSequence description, @NotNull IntFunction<CharSequence> format, int min, int max, @NotNull IntSupplier value, @NotNull IntConsumer onChange) {
         if (max <= min) {
             int fixed = min;
-            return valueRow(context, theme, title, format, () -> fixed);
+            LinearLayout row = valueRow(context, theme, title, format, () -> fixed);
+            applyTitleTooltip(row.getChildAt(0), description);
+            return row;
         }
 
         long span = (long) max - min;
@@ -939,7 +977,7 @@ public final class MuiControls {
         LinearLayout block = column(context);
 
         int initial = clamp(value.getAsInt(), min, max);
-        TextView valueView = sliderHeader(context, theme, title, format.apply(initial), block);
+        TextView valueView = sliderHeader(context, theme, title, description, format.apply(initial), block);
 
         SeekBar bar = slider(context, theme, sliderMax, progressOf(initial, min, span, sliderMax));
         boolean[] tracking = new boolean[1];
@@ -1001,9 +1039,30 @@ public final class MuiControls {
      * @return the composed row
      */
     public static @NotNull LinearLayout sliderRow(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence title, @NotNull DoubleFunction<CharSequence> format, double min, double max, double step, @NotNull DoubleSupplier value, @NotNull DoubleConsumer onChange) {
+        return sliderRow(context, theme, title, null, format, min, max, step, value, onChange);
+    }
+
+    /**
+     * Creates a supplier-backed decimal slider row with a title tooltip.
+     *
+     * @param context     the screen context
+     * @param theme       active theme
+     * @param title       row title
+     * @param description optional tooltip shown when the title is hovered
+     * @param format      value formatter
+     * @param min         minimum value (inclusive)
+     * @param max         maximum value (inclusive)
+     * @param step        value increment, greater than {@code 0}
+     * @param value       live value supplier
+     * @param onChange    value callback
+     * @return the composed row
+     */
+    public static @NotNull LinearLayout sliderRow(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence title, @Nullable CharSequence description, @NotNull DoubleFunction<CharSequence> format, double min, double max, double step, @NotNull DoubleSupplier value, @NotNull DoubleConsumer onChange) {
         if (!(max > min) || !(step > 0) || !Double.isFinite(min) || !Double.isFinite(max) || !Double.isFinite(step)) {
             double fixed = Math.max(max, min);
-            return valueRow(context, theme, title, format, () -> fixed);
+            LinearLayout row = valueRow(context, theme, title, format, () -> fixed);
+            applyTitleTooltip(row.getChildAt(0), description);
+            return row;
         }
 
         long steps = Math.round((max - min) / step);
@@ -1013,7 +1072,7 @@ public final class MuiControls {
         LinearLayout block = column(context);
 
         double initial = clamp(value.getAsDouble(), min, max);
-        TextView valueView = sliderHeader(context, theme, title, format.apply(initial), block);
+        TextView valueView = sliderHeader(context, theme, title, description, format.apply(initial), block);
 
         SeekBar bar = slider(context, theme, sliderMax, progressOf(initial, min, max, sliderMax));
         boolean[] tracking = new boolean[1];
@@ -1172,6 +1231,36 @@ public final class MuiControls {
 
     /** Upper bound for the integer slider resolution. */
     private static final int MAX_SLIDER_STEPS = 100_000;
+
+    /**
+     * Keeps a composed row enabled or disabled from an external predicate. The predicate is polled
+     * on the UI thread about ten times per second while the row is attached, so a control that
+     * becomes unavailable (for example an option gated by another mod) is greyed out without
+     * rebuilding the page.
+     * <p>
+     * Disabling is recursive: every child control is disabled as well, so a switch or slider inside
+     * the row cannot be operated while the row is unavailable.
+     *
+     * @param row     the composed row
+     * @param enabled availability predicate
+     */
+    public static void enabledWhen(@NotNull View row, @NotNull BooleanSupplier enabled) {
+        refreshPeriodically(row, () -> applyEnabled(row, enabled.getAsBoolean()));
+    }
+
+    private static void applyEnabled(@NotNull View view, boolean enabled) {
+        setEnabledRecursive(view, enabled);
+        view.setAlpha(enabled ? 1.0F : 0.45F);
+    }
+
+    private static void setEnabledRecursive(@NotNull View view, boolean enabled) {
+        view.setEnabled(enabled);
+        if (view instanceof ViewGroup group) {
+            for (int i = 0; i < group.getChildCount(); i++) {
+                setEnabledRecursive(group.getChildAt(i), enabled);
+            }
+        }
+    }
 
     /**
      * Runs {@code refresh} immediately and then every 100 ms while {@code host} is attached.
