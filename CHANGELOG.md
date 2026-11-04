@@ -24,4 +24,7 @@
 - Add description-free overloads for section number, long number, decimal, dropdown, choice grid, list and text field rows, mirrored in `MuiControls` and `MuiPageContext`.
 - Add three-argument page overloads and navigation-label based initial-page selection to the high-level and low-level screen builders.
 - Add default-marker checkbox, radio button and progress bar factories, a filled button overload, fluent padding, margin, text and heading helpers, and decimal/long value rows.
-- Add expanded-by-default collapsible section helpers, default image/slideshow background factories, shorter file-picker calls, and a decimal number field factory without an explicit scale.
+- Add expanded-by-default collapsible section helpers, default image/slideshow background factories, shorter file-picker calls, and a decimal number field factory without an explicit scale. 1.7.
+# 1.7.0
+- Add page-switch transitions through `MuiPageTransition` (`FADE` default, `SLIDE_UP`, `SLIDE_DOWN`, `SLIDE_AUTO`) and the matching `pageTransition(...)` / `pageTransitionDuration(...)` builder methods on both screen builders. Use `pageTransitionDuration(0)` for an instant switch.
+- Skip transitions on the initial page, page reloads and resize rebuilds, and cancel a running transition when another switch starts or the view is destroyed.

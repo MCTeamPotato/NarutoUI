@@ -12,6 +12,7 @@ NarutoUI 是一个面向 Minecraft 客户端模组的 **Modern UI 配置界面�
 - 可链式构建的 `MuiLayout` 与 `MuiControls`
 - 常用控件：开关、整数/小数滑杆、文本输入、整数/长整数/小数输入、下拉框、卡片选择、列表编辑、按钮、只读值
 - 外壳能力：固定底部 action bar、关闭守卫（未保存确认）、可滚动导航栏、按需构建页面、`MuiPageContext#searchable` 过滤原语
+- 页面切换过渡：默认淡入淡出，另有上滑 / 下滑 / 按页序自动；`pageTransitionDuration(0)` 可关闭，时长可调
 - 输入校验：数值字段支持外部 `Predicate<BigDecimal>`，列表编辑器支持逐项 `Predicate<String>`，`MuiValidationHint` 显示错误文案
 - 通用组件：`MuiChip`、`MuiTextAction`、`MuiLogo`、`MuiHintBadge`、`MuiValidationHint`、`MuiColorField`、`MuiDescriptionRow`、`MuiCollapsibleCard`
 - 可配置主题：强调色、背景色、圆角、间距、内容宽度

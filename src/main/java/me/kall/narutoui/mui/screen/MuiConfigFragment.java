@@ -1,5 +1,9 @@
 package me.kall.narutoui.mui.screen;
 
+import icyllis.modernui.animation.Animator;
+import icyllis.modernui.animation.AnimatorListener;
+import icyllis.modernui.animation.MotionEasingUtils;
+import icyllis.modernui.animation.ValueAnimator;
 import icyllis.modernui.core.Context;
 import icyllis.modernui.fragment.Fragment;
 import icyllis.modernui.graphics.drawable.ColorDrawable;
@@ -82,6 +86,10 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost, 
     private MuiTheme theme;
     /** Currently selected page index, or {@code -1}. */
     private int selected = -1;
+    /** Running page transition, or {@code null}. */
+    private @Nullable ValueAnimator pageAnimator;
+    /** Outgoing page kept below the incoming page while a transition runs. */
+    private @Nullable View outgoingPage;
     /** Backing Minecraft screen, used for back navigation. */
     private @Nullable Screen screen;
     /** Screen to return to when the backing screen cannot close itself. */
@@ -206,6 +214,7 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost, 
         }
 
         this.content = new FrameLayout(context);
+        this.content.setClipChildren(true);
         if (shell == null) {
             body.addView(this.content, new LinearLayout.LayoutParams(MuiControls.MATCH, 0, 1.0F));
         } else if (this.model.navigation() == MuiNavigation.TOP) {
@@ -230,7 +239,7 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost, 
             this.pages.add(null);
         }
 
-        this.showPage(initialPage);
+        this.showPage(initialPage, false);
     }
 
     private void scheduleResizeRebuild() {
@@ -253,6 +262,7 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost, 
         int page = Math.max(0, this.selected);
         Context context = this.requireContext();
         this.theme = this.model.theme() != null ? this.model.theme() : MuiTheme.modern(context);
+        this.cancelPageTransition();
         this.model.background().detach();
         current.removeAllViews();
         this.content = null;
@@ -331,7 +341,7 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost, 
 
         int index = this.selected;
         this.pages.set(index, this.createPage(this.requireContext(), this.model.pages().get(index)));
-        this.showPage(index);
+        this.showPage(index, false);
     }
 
     /**
@@ -346,7 +356,7 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost, 
         for (int i = 0; i < this.pages.size(); i++) {
             this.pages.set(i, null);
         }
-        this.showPage(index);
+        this.showPage(index, false);
     }
 
     /**
@@ -637,23 +647,169 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost, 
     }
 
     /**
-     * Swaps the visible page and updates the navigation selection.
+     * Swaps the visible page and plays the configured transition.
      *
      * @param index zero-based page index; clamped to the available range
      */
     private void showPage(int index) {
+        this.showPage(index, true);
+    }
+
+    /**
+     * Swaps the visible page and updates the navigation selection.
+     *
+     * @param index   zero-based page index; clamped to the available range
+     * @param animate {@code true} to play the configured page transition
+     */
+    private void showPage(int index, boolean animate) {
         if (this.content == null || this.pages.isEmpty()) return;
 
         int clamped = Math.max(0, Math.min(this.pages.size() - 1, index));
+        if (animate && clamped == this.selected) return;
+
+        this.cancelPageTransition();
+
         View page = this.pages.get(clamped);
         if (page == null) {
             page = this.createPage(this.requireContext(), this.model.pages().get(clamped));
             this.pages.set(clamped, page);
         }
-        this.content.removeAllViews();
+
+        int previousIndex = this.selected;
+        View previous = previousIndex >= 0 && previousIndex < this.pages.size() ? this.pages.get(previousIndex) : null;
+        if (previous == page || previous != null && previous.getParent() != this.content) previous = null;
+
+        if (animate) {
+            this.removeOtherChildren(previous);
+        } else {
+            this.content.removeAllViews();
+        }
+
         this.content.addView(page, new FrameLayout.LayoutParams(MuiControls.MATCH, MuiControls.MATCH, Gravity.CENTER_HORIZONTAL));
         this.selected = clamped;
         this.refreshNav();
+
+        MuiPageTransition transition = this.model.pageTransition();
+        long duration = this.model.pageTransitionDuration();
+        if (!animate || previous == null || duration <= 0L
+                || !this.content.isAttachedToWindow() || !ValueAnimator.areAnimatorsEnabled()) {
+            if (previous != null) this.content.removeView(previous);
+            return;
+        }
+
+        this.startPageTransition(previous, page, transition, duration, clamped > previousIndex);
+    }
+
+    /**
+     * Removes every content child except the retained outgoing page.
+     *
+     * @param keep the child to keep, or {@code null} to remove all
+     */
+    private void removeOtherChildren(@Nullable View keep) {
+        if (this.content == null) return;
+        for (int i = this.content.getChildCount() - 1; i >= 0; i--) {
+            View child = this.content.getChildAt(i);
+            if (child != keep) this.content.removeViewAt(i);
+        }
+    }
+
+    /**
+     * Runs the configured page transition.
+     *
+     * @param outgoing   page leaving the content area
+     * @param incoming   page entering the content area
+     * @param transition transition style
+     * @param duration   duration in milliseconds
+     * @param forward    {@code true} when the incoming page has a higher index
+     */
+    private void startPageTransition(@NotNull View outgoing, @NotNull View incoming, @NotNull MuiPageTransition transition, long duration, boolean forward) {
+        boolean slide = transition != MuiPageTransition.FADE;
+        boolean upward = transition == MuiPageTransition.SLIDE_UP || transition == MuiPageTransition.SLIDE_AUTO && forward;
+        int travel = this.content.getHeight();
+        if (travel <= 0) travel = MuiControls.dp(this.requireContext(), 240);
+        final int distance = travel;
+
+        incoming.setAlpha(slide ? 1.0F : 0.0F);
+        incoming.setTranslationY(slide ? (upward ? distance : -distance) : 0.0F);
+        outgoing.setAlpha(1.0F);
+        outgoing.setTranslationY(0.0F);
+
+        ValueAnimator animator = ValueAnimator.ofFloat(0.0F, 1.0F);
+        animator.setDuration(duration);
+        animator.setInterpolator(MotionEasingUtils.MOTION_EASING_STANDARD);
+        animator.addUpdateListener(animation -> {
+            if (this.pageAnimator != animator) return;
+
+            float progress = (Float) animation.getAnimatedValue();
+            if (!slide) {
+                outgoing.setAlpha(1.0F - progress);
+                incoming.setAlpha(progress);
+                return;
+            }
+
+            float start = upward ? distance : -distance;
+            outgoing.setTranslationY(-start * progress);
+            incoming.setTranslationY(start * (1.0F - progress));
+        });
+        animator.addListener(new AnimatorListener() {
+            @Override
+            public void onAnimationEnd(@NotNull Animator animation) {
+                if (MuiConfigFragment.this.pageAnimator != animator) return;
+                MuiConfigFragment.this.finishPageTransition(animator);
+            }
+        });
+        this.pageAnimator = animator;
+        this.outgoingPage = outgoing;
+        animator.start();
+    }
+
+    /**
+     * Removes the outgoing page once the transition ends.
+     *
+     * @param animator the animator that finished
+     */
+    private void finishPageTransition(@NotNull ValueAnimator animator) {
+        if (this.pageAnimator != animator) return;
+        this.pageAnimator = null;
+
+        View outgoing = this.outgoingPage;
+        this.outgoingPage = null;
+
+        View incoming = this.selected >= 0 && this.selected < this.pages.size() ? this.pages.get(this.selected) : null;
+        if (incoming != null) {
+            incoming.setAlpha(1.0F);
+            incoming.setTranslationY(0.0F);
+        }
+        if (outgoing == null || outgoing == incoming) return;
+
+        outgoing.setAlpha(1.0F);
+        outgoing.setTranslationY(0.0F);
+        if (this.content != null) this.content.removeView(outgoing);
+    }
+
+    /**
+     * Cancels a running page transition and restores the pages it touched.
+     */
+    private void cancelPageTransition() {
+        ValueAnimator animator = this.pageAnimator;
+        this.pageAnimator = null;
+        if (animator != null) animator.cancel();
+
+        View outgoing = this.outgoingPage;
+        this.outgoingPage = null;
+        if (outgoing != null) {
+            outgoing.setAlpha(1.0F);
+            outgoing.setTranslationY(0.0F);
+            if (this.content != null) this.content.removeView(outgoing);
+        }
+
+        if (this.selected >= 0 && this.selected < this.pages.size()) {
+            View current = this.pages.get(this.selected);
+            if (current != null) {
+                current.setAlpha(1.0F);
+                current.setTranslationY(0.0F);
+            }
+        }
     }
 
     /**
@@ -710,6 +866,7 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost, 
      */
     @Override
     public void onDestroyView() {
+        this.cancelPageTransition();
         if (this.resizeListenerRegistered) {
             MuiModApi.removeOnWindowResizeListener(this.resizeListener);
             this.resizeListenerRegistered = false;

@@ -117,6 +117,22 @@ MuiSettingsScreen.builder("My Mod")
 
 `initialPage(int)` 和 `initialPage(String)` 后调用的生效；标签在 `create()` 时解析，找不到会抛 `IllegalArgumentException`。
 
+### 页面切换过渡
+
+```java
+MuiSettingsScreen.builder("My Mod")
+        // 不写这一行也可以：默认就是 FADE
+        .pageTransition(MuiPageTransition.SLIDE_AUTO)
+        .pageTransitionDuration(220) // 可选，毫秒
+        .page(...)
+```
+
+- `FADE`：旧页淡出、新页淡入（默认）
+- `SLIDE_UP` / `SLIDE_DOWN`：旧页向上/下移出，新页从另一侧移入
+- `SLIDE_AUTO`：按页序决定方向，往后翻向上、往前翻向下
+
+想要瞬间切换（不播动画）时用 `.pageTransitionDuration(0)`；首次打开、`reloadCurrentPage()` 和窗口尺寸重建本来就不做动画。连续点导航会取消上一次动画、从当前状态重新开始。单页模式没有页面切换，这个设置不会生效。
+
 ---
 
 ## 3. 我想做开关、滑杆、按钮

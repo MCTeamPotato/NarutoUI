@@ -68,6 +68,10 @@ public final class MuiSettingsScreen {
         private boolean singlePage;
         /** Navigation placement for multi-page screens. */
         private MuiNavigation navigation = MuiNavigation.LEFT;
+        /** Page-switch transition. */
+        private MuiPageTransition pageTransition = MuiPageTransition.FADE;
+        /** Page-switch transition duration in milliseconds; negative uses the style default. */
+        private long pageTransitionDuration = -1L;
         /** Optional theme override. */
         private MuiTheme theme;
         /** Per-screen widget factory. */
@@ -286,6 +290,34 @@ public final class MuiSettingsScreen {
         }
 
         /**
+         * Sets the transition played when the player switches pages. The default is
+         * {@link MuiPageTransition#FADE}; use {@link #pageTransitionDuration(long)} with
+         * {@code 0} to keep the instant page switch. The first page shown when the screen opens,
+         * page reloads and shell rebuilds after a resize never animate, so this only affects
+         * navigation between pages.
+         *
+         * @param transition the transition
+         * @return this builder
+         */
+        public @NotNull Builder pageTransition(@NotNull MuiPageTransition transition) {
+            this.pageTransition = Objects.requireNonNull(transition, "transition");
+            return this;
+        }
+
+        /**
+         * Overrides the transition duration. Values are clamped to {@code 0..2000} milliseconds;
+         * {@code 0} makes the switch instant even when a transition is selected. By default the
+         * duration of the selected {@link MuiPageTransition} is used.
+         *
+         * @param millis duration in milliseconds
+         * @return this builder
+         */
+        public @NotNull Builder pageTransitionDuration(long millis) {
+            this.pageTransitionDuration = Math.max(0L, Math.min(2000L, millis));
+            return this;
+        }
+
+        /**
          * Replaces the default rail title/subtitle block.
          *
          * @param factory header view factory, or {@code null} for the default
@@ -442,8 +474,10 @@ public final class MuiSettingsScreen {
                     .actionBar(this.actionBar)
                     .onCloseRequested(this.closeGuard)
                     .onCreated(this.onCreated)
-                    .onDestroyed(this.onDestroyed);
+                    .onDestroyed(this.onDestroyed)
+                    .pageTransition(this.pageTransition);
 
+            if (this.pageTransitionDuration >= 0L) delegate.pageTransitionDuration(this.pageTransitionDuration);
             if (this.singlePage) delegate.singlePage();
             if (this.theme != null) delegate.theme(this.theme);
 

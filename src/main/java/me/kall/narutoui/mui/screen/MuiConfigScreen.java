@@ -77,6 +77,10 @@ public final class MuiConfigScreen {
         private boolean singlePage;
         /** Navigation placement for multi-page screens. */
         private MuiNavigation navigation = MuiNavigation.LEFT;
+        /** Page-switch transition. */
+        private MuiPageTransition pageTransition = MuiPageTransition.FADE;
+        /** Page-switch transition duration in milliseconds; negative uses the style default. */
+        private long pageTransitionDuration = -1L;
         /** Optional theme override. */
         private MuiTheme theme;
         /** Per-screen widget factory. */
@@ -299,6 +303,34 @@ public final class MuiConfigScreen {
         }
 
         /**
+         * Sets the transition played when the player switches pages. The default is
+         * {@link MuiPageTransition#FADE}; use {@link #pageTransitionDuration(long)} with
+         * {@code 0} to keep the instant page switch. The first page shown when the screen opens,
+         * page reloads and shell rebuilds after a resize never animate, so this only affects
+         * navigation between pages.
+         *
+         * @param transition the transition
+         * @return this builder
+         */
+        public @NotNull Builder pageTransition(@NotNull MuiPageTransition transition) {
+            this.pageTransition = Objects.requireNonNull(transition, "transition");
+            return this;
+        }
+
+        /**
+         * Overrides the transition duration. Values are clamped to {@code 0..2000} milliseconds;
+         * {@code 0} makes the switch instant even when a transition is selected. By default the
+         * duration of the selected {@link MuiPageTransition} is used.
+         *
+         * @param millis duration in milliseconds
+         * @return this builder
+         */
+        public @NotNull Builder pageTransitionDuration(long millis) {
+            this.pageTransitionDuration = Math.max(0L, Math.min(2000L, millis));
+            return this;
+        }
+
+        /**
          * Replaces the default title/subtitle block at the top of the navigation rail.
          *
          * @param factory header factory, or {@code null} for the default
@@ -457,7 +489,18 @@ public final class MuiConfigScreen {
             }
 
             int initialPageIndex = this.resolveInitialPage();
-            return new Model(this.title, this.subtitle, this.footer, this.singlePage, this.navigation, this.theme, this.widgetFactory, this.shimmerProfile, this.navigationShimmerable, this.titlesShimmerable, this.contentWidth, this.background, List.copyOf(this.pages), initialPageIndex, this.railHeader, this.railFooter, this.actionBar, this.onCreated, this.onDestroyed, this.closeGuard);
+            return new Model(this.title, this.subtitle, this.footer, this.singlePage, this.navigation, this.pageTransition, this.resolveTransitionDuration(), this.theme, this.widgetFactory, this.shimmerProfile, this.navigationShimmerable, this.titlesShimmerable, this.contentWidth, this.background, List.copyOf(this.pages), initialPageIndex, this.railHeader, this.railFooter, this.actionBar, this.onCreated, this.onDestroyed, this.closeGuard);
+        }
+
+        /**
+         * Resolves the page-transition duration, falling back to the style default.
+         *
+         * @return duration in milliseconds
+         */
+        private long resolveTransitionDuration() {
+            return this.pageTransitionDuration >= 0L
+                    ? this.pageTransitionDuration
+                    : this.pageTransition.defaultDurationMillis();
         }
 
         /**
@@ -537,6 +580,8 @@ public final class MuiConfigScreen {
      * @param footer      rail footer text
      * @param singlePage  {@code true} to omit the navigation
      * @param navigation  navigation placement
+     * @param pageTransition page-switch transition
+     * @param pageTransitionDuration page-switch transition duration in milliseconds
      * @param theme       optional theme override
      * @param widgetFactory per-screen widget factory
      * @param shimmerProfile per-screen shimmer profile
@@ -553,7 +598,7 @@ public final class MuiConfigScreen {
      * @param onDestroyed optional destruction callback
      * @param closeGuard  optional guard consulted before a user-initiated close
      */
-    record Model(String title, String subtitle, String footer, boolean singlePage, MuiNavigation navigation, @Nullable MuiTheme theme, MuiWidgetFactory widgetFactory, MuiShimmerProfile shimmerProfile, MuiShimmerable navigationShimmerable, MuiShimmerable titlesShimmerable, int contentWidth, MuiBackground background, List<PageSpec> pages, int initialPage, @Nullable Function<Context, View> railHeader, @Nullable Function<Context, View> railFooter, @Nullable Function<Context, View> actionBar, @Nullable Consumer<MuiConfigFragment> onCreated, @Nullable Consumer<MuiConfigFragment> onDestroyed, @Nullable BooleanSupplier closeGuard) {}
+    record Model(String title, String subtitle, String footer, boolean singlePage, MuiNavigation navigation, MuiPageTransition pageTransition, long pageTransitionDuration, @Nullable MuiTheme theme, MuiWidgetFactory widgetFactory, MuiShimmerProfile shimmerProfile, MuiShimmerable navigationShimmerable, MuiShimmerable titlesShimmerable, int contentWidth, MuiBackground background, List<PageSpec> pages, int initialPage, @Nullable Function<Context, View> railHeader, @Nullable Function<Context, View> railFooter, @Nullable Function<Context, View> actionBar, @Nullable Consumer<MuiConfigFragment> onCreated, @Nullable Consumer<MuiConfigFragment> onDestroyed, @Nullable BooleanSupplier closeGuard) {}
 
     /**
      * One page entry, either a low-level body callback or a custom root-view factory.
