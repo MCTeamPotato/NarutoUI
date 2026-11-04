@@ -84,6 +84,8 @@ public final class MuiSettingsScreen {
         private MuiBackground background = MuiBackground.scrim();
         /** Initial selected page index. */
         private int initialPage;
+        /** Initial page navigation label, or {@code null} when {@link #initialPage} is used. */
+        private String initialPageLabel;
         /** Optional custom rail header factory. */
         private Function<Context, View> railHeader;
         /** Optional custom rail footer factory. */
@@ -266,6 +268,20 @@ public final class MuiSettingsScreen {
          */
         public @NotNull Builder initialPage(int index) {
             this.initialPage = index;
+            this.initialPageLabel = null;
+            return this;
+        }
+
+        /**
+         * Selects the page shown when the screen opens by its navigation label. The label is
+         * resolved when the screen is built, so pages may be added after this call. An unknown
+         * label fails with {@link IllegalArgumentException}.
+         *
+         * @param navLabel navigation label of the initial page
+         * @return this builder
+         */
+        public @NotNull Builder initialPage(@NotNull String navLabel) {
+            this.initialPageLabel = Objects.requireNonNull(navLabel, "navLabel");
             return this;
         }
 
@@ -352,6 +368,18 @@ public final class MuiSettingsScreen {
         }
 
         /**
+         * Adds a DSL page with a distinct title and no subtitle.
+         *
+         * @param navLabel navigation label
+         * @param title    page title
+         * @param body     page builder callback
+         * @return this builder
+         */
+        public @NotNull Builder page(@NotNull String navLabel, @NotNull String title, @NotNull Consumer<MuiSettingsPage> body) {
+            return this.page(navLabel, title, null, body);
+        }
+
+        /**
          * Adds a DSL page.
          *
          * @param navLabel navigation label
@@ -384,6 +412,7 @@ public final class MuiSettingsScreen {
          * @param parent previous screen, or {@code null}
          * @return the created screen
          * @throws IllegalStateException when no page was added
+         * @throws IllegalArgumentException when the initial page label does not match a page
          */
         public @NotNull Screen create(@Nullable Screen parent) {
             if (this.pages.isEmpty()) {
@@ -397,6 +426,7 @@ public final class MuiSettingsScreen {
 
         @SuppressWarnings("DataFlowIssue")
         private void applyTo(@NotNull MuiConfigScreen.Builder delegate) {
+            int initialPageIndex = this.resolveInitialPage();
             delegate.subtitle(this.subtitle)
                     .footer(this.footer)
                     .widgetFactory(this.widgetFactory)
@@ -405,7 +435,7 @@ public final class MuiSettingsScreen {
                     .shimmerTitles(this.titlesShimmerable)
                     .contentWidth(this.contentWidth)
                     .background(this.background)
-                    .initialPage(this.initialPage)
+                    .initialPage(initialPageIndex)
                     .navigation(this.navigation)
                     .railHeader(this.railHeader)
                     .railFooter(this.railFooter)
@@ -424,6 +454,20 @@ public final class MuiSettingsScreen {
                     delegate.page(page.navLabel(), page.title(), page.subtitle(), context -> page.body().accept(new MuiSettingsPage(context)));
                 }
             }
+        }
+
+        /**
+         * Resolves the initial page index from either the numeric index or the navigation label.
+         *
+         * @return the zero-based initial page index
+         */
+        private int resolveInitialPage() {
+            if (this.initialPageLabel == null) return this.initialPage;
+
+            for (int i = 0; i < this.pages.size(); i++) {
+                if (this.pages.get(i).navLabel().equals(this.initialPageLabel)) return i;
+            }
+            throw new IllegalArgumentException("No page with navigation label: " + this.initialPageLabel);
         }
     }
 

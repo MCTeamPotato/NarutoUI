@@ -93,6 +93,16 @@ public interface MuiBackground {
     }
 
     /**
+     * Creates a single-image background covering the screen with the default dim overlay.
+     *
+     * @param path image path
+     * @return an image background provider
+     */
+    static @NotNull MuiBackground image(@NotNull Path path) {
+        return image(path, 0.55D);
+    }
+
+    /**
      * Creates a single-image background covering the screen.
      *
      * @param path image path
@@ -117,6 +127,16 @@ public interface MuiBackground {
     static @NotNull MuiBackground image(@NotNull Path path, double cropX, double cropY,
                                         double cropWidth, double cropHeight, double dim) {
         return new MuiImageBackground(path, cropX, cropY, cropWidth, cropHeight, dim);
+    }
+
+    /**
+     * Creates a slideshow background with the default interval, fade and dim values.
+     *
+     * @param files image paths
+     * @return a slideshow background provider
+     */
+    static @NotNull MuiBackground slideshow(@NotNull List<Path> files) {
+        return slideshow(files, 8.0D, 1.2D, 0.55D);
     }
 
     /**

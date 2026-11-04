@@ -131,6 +131,18 @@ public final class MuiControls {
     }
 
     /**
+     * Creates a plain secondary text view with the standard size and variant color.
+     *
+     * @param context the screen context
+     * @param theme   active theme
+     * @param text    text content
+     * @return the text view
+     */
+    public static @NotNull TextView text(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence text) {
+        return text(context, theme, text, 12, theme.onSurfaceVariant());
+    }
+
+    /**
      * Creates a plain text view.
      *
      * @param context the screen context
@@ -157,6 +169,18 @@ public final class MuiControls {
      */
     public static @NotNull TextView text(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence text, float size, int color, @NotNull MuiShimmerable marker) {
         return factory().text(context, MuiLocalization.resolve(text), size, color, marker);
+    }
+
+    /**
+     * Creates a bold heading with the standard size and on-surface color.
+     *
+     * @param context the screen context
+     * @param theme   active theme
+     * @param text    heading text
+     * @return the heading view
+     */
+    public static @NotNull TextView heading(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence text) {
+        return heading(context, theme, text, 16, theme.onSurface());
     }
 
     /**
@@ -402,6 +426,17 @@ public final class MuiControls {
     }
 
     /**
+     * Creates a themed checkbox without a shimmer marker.
+     *
+     * @param context the screen context
+     * @param theme   active theme
+     * @return the checkbox
+     */
+    public static @NotNull CheckBox checkBox(@NotNull Context context, @NotNull MuiTheme theme) {
+        return factory().checkBox(context, theme, MuiShimmerable.NEVER);
+    }
+
+    /**
      * Creates a themed checkbox.
      *
      * @param context the screen context
@@ -411,6 +446,17 @@ public final class MuiControls {
      */
     public static @NotNull CheckBox checkBox(@NotNull Context context, @NotNull MuiTheme theme, @NotNull MuiShimmerable marker) {
         return factory().checkBox(context, theme, marker);
+    }
+
+    /**
+     * Creates a themed radio button without a shimmer marker.
+     *
+     * @param context the screen context
+     * @param theme   active theme
+     * @return the radio button
+     */
+    public static @NotNull RadioButton radioButton(@NotNull Context context, @NotNull MuiTheme theme) {
+        return factory().radioButton(context, theme, MuiShimmerable.NEVER);
     }
 
     /**
@@ -426,6 +472,17 @@ public final class MuiControls {
     }
 
     /**
+     * Creates a themed progress bar without a shimmer marker.
+     *
+     * @param context the screen context
+     * @param theme   active theme
+     * @return the progress bar
+     */
+    public static @NotNull ProgressBar progressBar(@NotNull Context context, @NotNull MuiTheme theme) {
+        return factory().progressBar(context, theme, MuiShimmerable.NEVER);
+    }
+
+    /**
      * Creates a themed progress bar.
      *
      * @param context the screen context
@@ -435,6 +492,20 @@ public final class MuiControls {
      */
     public static @NotNull ProgressBar progressBar(@NotNull Context context, @NotNull MuiTheme theme, @NotNull MuiShimmerable marker) {
         return factory().progressBar(context, theme, marker);
+    }
+
+    /**
+     * Creates a switch row with a static initial state and no description.
+     *
+     * @param context  the screen context
+     * @param theme    active theme
+     * @param title    row title
+     * @param value    initial checked state
+     * @param onChange state callback
+     * @return the composed row
+     */
+    public static @NotNull LinearLayout switchRow(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence title, boolean value, @NotNull BooleanConsumer onChange) {
+        return switchRow(context, theme, title, null, value, onChange);
     }
 
     /**
@@ -461,6 +532,20 @@ public final class MuiControls {
         params.gravity = Gravity.CENTER_VERTICAL;
         row.addView(toggle, params);
         return row;
+    }
+
+    /**
+     * A switch row backed by an external {@link BooleanSupplier} and no description.
+     *
+     * @param context  the screen context
+     * @param theme    active theme
+     * @param title    row title
+     * @param value    live state supplier
+     * @param onChange state callback
+     * @return the composed row
+     */
+    public static @NotNull LinearLayout switchRow(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence title, @NotNull BooleanSupplier value, @NotNull BooleanConsumer onChange) {
+        return switchRow(context, theme, title, null, value, onChange);
     }
 
     /**
@@ -502,6 +587,34 @@ public final class MuiControls {
         params.gravity = Gravity.CENTER_VERTICAL;
         row.addView(toggle, params);
         return row;
+    }
+
+    /**
+     * Creates a text field row with a static initial value and no description.
+     *
+     * @param context  the screen context
+     * @param theme    active theme
+     * @param title    row title
+     * @param value    initial text
+     * @param onCommit commit callback
+     * @return the composed row
+     */
+    public static @NotNull LinearLayout textFieldRow(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence title, @NotNull CharSequence value, @NotNull Consumer<String> onCommit) {
+        return textFieldRow(context, theme, title, null, value, onCommit);
+    }
+
+    /**
+     * Creates a text field row whose text tracks an external supplier and has no description.
+     *
+     * @param context  the screen context
+     * @param theme    active theme
+     * @param title    row title
+     * @param value    live text supplier
+     * @param onCommit commit callback
+     * @return the composed row
+     */
+    public static @NotNull LinearLayout textFieldRow(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence title, @NotNull Supplier<String> value, @NotNull Consumer<String> onCommit) {
+        return textFieldRow(context, theme, title, null, value, onCommit);
     }
 
     /**
@@ -557,6 +670,20 @@ public final class MuiControls {
     }
 
     /**
+     * Creates a string list row without a description.
+     *
+     * @param context   the screen context
+     * @param theme     active theme
+     * @param title     row title
+     * @param values    initial entries
+     * @param onChanged change callback
+     * @return the composed row
+     */
+    public static @NotNull LinearLayout listRow(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence title, @NotNull List<String> values, @NotNull Consumer<List<String>> onChanged) {
+        return listRow(context, theme, title, null, values, onChanged);
+    }
+
+    /**
      * Creates a string list row. The editor reports the complete list on every edit.
      *
      * @param context     the screen context
@@ -576,6 +703,22 @@ public final class MuiControls {
         params.topMargin = dp(context, 6);
         block.addView(editor, params);
         return block;
+    }
+
+    /**
+     * Creates an integer number row without a description.
+     *
+     * @param context  the screen context
+     * @param theme    active theme
+     * @param title    row title
+     * @param min      minimum value (inclusive)
+     * @param max      maximum value (inclusive)
+     * @param value    live value supplier
+     * @param onChange value callback
+     * @return the composed row
+     */
+    public static @NotNull LinearLayout numberRow(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence title, int min, int max, @NotNull IntSupplier value, @NotNull IntConsumer onChange) {
+        return numberRow(context, theme, title, null, min, max, value, onChange);
     }
 
     /**
@@ -611,6 +754,22 @@ public final class MuiControls {
     }
 
     /**
+     * Creates a long number row without a description.
+     *
+     * @param context  the screen context
+     * @param theme    active theme
+     * @param title    row title
+     * @param min      minimum value (inclusive)
+     * @param max      maximum value (inclusive)
+     * @param value    live value supplier
+     * @param onChange value callback
+     * @return the composed row
+     */
+    public static @NotNull LinearLayout longNumberRow(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence title, long min, long max, @NotNull LongSupplier value, @NotNull LongConsumer onChange) {
+        return longNumberRow(context, theme, title, null, min, max, value, onChange);
+    }
+
+    /**
      * Creates a long number row.
      *
      * @param context     the screen context
@@ -640,6 +799,22 @@ public final class MuiControls {
             if (field.longValue() != expected) field.value(expected);
         });
         return row;
+    }
+
+    /**
+     * Creates a decimal number row without a description.
+     *
+     * @param context  the screen context
+     * @param theme    active theme
+     * @param title    row title
+     * @param min      minimum value (inclusive)
+     * @param max      maximum value (inclusive)
+     * @param value    live value supplier
+     * @param onChange value callback
+     * @return the composed row
+     */
+    public static @NotNull LinearLayout decimalRow(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence title, double min, double max, @NotNull DoubleSupplier value, @NotNull DoubleConsumer onChange) {
+        return decimalRow(context, theme, title, null, min, max, value, onChange);
     }
 
     /**
@@ -675,6 +850,22 @@ public final class MuiControls {
     }
 
     /**
+     * Creates a select row with a static selection and no description.
+     *
+     * @param context    the screen context
+     * @param theme      active theme
+     * @param title      row title
+     * @param options    available options
+     * @param selected   initial selection, or {@code null}
+     * @param onSelected selection callback
+     * @param <T>        option value type
+     * @return the composed row
+     */
+    public static <T> @NotNull LinearLayout dropdownRow(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence title, @NotNull List<MuiOption<T>> options, @Nullable T selected, @NotNull Consumer<T> onSelected) {
+        return dropdownRow(context, theme, title, null, options, selected, onSelected);
+    }
+
+    /**
      * Creates a select row with a static selection.
      *
      * @param context     the screen context
@@ -697,6 +888,22 @@ public final class MuiControls {
         params.topMargin = dp(context, 6);
         block.addView(dropdown, params);
         return block;
+    }
+
+    /**
+     * A select row whose selection tracks an external supplier and has no description.
+     *
+     * @param context    the screen context
+     * @param theme      active theme
+     * @param title      row title
+     * @param options    available options
+     * @param value      live selection supplier
+     * @param onSelected selection callback
+     * @param <T>        option value type
+     * @return the composed row
+     */
+    public static <T> @NotNull LinearLayout dropdownRowBound(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence title, @NotNull List<MuiOption<T>> options, @NotNull Supplier<T> value, @NotNull Consumer<T> onSelected) {
+        return dropdownRowBound(context, theme, title, null, options, value, onSelected);
     }
 
     /**
@@ -731,6 +938,22 @@ public final class MuiControls {
     }
 
     /**
+     * Creates a card-style choice row with a static selection and no description.
+     *
+     * @param context    the screen context
+     * @param theme      active theme
+     * @param title      row title
+     * @param options    available options
+     * @param selected   initial selection, or {@code null}
+     * @param onSelected selection callback
+     * @param <T>        option value type
+     * @return the composed row
+     */
+    public static <T> @NotNull LinearLayout choiceGridRow(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence title, @NotNull List<MuiOption<T>> options, @Nullable T selected, @NotNull Consumer<T> onSelected) {
+        return choiceGridRow(context, theme, title, null, options, selected, onSelected);
+    }
+
+    /**
      * Creates a card-style choice row with a static selection.
      *
      * @param context     the screen context
@@ -753,6 +976,22 @@ public final class MuiControls {
         params.topMargin = dp(context, 6);
         block.addView(grid, params);
         return block;
+    }
+
+    /**
+     * A card-style choice row whose selection tracks an external supplier and has no description.
+     *
+     * @param context    the screen context
+     * @param theme      active theme
+     * @param title      row title
+     * @param options    available options
+     * @param value      live selection supplier
+     * @param onSelected selection callback
+     * @param <T>        option value type
+     * @return the composed row
+     */
+    public static <T> @NotNull LinearLayout choiceGridRowBound(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence title, @NotNull List<MuiOption<T>> options, @NotNull Supplier<T> value, @NotNull Consumer<T> onSelected) {
+        return choiceGridRowBound(context, theme, title, null, options, value, onSelected);
     }
 
     /**
@@ -812,6 +1051,52 @@ public final class MuiControls {
      */
     public static @NotNull LinearLayout valueRow(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence title, @NotNull IntSupplier value) {
         return valueRow(context, theme, title, Integer::toString, value);
+    }
+
+    /**
+     * A value row that refreshes its right-hand text from an external decimal source.
+     *
+     * @param context the screen context
+     * @param theme   active theme
+     * @param title   row title
+     * @param value   live decimal supplier
+     * @return the composed row
+     */
+    public static @NotNull LinearLayout valueRow(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence title, @NotNull DoubleSupplier value) {
+        LinearLayout row = row(context);
+        row.addView(text(context, theme, title, 14, theme.onSurface()), weight());
+
+        TextView valueView = text(context, theme, Double.toString(value.getAsDouble()), 12, theme.onSurfaceVariant());
+        row.addView(valueView, wrap());
+
+        refreshPeriodically(valueView, () -> {
+            CharSequence next = Double.toString(value.getAsDouble());
+            if (!next.toString().contentEquals(valueView.getText())) valueView.setText(next);
+        });
+        return row;
+    }
+
+    /**
+     * A value row that refreshes its right-hand text from an external long source.
+     *
+     * @param context the screen context
+     * @param theme   active theme
+     * @param title   row title
+     * @param value   live long supplier
+     * @return the composed row
+     */
+    public static @NotNull LinearLayout valueRow(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence title, @NotNull LongSupplier value) {
+        LinearLayout row = row(context);
+        row.addView(text(context, theme, title, 14, theme.onSurface()), weight());
+
+        TextView valueView = text(context, theme, Long.toString(value.getAsLong()), 12, theme.onSurfaceVariant());
+        row.addView(valueView, wrap());
+
+        refreshPeriodically(valueView, () -> {
+            CharSequence next = Long.toString(value.getAsLong());
+            if (!next.toString().contentEquals(valueView.getText())) valueView.setText(next);
+        });
+        return row;
     }
 
     /**
@@ -1280,6 +1565,19 @@ public final class MuiControls {
             }
         };
         host.postDelayed(tick, 100L);
+    }
+
+    /**
+     * Creates a filled pill button.
+     *
+     * @param context the screen context
+     * @param theme   active theme
+     * @param label   button label
+     * @param onClick click listener
+     * @return the button
+     */
+    public static @NotNull Button button(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence label, @NotNull View.OnClickListener onClick) {
+        return button(context, theme, label, false, onClick);
     }
 
     /**

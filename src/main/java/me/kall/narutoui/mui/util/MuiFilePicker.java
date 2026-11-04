@@ -42,6 +42,16 @@ public final class MuiFilePicker {
     private MuiFilePicker() {}
 
     /**
+     * Opens an image file dialog with the default {@code "Images"} filter label.
+     *
+     * @param title    dialog title
+     * @param callback selection callback
+     */
+    public static void openImage(@NotNull String title, @NotNull Callback callback) {
+        openImage(title, "Images", callback);
+    }
+
+    /**
      * Opens an image file dialog.
      *
      * @param title       dialog title
@@ -55,6 +65,16 @@ public final class MuiFilePicker {
         } else {
             minecraft.execute(() -> openImageNow(title, filterLabel, callback));
         }
+    }
+
+    /**
+     * Opens a folder dialog starting at the game directory.
+     *
+     * @param title    dialog title
+     * @param callback selection callback
+     */
+    public static void openFolder(@NotNull String title, @NotNull Callback callback) {
+        openFolder(null, title, callback);
     }
 
     /**

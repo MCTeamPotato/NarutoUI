@@ -138,11 +138,28 @@ public final class MuiSettingsPage {
     }
 
     /**
-     * Adds a paragraph of text directly to the page column, outside a card.
+     * Adds a collapsible card that starts expanded, without a summary.
      *
-     * @param text paragraph text
+     * @param title card title
+     * @param body  section field callback
      * @return this page, for chaining
      */
+    public @NotNull MuiSettingsPage collapsibleSection(@NotNull CharSequence title, @NotNull Consumer<MuiSettingsSection> body) {
+        return this.collapsibleSection(title, null, true, body);
+    }
+
+    /**
+     * Adds a collapsible card that starts expanded.
+     *
+     * @param title   card title
+     * @param summary optional summary; empty hides it
+     * @param body    section field callback
+     * @return this page, for chaining
+     */
+    public @NotNull MuiSettingsPage collapsibleSection(@NotNull CharSequence title, @Nullable CharSequence summary, @NotNull Consumer<MuiSettingsSection> body) {
+        return this.collapsibleSection(title, summary, true, body);
+    }
+
     /**
      * Adds a collapsible card and exposes its body as a regular field section. Useful for long
      * pages with independently expandable categories.

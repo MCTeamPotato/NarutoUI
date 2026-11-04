@@ -78,6 +78,7 @@ MuiSettingsScreen.builder("My Mod")
 ```
 
 `page(navLabel, body)` 的 `navLabel` 同时也是页面标题。
+`page(navLabel, title, body)` 只给页面单独标题，不显示副标题。
 `page(navLabel, title, subtitle, body)` 可以给页面单独的标题和副标题。
 
 ### 单页
@@ -109,13 +110,18 @@ MuiSettingsScreen.builder("My Mod")
 ### 初始页 / 内容宽度
 
 ```java
-.initialPage(1)
-.contentWidth(720)   // DP；<= 0 表示不限制
+.initialPage(1)          // 按索引
+.initialPage("General")  // 按导航标签，页面重排后仍然指向同一页
+.contentWidth(720)       // DP；<= 0 表示不限制
 ```
+
+`initialPage(int)` 和 `initialPage(String)` 后调用的生效；标签在 `create()` 时解析，找不到会抛 `IllegalArgumentException`。
 
 ---
 
 ## 3. 我想做开关、滑杆、按钮
+
+所有行级方法都提供不传 `description` 的重载；`description` 是可选的标题 tooltip，不需要时直接省略。
 
 ### 开关
 
@@ -172,7 +178,7 @@ MuiSettingsScreen.builder("My Mod")
 .value("TPS", value -> String.format("%.1f", value / 20.0F), MyWorld::tps)
 ```
 
-`value(..., IntSupplier)` 会定期刷新；`value(..., format, supplier)` 可以自定义显示。
+`value(..., IntSupplier)` 会定期刷新；`value(..., format, supplier)` 可以自定义整数显示。`DoubleSupplier` / `LongSupplier` 也有默认格式化的重载。
 
 ---
 
@@ -189,7 +195,7 @@ supplier 版本：
 静态初始值版本：
 
 ```java
-.textField("Alias", null, "default", value -> {
+.textField("Alias", "default", value -> {
     MyConfig.setAlias(value);
 })
 ```
@@ -210,9 +216,9 @@ MuiValidationHint hint = MuiValidationHint.create(
 ### 数字
 
 ```java
-.number("Width", null, 1, 1920, MyConfig::width, MyConfig::setWidth)
-.longNumber("Seed", null, Long.MIN_VALUE, Long.MAX_VALUE, MyConfig::seed, MyConfig::setSeed)
-.decimal("Multiplier", null, 0.0D, 10.0D, MyConfig::factor, MyConfig::setFactor)
+.number("Width", 1, 1920, MyConfig::width, MyConfig::setWidth)
+.longNumber("Seed", Long.MIN_VALUE, Long.MAX_VALUE, MyConfig::seed, MyConfig::setSeed)
+.decimal("Multiplier", 0.0D, 10.0D, MyConfig::factor, MyConfig::setFactor)
 ```
 
 - `number` 是 `int`
@@ -257,13 +263,13 @@ MuiControls.listEditor(ctx, theme, MyConfig.ids())
 List<MuiOption<Mode>> modes = MuiEnumOptions.of(Mode.class, "mymod.config.mode");
 
 // ...
-.dropdown("Mode", null, modes, MyConfig.mode(), MyConfig::setMode)
+.dropdown("Mode", modes, MyConfig.mode(), MyConfig::setMode)
 ```
 
 如果是 supplier 驱动：
 
 ```java
-.dropdownBound("Mode", null, modes, MyConfig::mode, MyConfig::setMode)
+.dropdownBound("Mode", modes, MyConfig::mode, MyConfig::setMode)
 ```
 
 `MuiEnumOptions.of(...)` 会为每个枚举常量生成选项，并按 `keyPrefix + "." + 小写常量名` 找翻译；找不到就自动把 `SOME_NAME` 变成 `Some Name`。
@@ -276,7 +282,7 @@ List<MuiOption<Integer>> quality = List.of(
         MuiOption.of(1, "High").badge("Recommended"));
 
 // ...
-.choiceGrid("Quality", null, quality, MyConfig.quality(), MyConfig::setQuality)
+.choiceGrid("Quality", quality, MyConfig.quality(), MyConfig::setQuality)
 ```
 
 supplier 版本叫 `choiceGridBound(...)`。
@@ -543,8 +549,11 @@ MuiTheme theme = new MuiTheme(
 
 ```java
 .background(MuiBackground.image(
+        Path.of("config/mymod/background.png")))   // dim 默认 0.55
+
+.background(MuiBackground.image(
         Path.of("config/mymod/background.png"),
-        0.55D))   // dim，0..1
+        0.7D))   // 显式 dim，0..1
 ```
 
 ### 带裁剪的图片
@@ -559,6 +568,8 @@ MuiTheme theme = new MuiTheme(
 ### 幻灯片
 
 ```java
+.background(MuiBackground.slideshow(files)) // 默认 8s / 1.2s / 0.55
+
 .background(MuiBackground.slideshow(
         files,
         8.0D,   // 每张图停留秒数
@@ -698,6 +709,10 @@ MuiFilePicker.openImage("Choose background", "Images", new MuiFilePicker.Callbac
 });
 
 MuiFilePicker.openFolder(Path.of("config/mymod"), "Choose folder", callback);
+
+// 短版本：图片 filter 默认 "Images"；文件夹默认从游戏目录开始
+MuiFilePicker.openImage("Choose background", callback);
+MuiFilePicker.openFolder("Choose folder", callback);
 ```
 
 回调会在 UI 线程执行。

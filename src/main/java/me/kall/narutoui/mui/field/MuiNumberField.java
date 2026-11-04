@@ -176,6 +176,18 @@ public final class MuiNumberField extends EditText implements ShimmerTarget, Mui
     }
 
     /**
+     * Creates a decimal field that keeps the entered precision.
+     *
+     * @param context the screen context
+     * @param theme   active theme
+     * @param value   initial value
+     * @return the field
+     */
+    public static @NotNull MuiNumberField create(@NotNull Context context, @NotNull MuiTheme theme, double value) {
+        return new MuiNumberField(context, theme, value, -1);
+    }
+
+    /**
      * Creates a decimal field.
      *
      * @param context the screen context

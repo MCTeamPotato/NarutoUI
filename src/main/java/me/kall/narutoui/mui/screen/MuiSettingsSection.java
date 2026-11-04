@@ -115,6 +115,19 @@ public final class MuiSettingsSection {
     }
 
     /**
+     * Adds a switch row with a static initial state and a description.
+     *
+     * @param title       row title
+     * @param description optional description
+     * @param value       initial checked state
+     * @param onChange    state callback
+     * @return this section, for chaining
+     */
+    public @NotNull MuiSettingsSection toggle(@NotNull CharSequence title, @Nullable CharSequence description, boolean value, @NotNull BooleanConsumer onChange) {
+        return this.add(MuiControls.switchRow(this.page.context(), this.page.theme(), title, description, value, onChange));
+    }
+
+    /**
      * Adds a supplier-backed integer slider with the default value label.
      *
      * @param title    row title
@@ -126,6 +139,21 @@ public final class MuiSettingsSection {
      */
     public @NotNull MuiSettingsSection slider(@NotNull CharSequence title, int min, int max, @NotNull IntSupplier value, @NotNull IntConsumer onChange) {
         return this.slider(title, min, max, value, onChange, Integer::toString);
+    }
+
+    /**
+     * Adds a supplier-backed integer slider with a description and the default value label.
+     *
+     * @param title       row title
+     * @param description optional description
+     * @param min         minimum value (inclusive)
+     * @param max         maximum value (inclusive)
+     * @param value       live value supplier
+     * @param onChange    value callback
+     * @return this section, for chaining
+     */
+    public @NotNull MuiSettingsSection slider(@NotNull CharSequence title, @Nullable CharSequence description, int min, int max, @NotNull IntSupplier value, @NotNull IntConsumer onChange) {
+        return this.slider(title, description, min, max, value, onChange, Integer::toString);
     }
 
     /**
@@ -195,6 +223,31 @@ public final class MuiSettingsSection {
     }
 
     /**
+     * Adds a text field row with a static initial value and no description. The value is written on
+     * commit (Enter or focus loss), so a half-typed string never reaches the config object.
+     *
+     * @param title    row title
+     * @param value    initial text
+     * @param onCommit commit callback
+     * @return this section, for chaining
+     */
+    public @NotNull MuiSettingsSection textField(@NotNull CharSequence title, @NotNull CharSequence value, @NotNull Consumer<String> onCommit) {
+        return this.textField(title, null, value, onCommit);
+    }
+
+    /**
+     * Adds a text field row whose text tracks an external supplier and has no description.
+     *
+     * @param title    row title
+     * @param value    live text supplier
+     * @param onCommit commit callback
+     * @return this section, for chaining
+     */
+    public @NotNull MuiSettingsSection textField(@NotNull CharSequence title, @NotNull Supplier<String> value, @NotNull Consumer<String> onCommit) {
+        return this.textField(title, null, value, onCommit);
+    }
+
+    /**
      * Adds a text field row with a static initial value. The value is written on commit (Enter or
      * focus loss), so a half-typed string never reaches the config object.
      *
@@ -222,6 +275,20 @@ public final class MuiSettingsSection {
     }
 
     /**
+     * Adds an integer number row without a description.
+     *
+     * @param title    row title
+     * @param min      minimum value (inclusive)
+     * @param max      maximum value (inclusive)
+     * @param value    live value supplier
+     * @param onChange value callback
+     * @return this section, for chaining
+     */
+    public @NotNull MuiSettingsSection number(@NotNull CharSequence title, int min, int max, @NotNull IntSupplier value, @NotNull IntConsumer onChange) {
+        return this.number(title, null, min, max, value, onChange);
+    }
+
+    /**
      * Adds an integer number row.
      *
      * @param title       row title
@@ -234,6 +301,20 @@ public final class MuiSettingsSection {
      */
     public @NotNull MuiSettingsSection number(@NotNull CharSequence title, @Nullable CharSequence description, int min, int max, @NotNull IntSupplier value, @NotNull IntConsumer onChange) {
         return this.add(MuiControls.numberRow(this.page.context(), this.page.theme(), title, description, min, max, value, onChange));
+    }
+
+    /**
+     * Adds a long number row without a description.
+     *
+     * @param title    row title
+     * @param min      minimum value (inclusive)
+     * @param max      maximum value (inclusive)
+     * @param value    live value supplier
+     * @param onChange value callback
+     * @return this section, for chaining
+     */
+    public @NotNull MuiSettingsSection longNumber(@NotNull CharSequence title, long min, long max, @NotNull LongSupplier value, @NotNull LongConsumer onChange) {
+        return this.longNumber(title, null, min, max, value, onChange);
     }
 
     /**
@@ -252,6 +333,20 @@ public final class MuiSettingsSection {
     }
 
     /**
+     * Adds a decimal number row without a description.
+     *
+     * @param title    row title
+     * @param min      minimum value (inclusive)
+     * @param max      maximum value (inclusive)
+     * @param value    live value supplier
+     * @param onChange value callback
+     * @return this section, for chaining
+     */
+    public @NotNull MuiSettingsSection decimal(@NotNull CharSequence title, double min, double max, @NotNull DoubleSupplier value, @NotNull DoubleConsumer onChange) {
+        return this.decimal(title, null, min, max, value, onChange);
+    }
+
+    /**
      * Adds a decimal number row.
      *
      * @param title       row title
@@ -264,6 +359,20 @@ public final class MuiSettingsSection {
      */
     public @NotNull MuiSettingsSection decimal(@NotNull CharSequence title, @Nullable CharSequence description, double min, double max, @NotNull DoubleSupplier value, @NotNull DoubleConsumer onChange) {
         return this.add(MuiControls.decimalRow(this.page.context(), this.page.theme(), title, description, min, max, value, onChange));
+    }
+
+    /**
+     * Adds a select row with a static selection and no description.
+     *
+     * @param title      row title
+     * @param options    available options
+     * @param selected   initial selection, or {@code null}
+     * @param onSelected selection callback
+     * @param <T>        option value type
+     * @return this section, for chaining
+     */
+    public <T> @NotNull MuiSettingsSection dropdown(@NotNull CharSequence title, @NotNull List<MuiOption<T>> options, @Nullable T selected, @NotNull Consumer<T> onSelected) {
+        return this.dropdown(title, null, options, selected, onSelected);
     }
 
     /**
@@ -282,6 +391,20 @@ public final class MuiSettingsSection {
     }
 
     /**
+     * Adds a select row whose selection tracks an external supplier and has no description.
+     *
+     * @param title      row title
+     * @param options    available options
+     * @param selected   live selection supplier
+     * @param onSelected selection callback
+     * @param <T>        option value type
+     * @return this section, for chaining
+     */
+    public <T> @NotNull MuiSettingsSection dropdownBound(@NotNull CharSequence title, @NotNull List<MuiOption<T>> options, @NotNull Supplier<T> selected, @NotNull Consumer<T> onSelected) {
+        return this.dropdownBound(title, null, options, selected, onSelected);
+    }
+
+    /**
      * Adds a select row whose selection tracks an external supplier.
      *
      * @param title       row title
@@ -294,6 +417,20 @@ public final class MuiSettingsSection {
      */
     public <T> @NotNull MuiSettingsSection dropdownBound(@NotNull CharSequence title, @Nullable CharSequence description, @NotNull List<MuiOption<T>> options, @NotNull Supplier<T> selected, @NotNull Consumer<T> onSelected) {
         return this.add(MuiControls.dropdownRowBound(this.page.context(), this.page.theme(), title, description, options, selected, onSelected));
+    }
+
+    /**
+     * Adds a card-style choice row with a static selection and no description.
+     *
+     * @param title      row title
+     * @param options    available options
+     * @param selected   initial selection, or {@code null}
+     * @param onSelected selection callback
+     * @param <T>        option value type
+     * @return this section, for chaining
+     */
+    public <T> @NotNull MuiSettingsSection choiceGrid(@NotNull CharSequence title, @NotNull List<MuiOption<T>> options, @Nullable T selected, @NotNull Consumer<T> onSelected) {
+        return this.choiceGrid(title, null, options, selected, onSelected);
     }
 
     /**
@@ -312,6 +449,21 @@ public final class MuiSettingsSection {
     }
 
     /**
+     * Adds a card-style choice row whose selection tracks an external supplier and has no
+     * description.
+     *
+     * @param title      row title
+     * @param options    available options
+     * @param selected   live selection supplier
+     * @param onSelected selection callback
+     * @param <T>        option value type
+     * @return this section, for chaining
+     */
+    public <T> @NotNull MuiSettingsSection choiceGridBound(@NotNull CharSequence title, @NotNull List<MuiOption<T>> options, @NotNull Supplier<T> selected, @NotNull Consumer<T> onSelected) {
+        return this.choiceGridBound(title, null, options, selected, onSelected);
+    }
+
+    /**
      * Adds a card-style choice row whose selection tracks an external supplier.
      *
      * @param title       row title
@@ -324,6 +476,18 @@ public final class MuiSettingsSection {
      */
     public <T> @NotNull MuiSettingsSection choiceGridBound(@NotNull CharSequence title, @Nullable CharSequence description, @NotNull List<MuiOption<T>> options, @NotNull Supplier<T> selected, @NotNull Consumer<T> onSelected) {
         return this.add(MuiControls.choiceGridRowBound(this.page.context(), this.page.theme(), title, description, options, selected, onSelected));
+    }
+
+    /**
+     * Adds a string list editor row without a description.
+     *
+     * @param title     row title
+     * @param values    initial entries
+     * @param onChanged change callback
+     * @return this section, for chaining
+     */
+    public @NotNull MuiSettingsSection list(@NotNull CharSequence title, @NotNull List<String> values, @NotNull Consumer<List<String>> onChanged) {
+        return this.list(title, null, values, onChanged);
     }
 
     /**
@@ -358,6 +522,28 @@ public final class MuiSettingsSection {
      * @return this section, for chaining
      */
     public @NotNull MuiSettingsSection value(@NotNull CharSequence title, @NotNull IntSupplier value) {
+        return this.add(MuiControls.valueRow(this.page.context(), this.page.theme(), title, value));
+    }
+
+    /**
+     * Adds a supplier-backed decimal value row.
+     *
+     * @param title row title
+     * @param value live decimal supplier
+     * @return this section, for chaining
+     */
+    public @NotNull MuiSettingsSection value(@NotNull CharSequence title, @NotNull DoubleSupplier value) {
+        return this.add(MuiControls.valueRow(this.page.context(), this.page.theme(), title, value));
+    }
+
+    /**
+     * Adds a supplier-backed long value row.
+     *
+     * @param title row title
+     * @param value live long supplier
+     * @return this section, for chaining
+     */
+    public @NotNull MuiSettingsSection value(@NotNull CharSequence title, @NotNull LongSupplier value) {
         return this.add(MuiControls.valueRow(this.page.context(), this.page.theme(), title, value));
     }
 
@@ -489,7 +675,19 @@ public final class MuiSettingsSection {
      * @return this section, for chaining
      */
     public @NotNull MuiSettingsSection button(@NotNull CharSequence label, @NotNull Runnable action) {
-        Button button = MuiControls.button(this.page.context(), this.page.theme(), label, false, view -> action.run());
+        return this.button(label, false, action);
+    }
+
+    /**
+     * Adds a full-width action button.
+     *
+     * @param label    button label
+     * @param outlined {@code true} for an outlined button, {@code false} for a filled button
+     * @param action   click callback
+     * @return this section, for chaining
+     */
+    public @NotNull MuiSettingsSection button(@NotNull CharSequence label, boolean outlined, @NotNull Runnable action) {
+        Button button = MuiControls.button(this.page.context(), this.page.theme(), label, outlined, view -> action.run());
         return this.add(button);
     }
 
@@ -528,6 +726,29 @@ public final class MuiSettingsSection {
      */
     public @NotNull MuiSettingsSection custom(@NotNull View view) {
         return this.add(view);
+    }
+
+    /**
+     * Adds a nested collapsible card that starts expanded, without a summary.
+     *
+     * @param title card title
+     * @param body  nested section body
+     * @return the nested section
+     */
+    public @NotNull MuiSettingsSection collapsible(@NotNull CharSequence title, @NotNull Consumer<MuiSettingsSection> body) {
+        return this.collapsible(title, null, true, body);
+    }
+
+    /**
+     * Adds a nested collapsible card that starts expanded.
+     *
+     * @param title   card title
+     * @param summary optional summary; empty hides it
+     * @param body    nested section body
+     * @return the nested section
+     */
+    public @NotNull MuiSettingsSection collapsible(@NotNull CharSequence title, @Nullable CharSequence summary, @NotNull Consumer<MuiSettingsSection> body) {
+        return this.collapsible(title, summary, true, body);
     }
 
     /**

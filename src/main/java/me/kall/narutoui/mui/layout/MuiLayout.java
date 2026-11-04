@@ -12,6 +12,8 @@ import me.kall.narutoui.mui.theme.MuiTheme;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collection;
+
 /**
  * A fluent {@link LinearLayout} used by the configuration-screen API.
  * <p>
@@ -195,6 +197,17 @@ public final class MuiLayout extends LinearLayout {
     }
 
     /**
+     * Sets horizontal and vertical padding.
+     *
+     * @param horizontal left and right padding in density-independent pixels
+     * @param vertical   top and bottom padding in density-independent pixels
+     * @return this layout, for chaining
+     */
+    public @NotNull MuiLayout padding(int horizontal, int vertical) {
+        return this.padding(horizontal, vertical, horizontal, vertical);
+    }
+
+    /**
      * Sets padding for each edge.
      *
      * @param left   left padding in density-independent pixels
@@ -216,6 +229,17 @@ public final class MuiLayout extends LinearLayout {
      */
     public @NotNull MuiLayout margin(int dp) {
         return this.margin(dp, dp, dp, dp);
+    }
+
+    /**
+     * Sets horizontal and vertical margins.
+     *
+     * @param horizontal left and right margin in density-independent pixels
+     * @param vertical   top and bottom margin in density-independent pixels
+     * @return this layout, for chaining
+     */
+    public @NotNull MuiLayout margin(int horizontal, int vertical) {
+        return this.margin(horizontal, vertical, horizontal, vertical);
     }
 
     /**
@@ -349,6 +373,17 @@ public final class MuiLayout extends LinearLayout {
     }
 
     /**
+     * Appends several children with the default layout params.
+     *
+     * @param children the child views
+     * @return this layout, for chaining
+     */
+    public @NotNull MuiLayout addAll(@NotNull Collection<? extends View> children) {
+        for (View child : children) this.addView(child);
+        return this;
+    }
+
+    /**
      * Appends a fixed-size empty space along the layout axis.
      *
      * @param dp size in density-independent pixels
@@ -381,6 +416,17 @@ public final class MuiLayout extends LinearLayout {
     }
 
     /**
+     * Appends a secondary text view with an explicit size and the theme's variant color.
+     *
+     * @param text text content
+     * @param size text size in SP
+     * @return this layout, for chaining
+     */
+    public @NotNull MuiLayout text(@NotNull CharSequence text, float size) {
+        return this.add(MuiControls.text(this.getContext(), this.theme, text, size, this.theme.onSurfaceVariant()));
+    }
+
+    /**
      * Appends a text view with an explicit size and color.
      *
      * @param text  text content
@@ -400,6 +446,17 @@ public final class MuiLayout extends LinearLayout {
      */
     public @NotNull MuiLayout heading(@NotNull CharSequence text) {
         return this.add(MuiControls.heading(this.getContext(), this.theme, text, 16, this.theme.onSurface()));
+    }
+
+    /**
+     * Appends a bold heading with an explicit size and the theme's on-surface color.
+     *
+     * @param text heading text
+     * @param size text size in SP
+     * @return this layout, for chaining
+     */
+    public @NotNull MuiLayout heading(@NotNull CharSequence text, float size) {
+        return this.add(MuiControls.heading(this.getContext(), this.theme, text, size, this.theme.onSurface()));
     }
 
     /**

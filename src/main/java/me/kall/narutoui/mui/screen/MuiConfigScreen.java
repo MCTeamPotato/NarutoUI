@@ -93,6 +93,8 @@ public final class MuiConfigScreen {
         private MuiBackground background = MuiBackground.scrim();
         /** Initial selected page index. */
         private int initialPage;
+        /** Initial page navigation label, or {@code null} when {@link #initialPage} is used. */
+        private String initialPageLabel;
         /** Optional custom rail header factory. */
         private Function<Context, View> railHeader;
         /** Optional custom rail footer factory. */
@@ -279,6 +281,20 @@ public final class MuiConfigScreen {
          */
         public @NotNull Builder initialPage(int index) {
             this.initialPage = index;
+            this.initialPageLabel = null;
+            return this;
+        }
+
+        /**
+         * Selects the page shown when the screen opens by its navigation label. The label is
+         * resolved when the screen is built, so pages may be added after this call. An unknown
+         * label fails with {@link IllegalArgumentException}.
+         *
+         * @param navLabel navigation label of the initial page
+         * @return this builder
+         */
+        public @NotNull Builder initialPage(@NotNull String navLabel) {
+            this.initialPageLabel = Objects.requireNonNull(navLabel, "navLabel");
             return this;
         }
 
@@ -374,6 +390,18 @@ public final class MuiConfigScreen {
         }
 
         /**
+         * Adds a low-level page with a distinct title and no subtitle.
+         *
+         * @param navLabel navigation label
+         * @param title    page title
+         * @param body     page body callback
+         * @return this builder
+         */
+        public @NotNull Builder page(@NotNull String navLabel, @NotNull String title, @NotNull Consumer<MuiPageContext> body) {
+            return this.page(navLabel, title, null, body);
+        }
+
+        /**
          * Adds a low-level page.
          *
          * @param navLabel navigation label
@@ -406,6 +434,7 @@ public final class MuiConfigScreen {
          * @param parent previous screen, or {@code null}
          * @return the created screen
          * @throws IllegalStateException when no page was added
+         * @throws IllegalArgumentException when the initial page label does not match a page
          */
         public @NotNull Screen create(@Nullable Screen parent) {
             return createScreen(this.buildModel(), UUID.randomUUID().toString(), parent);
@@ -416,6 +445,7 @@ public final class MuiConfigScreen {
          *
          * @return the model
          * @throws IllegalStateException when no page was added
+         * @throws IllegalArgumentException when the initial page label does not match a page
          */
         @Contract(" -> new")
         MuiConfigScreen.@NotNull Model buildModel() {
@@ -426,7 +456,22 @@ public final class MuiConfigScreen {
                 throw new IllegalStateException("Single-page mode needs exactly one page");
             }
 
-            return new Model(this.title, this.subtitle, this.footer, this.singlePage, this.navigation, this.theme, this.widgetFactory, this.shimmerProfile, this.navigationShimmerable, this.titlesShimmerable, this.contentWidth, this.background, List.copyOf(this.pages), this.initialPage, this.railHeader, this.railFooter, this.actionBar, this.onCreated, this.onDestroyed, this.closeGuard);
+            int initialPageIndex = this.resolveInitialPage();
+            return new Model(this.title, this.subtitle, this.footer, this.singlePage, this.navigation, this.theme, this.widgetFactory, this.shimmerProfile, this.navigationShimmerable, this.titlesShimmerable, this.contentWidth, this.background, List.copyOf(this.pages), initialPageIndex, this.railHeader, this.railFooter, this.actionBar, this.onCreated, this.onDestroyed, this.closeGuard);
+        }
+
+        /**
+         * Resolves the initial page index from either the numeric index or the navigation label.
+         *
+         * @return the zero-based initial page index
+         */
+        private int resolveInitialPage() {
+            if (this.initialPageLabel == null) return this.initialPage;
+
+            for (int i = 0; i < this.pages.size(); i++) {
+                if (this.pages.get(i).navLabel().equals(this.initialPageLabel)) return i;
+            }
+            throw new IllegalArgumentException("No page with navigation label: " + this.initialPageLabel);
         }
     }
 

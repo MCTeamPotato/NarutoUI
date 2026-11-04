@@ -20,3 +20,8 @@
 # 1.5.1
 - Add dialogs, collapsible sections, tooltips, dynamic navigation sizing, and runtime row enablement. 
 - Parse legacy text formatting and improve screen lifecycle, resize handling, and list-editor commits.
+# 1.6.0
+- Add description-free overloads for section number, long number, decimal, dropdown, choice grid, list and text field rows, mirrored in `MuiControls` and `MuiPageContext`.
+- Add three-argument page overloads and navigation-label based initial-page selection to the high-level and low-level screen builders.
+- Add default-marker checkbox, radio button and progress bar factories, a filled button overload, fluent padding, margin, text and heading helpers, and decimal/long value rows.
+- Add expanded-by-default collapsible section helpers, default image/slideshow background factories, shorter file-picker calls, and a decimal number field factory without an explicit scale.

@@ -229,6 +229,18 @@ public final class MuiPageContext {
     private record SearchEntry(@NotNull String keywords, @NotNull View row) {}
 
     /**
+     * Creates a switch row using a static initial value and no description.
+     *
+     * @param title    row title
+     * @param value    initial checked state
+     * @param onChange state callback
+     * @return the composed row
+     */
+    public @NotNull LinearLayout switchRow(@NotNull CharSequence title, boolean value, @NotNull BooleanConsumer onChange) {
+        return MuiControls.switchRow(this.context, this.theme, title, value, onChange);
+    }
+
+    /**
      * Creates a switch row using a static initial value.
      *
      * @param title       row title
@@ -239,6 +251,18 @@ public final class MuiPageContext {
      */
     public @NotNull LinearLayout switchRow(@NotNull CharSequence title, @Nullable CharSequence description, boolean value, @NotNull BooleanConsumer onChange) {
         return MuiControls.switchRow(this.context, this.theme, title, description, value, onChange);
+    }
+
+    /**
+     * Creates a supplier-backed switch row without a description.
+     *
+     * @param title    row title
+     * @param value    live state supplier
+     * @param onChange state callback
+     * @return the composed row
+     */
+    public @NotNull LinearLayout switchRow(@NotNull CharSequence title, @NotNull BooleanSupplier value, @NotNull BooleanConsumer onChange) {
+        return MuiControls.switchRow(this.context, this.theme, title, value, onChange);
     }
 
     /**
@@ -273,6 +297,28 @@ public final class MuiPageContext {
      * @return the composed row
      */
     public @NotNull LinearLayout valueRow(@NotNull CharSequence title, @NotNull IntSupplier value) {
+        return MuiControls.valueRow(this.context, this.theme, title, value);
+    }
+
+    /**
+     * Creates a supplier-backed decimal value row.
+     *
+     * @param title row title
+     * @param value live decimal supplier
+     * @return the composed row
+     */
+    public @NotNull LinearLayout valueRow(@NotNull CharSequence title, @NotNull DoubleSupplier value) {
+        return MuiControls.valueRow(this.context, this.theme, title, value);
+    }
+
+    /**
+     * Creates a supplier-backed long value row.
+     *
+     * @param title row title
+     * @param value live long supplier
+     * @return the composed row
+     */
+    public @NotNull LinearLayout valueRow(@NotNull CharSequence title, @NotNull LongSupplier value) {
         return MuiControls.valueRow(this.context, this.theme, title, value);
     }
 
@@ -317,6 +363,30 @@ public final class MuiPageContext {
     }
 
     /**
+     * Creates a text field row with a static initial value and no description.
+     *
+     * @param title    row title
+     * @param value    initial text
+     * @param onCommit commit callback
+     * @return the composed row
+     */
+    public @NotNull LinearLayout textFieldRow(@NotNull CharSequence title, @NotNull CharSequence value, @NotNull Consumer<String> onCommit) {
+        return MuiControls.textFieldRow(this.context, this.theme, title, value, onCommit);
+    }
+
+    /**
+     * Creates a text field row whose text tracks an external supplier and has no description.
+     *
+     * @param title    row title
+     * @param value    live text supplier
+     * @param onCommit commit callback
+     * @return the composed row
+     */
+    public @NotNull LinearLayout textFieldRow(@NotNull CharSequence title, @NotNull Supplier<String> value, @NotNull Consumer<String> onCommit) {
+        return MuiControls.textFieldRow(this.context, this.theme, title, value, onCommit);
+    }
+
+    /**
      * Creates a text field row with a static initial value.
      *
      * @param title       row title
@@ -343,6 +413,20 @@ public final class MuiPageContext {
     }
 
     /**
+     * Creates an integer number row without a description.
+     *
+     * @param title    row title
+     * @param min      minimum value (inclusive)
+     * @param max      maximum value (inclusive)
+     * @param value    live value supplier
+     * @param onChange value callback
+     * @return the composed row
+     */
+    public @NotNull LinearLayout numberRow(@NotNull CharSequence title, int min, int max, @NotNull IntSupplier value, @NotNull IntConsumer onChange) {
+        return MuiControls.numberRow(this.context, this.theme, title, min, max, value, onChange);
+    }
+
+    /**
      * Creates an integer number row.
      *
      * @param title       row title
@@ -355,6 +439,20 @@ public final class MuiPageContext {
      */
     public @NotNull LinearLayout numberRow(@NotNull CharSequence title, @Nullable CharSequence description, int min, int max, @NotNull IntSupplier value, @NotNull IntConsumer onChange) {
         return MuiControls.numberRow(this.context, this.theme, title, description, min, max, value, onChange);
+    }
+
+    /**
+     * Creates a long number row without a description.
+     *
+     * @param title    row title
+     * @param min      minimum value (inclusive)
+     * @param max      maximum value (inclusive)
+     * @param value    live value supplier
+     * @param onChange value callback
+     * @return the composed row
+     */
+    public @NotNull LinearLayout longNumberRow(@NotNull CharSequence title, long min, long max, @NotNull LongSupplier value, @NotNull LongConsumer onChange) {
+        return MuiControls.longNumberRow(this.context, this.theme, title, min, max, value, onChange);
     }
 
     /**
@@ -373,6 +471,20 @@ public final class MuiPageContext {
     }
 
     /**
+     * Creates a decimal number row without a description.
+     *
+     * @param title    row title
+     * @param min      minimum value (inclusive)
+     * @param max      maximum value (inclusive)
+     * @param value    live value supplier
+     * @param onChange value callback
+     * @return the composed row
+     */
+    public @NotNull LinearLayout decimalRow(@NotNull CharSequence title, double min, double max, @NotNull DoubleSupplier value, @NotNull DoubleConsumer onChange) {
+        return MuiControls.decimalRow(this.context, this.theme, title, min, max, value, onChange);
+    }
+
+    /**
      * Creates a decimal number row.
      *
      * @param title       row title
@@ -385,6 +497,20 @@ public final class MuiPageContext {
      */
     public @NotNull LinearLayout decimalRow(@NotNull CharSequence title, @Nullable CharSequence description, double min, double max, @NotNull DoubleSupplier value, @NotNull DoubleConsumer onChange) {
         return MuiControls.decimalRow(this.context, this.theme, title, description, min, max, value, onChange);
+    }
+
+    /**
+     * Creates a select row with a static selection and no description.
+     *
+     * @param title      row title
+     * @param options    available options
+     * @param selected   initial selection, or {@code null}
+     * @param onSelected selection callback
+     * @param <T>        option value type
+     * @return the composed row
+     */
+    public <T> @NotNull LinearLayout dropdownRow(@NotNull CharSequence title, @NotNull List<MuiOption<T>> options, @Nullable T selected, @NotNull Consumer<T> onSelected) {
+        return MuiControls.dropdownRow(this.context, this.theme, title, options, selected, onSelected);
     }
 
     /**
@@ -403,6 +529,20 @@ public final class MuiPageContext {
     }
 
     /**
+     * Creates a select row whose selection tracks an external supplier and has no description.
+     *
+     * @param title      row title
+     * @param options    available options
+     * @param selected   live selection supplier
+     * @param onSelected selection callback
+     * @param <T>        option value type
+     * @return the composed row
+     */
+    public <T> @NotNull LinearLayout dropdownRowBound(@NotNull CharSequence title, @NotNull List<MuiOption<T>> options, @NotNull Supplier<T> selected, @NotNull Consumer<T> onSelected) {
+        return MuiControls.dropdownRowBound(this.context, this.theme, title, options, selected, onSelected);
+    }
+
+    /**
      * Creates a select row whose selection tracks an external supplier.
      *
      * @param title       row title
@@ -415,6 +555,20 @@ public final class MuiPageContext {
      */
     public <T> @NotNull LinearLayout dropdownRowBound(@NotNull CharSequence title, @Nullable CharSequence description, @NotNull List<MuiOption<T>> options, @NotNull Supplier<T> selected, @NotNull Consumer<T> onSelected) {
         return MuiControls.dropdownRowBound(this.context, this.theme, title, description, options, selected, onSelected);
+    }
+
+    /**
+     * Creates a card-style choice row with a static selection and no description.
+     *
+     * @param title      row title
+     * @param options    available options
+     * @param selected   initial selection, or {@code null}
+     * @param onSelected selection callback
+     * @param <T>        option value type
+     * @return the composed row
+     */
+    public <T> @NotNull LinearLayout choiceGridRow(@NotNull CharSequence title, @NotNull List<MuiOption<T>> options, @Nullable T selected, @NotNull Consumer<T> onSelected) {
+        return MuiControls.choiceGridRow(this.context, this.theme, title, options, selected, onSelected);
     }
 
     /**
@@ -433,6 +587,21 @@ public final class MuiPageContext {
     }
 
     /**
+     * Creates a card-style choice row whose selection tracks an external supplier and has no
+     * description.
+     *
+     * @param title      row title
+     * @param options    available options
+     * @param selected   live selection supplier
+     * @param onSelected selection callback
+     * @param <T>        option value type
+     * @return the composed row
+     */
+    public <T> @NotNull LinearLayout choiceGridRowBound(@NotNull CharSequence title, @NotNull List<MuiOption<T>> options, @NotNull Supplier<T> selected, @NotNull Consumer<T> onSelected) {
+        return MuiControls.choiceGridRowBound(this.context, this.theme, title, options, selected, onSelected);
+    }
+
+    /**
      * Creates a card-style choice row whose selection tracks an external supplier.
      *
      * @param title       row title
@@ -445,6 +614,18 @@ public final class MuiPageContext {
      */
     public <T> @NotNull LinearLayout choiceGridRowBound(@NotNull CharSequence title, @Nullable CharSequence description, @NotNull List<MuiOption<T>> options, @NotNull Supplier<T> selected, @NotNull Consumer<T> onSelected) {
         return MuiControls.choiceGridRowBound(this.context, this.theme, title, description, options, selected, onSelected);
+    }
+
+    /**
+     * Creates a string list editor row without a description.
+     *
+     * @param title     row title
+     * @param values    initial entries
+     * @param onChanged change callback
+     * @return the composed row
+     */
+    public @NotNull LinearLayout listRow(@NotNull CharSequence title, @NotNull List<String> values, @NotNull Consumer<List<String>> onChanged) {
+        return MuiControls.listRow(this.context, this.theme, title, values, onChanged);
     }
 
     /**
