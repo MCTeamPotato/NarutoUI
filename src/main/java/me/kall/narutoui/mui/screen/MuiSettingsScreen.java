@@ -74,6 +74,8 @@ public final class MuiSettingsScreen {
         private long pageTransitionDuration = -1L;
         /** Optional theme override. */
         private MuiTheme theme;
+        /** Optional context-aware theme provider; takes precedence over {@link #theme}. */
+        private Function<Context, MuiTheme> themeProvider;
         /** Per-screen widget factory. */
         private MuiWidgetFactory widgetFactory = MuiWidgetFactory.modern();
         /** Per-screen shimmer profile. */
@@ -177,6 +179,23 @@ public final class MuiSettingsScreen {
          */
         public @NotNull Builder theme(@Nullable MuiTheme theme) {
             this.theme = theme;
+            this.themeProvider = null;
+            return this;
+        }
+
+        /**
+         * Uses a context-aware theme provider. This is the dynamic counterpart of
+         * {@link #theme(MuiTheme)}: the provider can read live settings and is evaluated again
+         * whenever the shell is rebuilt.
+         *
+         * @param provider theme provider, or {@code null} to clear it
+         * @return this builder
+         */
+        public @NotNull Builder themeProvider(@Nullable Function<Context, MuiTheme> provider) {
+            this.themeProvider = provider;
+            if (provider != null) {
+                this.theme = null;
+            }
             return this;
         }
 
@@ -480,6 +499,7 @@ public final class MuiSettingsScreen {
             if (this.pageTransitionDuration >= 0L) delegate.pageTransitionDuration(this.pageTransitionDuration);
             if (this.singlePage) delegate.singlePage();
             if (this.theme != null) delegate.theme(this.theme);
+            if (this.themeProvider != null) delegate.themeProvider(this.themeProvider);
 
             for (PageDefinition page : this.pages) {
                 if (page.viewFactory() != null) {

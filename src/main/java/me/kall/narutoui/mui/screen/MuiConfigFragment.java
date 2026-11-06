@@ -157,7 +157,7 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost, 
         if (this.model == null) return this.buildRecoveryView(context);
 
         this.allowClose = false;
-        this.theme = this.model.theme() != null ? this.model.theme() : MuiTheme.modern(context);
+        this.theme = this.resolveTheme(context);
 
         if (!this.resizeListenerRegistered) {
             MuiModApi.addOnWindowResizeListener(this.resizeListener);
@@ -261,7 +261,7 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost, 
 
         int page = Math.max(0, this.selected);
         Context context = this.requireContext();
-        this.theme = this.model.theme() != null ? this.model.theme() : MuiTheme.modern(context);
+        this.theme = this.resolveTheme(context);
         this.cancelPageTransition();
         this.model.background().detach();
         current.removeAllViews();
@@ -269,6 +269,38 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost, 
         this.selected = -1;
         this.model.background().attach(this, current);
         this.buildShell(context, current, page);
+    }
+
+    /**
+     * Rebuilds the shell with the current theme provider while keeping the selected page.
+     * <p>
+     * This is stronger than {@link #reloadCurrentPage()}: the rail, navigation highlight, section
+     * headings and widgets are all recreated, so a live accent change cannot leave half of the
+     * screen on the previous theme.
+     */
+    public void reloadTheme() {
+        if (this.root == null || this.model == null) {
+            return;
+        }
+        this.rebuildForResize();
+    }
+
+    private @NotNull MuiTheme resolveTheme(@NotNull Context context) {
+        if (this.model != null && this.model.themeProvider() != null) {
+            MuiTheme provided = this.model.themeProvider().apply(context);
+            if (provided != null) {
+                return provided;
+            }
+        }
+        if (this.model != null && this.model.theme() != null) {
+            return this.model.theme();
+        }
+        return MuiTheme.modern(context);
+    }
+
+    @Override
+    public void onThemeChanged() {
+        this.reloadTheme();
     }
 
     /**

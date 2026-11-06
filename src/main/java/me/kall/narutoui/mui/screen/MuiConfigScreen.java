@@ -83,6 +83,8 @@ public final class MuiConfigScreen {
         private long pageTransitionDuration = -1L;
         /** Optional theme override. */
         private MuiTheme theme;
+        /** Optional context-aware theme provider; takes precedence over {@link #theme}. */
+        private Function<Context, MuiTheme> themeProvider;
         /** Per-screen widget factory. */
         private MuiWidgetFactory widgetFactory = MuiWidgetFactory.modern();
         /** Per-screen shimmer profile. */
@@ -189,6 +191,23 @@ public final class MuiConfigScreen {
          */
         public @NotNull Builder theme(@Nullable MuiTheme theme) {
             this.theme = theme;
+            this.themeProvider = null;
+            return this;
+        }
+
+        /**
+         * Uses a context-aware theme provider. Unlike {@link #theme(MuiTheme)}, the provider is
+         * evaluated after the Modern UI context exists and again whenever the shell is rebuilt, so
+         * its accent can follow a live setting.
+         *
+         * @param provider theme provider, or {@code null} to clear it
+         * @return this builder
+         */
+        public @NotNull Builder themeProvider(@Nullable Function<Context, MuiTheme> provider) {
+            this.themeProvider = provider;
+            if (provider != null) {
+                this.theme = null;
+            }
             return this;
         }
 
@@ -489,7 +508,7 @@ public final class MuiConfigScreen {
             }
 
             int initialPageIndex = this.resolveInitialPage();
-            return new Model(this.title, this.subtitle, this.footer, this.singlePage, this.navigation, this.pageTransition, this.resolveTransitionDuration(), this.theme, this.widgetFactory, this.shimmerProfile, this.navigationShimmerable, this.titlesShimmerable, this.contentWidth, this.background, List.copyOf(this.pages), initialPageIndex, this.railHeader, this.railFooter, this.actionBar, this.onCreated, this.onDestroyed, this.closeGuard);
+            return new Model(this.title, this.subtitle, this.footer, this.singlePage, this.navigation, this.pageTransition, this.resolveTransitionDuration(), this.theme, this.widgetFactory, this.shimmerProfile, this.navigationShimmerable, this.titlesShimmerable, this.contentWidth, this.background, List.copyOf(this.pages), initialPageIndex, this.railHeader, this.railFooter, this.actionBar, this.onCreated, this.onDestroyed, this.closeGuard, this.themeProvider);
         }
 
         /**
@@ -597,8 +616,9 @@ public final class MuiConfigScreen {
      * @param onCreated   optional creation callback
      * @param onDestroyed optional destruction callback
      * @param closeGuard  optional guard consulted before a user-initiated close
+     * @param themeProvider optional context-aware theme provider
      */
-    record Model(String title, String subtitle, String footer, boolean singlePage, MuiNavigation navigation, MuiPageTransition pageTransition, long pageTransitionDuration, @Nullable MuiTheme theme, MuiWidgetFactory widgetFactory, MuiShimmerProfile shimmerProfile, MuiShimmerable navigationShimmerable, MuiShimmerable titlesShimmerable, int contentWidth, MuiBackground background, List<PageSpec> pages, int initialPage, @Nullable Function<Context, View> railHeader, @Nullable Function<Context, View> railFooter, @Nullable Function<Context, View> actionBar, @Nullable Consumer<MuiConfigFragment> onCreated, @Nullable Consumer<MuiConfigFragment> onDestroyed, @Nullable BooleanSupplier closeGuard) {}
+    record Model(String title, String subtitle, String footer, boolean singlePage, MuiNavigation navigation, MuiPageTransition pageTransition, long pageTransitionDuration, @Nullable MuiTheme theme, MuiWidgetFactory widgetFactory, MuiShimmerProfile shimmerProfile, MuiShimmerable navigationShimmerable, MuiShimmerable titlesShimmerable, int contentWidth, MuiBackground background, List<PageSpec> pages, int initialPage, @Nullable Function<Context, View> railHeader, @Nullable Function<Context, View> railFooter, @Nullable Function<Context, View> actionBar, @Nullable Consumer<MuiConfigFragment> onCreated, @Nullable Consumer<MuiConfigFragment> onDestroyed, @Nullable BooleanSupplier closeGuard, @Nullable Function<Context, MuiTheme> themeProvider) {}
 
     /**
      * One page entry, either a low-level body callback or a custom root-view factory.

@@ -28,3 +28,13 @@
 # 1.7.0
 - Add page-switch transitions through `MuiPageTransition` (`FADE` default, `SLIDE_UP`, `SLIDE_DOWN`, `SLIDE_AUTO`) and the matching `pageTransition(...)` / `pageTransitionDuration(...)` builder methods on both screen builders. Use `pageTransitionDuration(0)` for an instant switch.
 - Skip transitions on the initial page, page reloads and resize rebuilds, and cancel a running transition when another switch starts or the view is destroyed.
+# 1.7.1
+- Add `MuiColorBand` and `MuiColorBands`, a public OKLab two-color band API with a nine-stop mirrored ramp.
+- Add `MuiColorBandField` and `MuiColorBandPreview` widgets: live ramp preview, two color fields, picker hooks and per-field labels.
+- Document the band API in the API tutorial.
+# 1.7.2
+- Add `themeProvider(Function<Context, MuiTheme>)` to both screen builders for context-aware, live themes.
+- Add `MuiConfigFragment.reloadTheme()`: rebuild the rail, navigation highlight, headings and widgets while keeping the selected page.
+# 1.7.3
+- Add `MuiShimmerRamps`, a public light/core/deep nine-stop ramp generator with sampling.
+- Add `MuiColorBandField.rampProvider(...)` so core/deep band fields can preview a richer ramp than the default two-color band.

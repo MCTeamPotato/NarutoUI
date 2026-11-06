@@ -14,7 +14,8 @@ NarutoUI 是一个面向 Minecraft 客户端模组的 **Modern UI 配置界面�
 - 外壳能力：固定底部 action bar、关闭守卫（未保存确认）、可滚动导航栏、按需构建页面、`MuiPageContext#searchable` 过滤原语
 - 页面切换过渡：默认淡入淡出，另有上滑 / 下滑 / 按页序自动；`pageTransitionDuration(0)` 可关闭，时长可调
 - 输入校验：数值字段支持外部 `Predicate<BigDecimal>`，列表编辑器支持逐项 `Predicate<String>`，`MuiValidationHint` 显示错误文案
-- 通用组件：`MuiChip`、`MuiTextAction`、`MuiLogo`、`MuiHintBadge`、`MuiValidationHint`、`MuiColorField`、`MuiDescriptionRow`、`MuiCollapsibleCard`
+- 通用组件：`MuiChip`、`MuiTextAction`、`MuiLogo`、`MuiHintBadge`、`MuiValidationHint`、`MuiColorField`、`MuiColorBandField`、`MuiColorBandPreview`、`MuiDescriptionRow`、`MuiCollapsibleCard`
+- 双色带取色：`MuiColorBand` / `MuiColorBands` 用 OKLab 在多色标之间生成平滑色带
 - 可配置主题：强调色、背景色、圆角、间距、内容宽度
 - 背景：纯色、透明、黑色、单图、裁剪图、幻灯片
 - 实例级 shimmer：`MuiShimmerable` + `shimmerNext()`，按行 / 页面 / 导航栏 / 标题开启；输入框和 `MuiTextAction` 也可参与
@@ -73,6 +74,7 @@ src/main/java/me/kall/narutoui/mui/
 ├── layout/       链式布局 MuiLayout 与 MuiControls 门面
 ├── field/        文本 / 数字 / 列表输入控件
 ├── choice/       MuiOption、dropdown、choice grid、枚举选项、主题选择
+├── color/        OKLab 双色带、色带值对象
 ├── widget/       chip、logo、hint、折叠卡片等通用视觉组件
 ├── factory/      MuiWidgetFactory / MuiShimmerFactory
 ├── theme/        MuiTheme

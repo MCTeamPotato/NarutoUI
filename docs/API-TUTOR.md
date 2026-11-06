@@ -513,6 +513,8 @@ MuiSettingsScreen.builder("My Mod")
 
 默认会自动解析 Modern UI 主题，一般不用设置。
 
+### 固定主题
+
 如果你已经有 Modern UI `Context`：
 
 ```java
@@ -528,6 +530,27 @@ MuiSettingsScreen.builder("My Mod")
         .page(...)
         .create(parent);
 ```
+
+### 跟随实时配置的主题
+
+`.theme(...)` 在屏幕创建时就固定了；如果强调色来自配置，用 `.themeProvider(...)`：
+
+```java
+var host = new MuiConfigFragment[1];
+
+MuiSettingsScreen.builder("My Mod")
+        .themeProvider(context -> MuiTheme.modern(context)
+                .withPrimary(MyConfig.accent())
+                .withOnPrimary(MyConfig.onAccent()))
+        .onCreated(fragment -> host[0] = fragment)
+        .page("General", ...)
+        .create(parent);
+
+// 配置改变后，重建外壳并保留当前页
+if (host[0] != null) host[0].reloadTheme();
+```
+
+`themeProvider` 在每次外壳重建时重新求值，因此导航高亮、页面标题、区块标题和控件会一起换色，不会只换一半。
 
 没有 `Context` 又想要固定配色时，可以直接构造 record：
 
@@ -753,6 +776,25 @@ MuiFilePicker.openFolder("Choose folder", callback);
     fragment.showOverlay(picker);
 })
 ```
+
+### 双色带
+
+双色带行由 `MuiColorBandField` 提供：标题、实时色带预览、两个颜色字段和两个取色回调。它只负责显示和更新颜色，取色弹层由调用方决定，和 `MuiColorField` 的模式一致。
+
+```java
+MuiColorBandField band = MuiColorBandField.create(
+                context, theme, "Glow band", 0xFFFFD24A, 0xFFFF5252)
+        .labels("Start", "End", "Pick")
+        .onPickFirst(() -> showPicker(band.firstColor(), argb -> band.first(argb)))
+        .onPickSecond(() -> showPicker(band.secondColor(), argb -> band.second(argb)));
+
+row.add(band, MuiControls.fill());
+```
+
+- `band.band()` 返回 `MuiColorBand`，`band.ramp()` 返回九段 OKLab 色带；色带是镜像的，引擎往复采样时两端和中间都能看到选中的颜色。
+- 只需要画色带时用 `MuiColorBandPreview.create(context, colors, 28)`。
+- 如果两个颜色是“核心色 + 深色辅助”，用 `MuiShimmerRamps.rich(core, deep)` 生成带浅色、核心、深色的九段带，再用 `.rampProvider(band -> MuiShimmerRamps.rich(band.first(), band.second()))` 让预览也使用它。
+- `MuiColorBandField.enabled(false)` 会同时禁用两个颜色字段。
 
 ### 裁剪
 
