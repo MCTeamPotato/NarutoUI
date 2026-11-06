@@ -509,7 +509,25 @@ MuiSettingsScreen.builder("My Mod")
 
 ---
 
-## 7. 我想改主题
+## 7. 共享配色方案
+
+`MuiColorSchemes` 是 UI 和 HUD 共用的配色目录。不要在自己的模组里再维护一份主题枚举：
+
+```java
+for (MuiColorScheme scheme : MuiColorSchemes.all()) {
+    String id = scheme.id();              // 存进配置
+    String name = I18n.get(scheme.nameKey());
+    MuiTheme theme = scheme.theme().toTheme(radius, spacing);
+    // HUD: scheme.hud() + scheme.shimmerRamp()
+}
+```
+
+- 内置 `NARUTO`、`CLASSIC`、`JADE`、`AZURE`、`SAKURA`、`GRAPHITE`
+- 需要新增方案时调用 `MuiColorSchemes.register(...)`；所有遍历 `all()` 的界面会自动多一个选项
+- `AUTO` / `CUSTOM` 属于消费方自己的特殊项，不放进共享目录
+- `MuiColorScheme` 同时携带 `MuiThemePalette`（UI）和 `MuiHudPalette`（HUD），一份方案可以同时服务设置界面和覆盖层
+
+## 8. 我想改主题
 
 默认会自动解析 Modern UI 主题，一般不用设置。
 
@@ -572,7 +590,7 @@ MuiTheme theme = new MuiTheme(
 
 ---
 
-## 8. 我想换背景
+## 9. 我想换背景
 
 默认是接近黑色的半透明遮罩。
 
@@ -620,7 +638,7 @@ MuiTheme theme = new MuiTheme(
 
 ---
 
-## 9. 我想让界面流光
+## 10. 我想让界面流光
 
 所有 shimmer 默认关闭。要开启，必须同时满足：
 
@@ -730,7 +748,7 @@ MuiShimmerable.when(MyConfig::glowEnabled)
 
 ---
 
-## 10. 我想选文件、选颜色、裁剪图片
+## 11. 我想选文件、选颜色、裁剪图片
 
 ### 文件 / 文件夹
 
@@ -802,7 +820,7 @@ row.add(band, MuiControls.fill());
 
 ---
 
-## 11. 我想注册一个稳定的配置界面
+## 12. 我想注册一个稳定的配置界面
 
 ```java
 public static void initClient() {
@@ -828,7 +846,7 @@ public static Screen open(Screen parent) {
 
 ---
 
-## 12. 我想让别的模组 shadow 这套 UI
+## 13. 我想让别的模组 shadow 这套 UI
 
 构建：
 
@@ -854,7 +872,7 @@ build/libs/narutoui-xxx-xxx-common.jar
 
 ---
 
-## 13. 常见坑
+## 14. 常见坑
 
 ### 我调用了 `shimmerNext()`，但没有流光
 

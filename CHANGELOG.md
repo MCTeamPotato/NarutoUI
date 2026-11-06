@@ -38,3 +38,7 @@
 # 1.7.3
 - Add `MuiShimmerRamps`, a public light/core/deep nine-stop ramp generator with sampling.
 - Add `MuiColorBandField.rampProvider(...)` so core/deep band fields can preview a richer ramp than the default two-color band.
+# 1.8.0
+- Add `MuiColorScheme`, `MuiThemePalette`, `MuiHudPalette` and `MuiColorSchemes`, a shared catalog of UI + HUD color schemes with a registry.
+- Add built-in Naruto, Classic, Jade, Azure, Sakura and Graphite schemes with translated names.
+- A scheme registered by NarutoUI or another mod automatically appears in every consumer that iterates the catalog.
