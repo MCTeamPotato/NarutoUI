@@ -26,6 +26,7 @@ import me.kall.narutoui.mui.field.MuiListEditor;
 import me.kall.narutoui.mui.field.MuiNumberField;
 import me.kall.narutoui.mui.choice.MuiOption;
 import me.kall.narutoui.mui.field.MuiTextField;
+import me.kall.narutoui.mui.widget.MuiTextView;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -244,13 +245,14 @@ public interface MuiWidgetFactory {
 
         @Override
         public @NotNull TextView text(@NotNull Context context, @NotNull CharSequence text, float size, int color) {
-            TextView view = new TextView(context);
-            // Use the normal buffer. Forcing BufferType.SPANNABLE makes even plain text a
-            // SpannableString, and Modern UI's setSingleLine() then crashes inside setSpan.
-            view.setText(MuiFormatting.parse(text));
+            // MuiTextView translates legacy § codes on every setText, so supplier-backed labels can
+            // be refreshed with their raw formatted text without losing the styling. Use the normal
+            // buffer: forcing BufferType.SPANNABLE makes even plain text a SpannableString, and
+            // Modern UI's setSingleLine() then crashes inside setSpan.
+            MuiTextView view = new MuiTextView(context);
             view.setTextSize(size);
-            int solid = MuiFormatting.solidColor(text);
-            view.setTextColor(solid != 0 ? solid : color);
+            view.setTextColor(color);
+            view.setText(text);
             return view;
         }
 
@@ -310,7 +312,7 @@ public interface MuiWidgetFactory {
         @Override
         public @NotNull Button button(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence label, boolean outlined, @NotNull View.OnClickListener onClick) {
             Button button = new Button(context);
-            button.setText(label);
+            button.setText(MuiFormatting.parse(label));
             button.setTextSize(12);
             button.setMinimumHeight(MuiControls.dp(context, 36));
             button.setGravity(Gravity.CENTER);

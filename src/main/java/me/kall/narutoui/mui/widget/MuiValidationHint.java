@@ -2,7 +2,6 @@ package me.kall.narutoui.mui.widget;
 
 import icyllis.modernui.core.Context;
 import icyllis.modernui.view.View;
-import icyllis.modernui.widget.TextView;
 import me.kall.narutoui.mui.field.MuiValidatable;
 import me.kall.narutoui.mui.layout.MuiControls;
 import me.kall.narutoui.mui.theme.MuiTheme;
@@ -16,7 +15,7 @@ import org.jetbrains.annotations.NotNull;
  * invalid value. It is intentionally a separate view so callers can place it exactly where the row
  * needs it, including below a custom field row.
  */
-public final class MuiValidationHint extends TextView {
+public final class MuiValidationHint extends MuiTextView {
     /** Field whose validity controls this label. */
     private final MuiValidatable field;
 

@@ -287,7 +287,11 @@ public final class MuiDropdown<T> extends LinearLayout implements MuiShimmerCont
             background.setColor(selected ? MuiControls.alpha(this.theme.primary(), 0.14F) : 0x00000000);
             row.setBackground(background);
             row.setEnabled(enabled);
-            if (!enabled) row.setTextColor(MuiControls.alpha(this.theme.onSurface(), 0.38F));
+            if (!enabled) {
+                // The base color alone cannot dim spans, so dim the formatted copy as well.
+                row.setText(MuiFormatting.withAlpha(MuiFormatting.parse(label), 0.38F));
+                row.setTextColor(MuiControls.alpha(this.theme.onSurface(), 0.38F));
+            }
 
             final int index = i;
             row.setOnClickListener(view -> this.select(index));
@@ -308,17 +312,17 @@ public final class MuiDropdown<T> extends LinearLayout implements MuiShimmerCont
      */
     private void refreshHeader() {
         CharSequence label = this.selectedIndex < 0 ? MuiLocalization.resolve(this.placeholder) : MuiLocalization.resolve(this.options.get(this.selectedIndex).label());
-        // The header is a button; keep it plain text and carry the selected value's solid color
-        // through setTextColor instead of raw § codes or spans.
+        // Keep the legacy colors of the selected value: the codes are translated into spans and the
+        // single-color case is carried through setTextColor, instead of showing the raw § characters.
+        CharSequence display = MuiFormatting.parse(label + "  " + (this.expanded ? "^" : "v"));
         int solid = MuiFormatting.solidColor(label);
-        this.header.setText(MuiFormatting.strip(label) + "  " + (this.expanded ? "^" : "v"));
+        int color = solid != 0 ? solid : this.theme.primary();
         if (!this.enabled) {
-            this.header.setTextColor(solid != 0
-                    ? MuiControls.alpha(solid, 0.38F)
-                    : MuiControls.alpha(this.theme.primary(), 0.38F));
-        } else {
-            this.header.setTextColor(solid != 0 ? solid : this.theme.primary());
+            display = MuiFormatting.withAlpha(display, 0.38F);
+            color = MuiControls.alpha(color, 0.38F);
         }
+        this.header.setText(display);
+        this.header.setTextColor(color);
     }
 
     /**

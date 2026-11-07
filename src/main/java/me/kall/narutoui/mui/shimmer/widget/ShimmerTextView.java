@@ -4,18 +4,22 @@ import me.kall.narutoui.mui.shimmer.MuiShimmer;
 import me.kall.narutoui.mui.shimmer.MuiShimmerProfile;
 import me.kall.narutoui.mui.shimmer.MuiShimmerable;
 import me.kall.narutoui.mui.shimmer.ShimmerTarget;
+import me.kall.narutoui.mui.widget.MuiTextView;
 
 import icyllis.modernui.core.Context;
 import icyllis.modernui.util.ColorStateList;
 import icyllis.modernui.view.View;
-import icyllis.modernui.widget.TextView;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * A text view that participates in the API shimmer. The base color is remembered so the ripple can
  * always be blended from it.
+ * <p>
+ * Legacy {@code §} formatting is handled by {@link MuiTextView}: the parsed color becomes the
+ * shimmer's base color, so an option value such as {@code §aVery Smooth} glows from green instead of
+ * the theme accent.
  */
-public final class ShimmerTextView extends TextView implements ShimmerTarget {
+public final class ShimmerTextView extends MuiTextView implements ShimmerTarget {
     private int baseColor = 0xFFFFFFFF;
     private MuiShimmerable marker = MuiShimmerable.NEVER;
     private final MuiShimmerProfile profile;
@@ -64,17 +68,17 @@ public final class ShimmerTextView extends TextView implements ShimmerTarget {
     }
 
     @Override
-    public void setTextColor(int color) {
+    protected void applyColor(int color) {
         this.baseColor = color;
         // During TextView's own constructor mTextColor is still null; it must be initialised,
         // otherwise the subsequent setHintTextColor() call inside the constructor NPEs.
-        if (this.getTextColors() == null || !MuiShimmer.isRunning()) super.setTextColor(color);
+        if (this.getTextColors() == null || !MuiShimmer.isRunning()) this.applyRawColor(color);
     }
 
     @Override
     public void setTextColor(@NotNull ColorStateList colors) {
         this.baseColor = colors.getDefaultColor();
-        if (this.getTextColors() == null || !MuiShimmer.isRunning()) super.setTextColor(colors);
+        if (this.getTextColors() == null || !MuiShimmer.isRunning()) this.applyRawColorState(colors);
     }
 
     @Override
@@ -84,12 +88,12 @@ public final class ShimmerTextView extends TextView implements ShimmerTarget {
 
     @Override
     public void applyShimmerColor(int color) {
-        super.setTextColor(color);
+        this.applyRawColor(color);
     }
 
     @Override
     public void applyBaseColor() {
-        super.setTextColor(this.baseColor);
+        this.applyRawColor(this.baseColor);
     }
 
     @Override

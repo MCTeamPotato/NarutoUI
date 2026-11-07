@@ -64,11 +64,12 @@ public final class MuiShimmerFactory implements MuiWidgetFactory {
 
     @Override
     public @NotNull TextView text(@NotNull Context context, @NotNull CharSequence text, float size, int color, @NotNull MuiShimmerable marker) {
+        // ShimmerTextView handles legacy § codes (including the color the shimmer animates from),
+        // so labels refreshed after construction keep their formatting.
         TextView view = new ShimmerTextView(context, marker);
-        view.setText(MuiFormatting.parse(text));
         view.setTextSize(size);
-        int solid = MuiFormatting.solidColor(text);
-        view.setTextColor(solid != 0 ? solid : color);
+        view.setTextColor(color);
+        view.setText(text);
         return view;
     }
 
@@ -121,7 +122,7 @@ public final class MuiShimmerFactory implements MuiWidgetFactory {
     @Override
     public @NotNull Button button(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence label, boolean outlined, @NotNull View.OnClickListener onClick, @NotNull MuiShimmerable marker) {
         Button button = new ShimmerButton(context, null, outlined ? R.attr.buttonOutlinedStyle : R.attr.buttonTonalStyle);
-        button.setText(label);
+        button.setText(MuiFormatting.parse(label));
         button.setTextSize(12);
         button.setMinimumHeight(MuiControls.dp(context, 36));
         button.setOnClickListener(onClick);

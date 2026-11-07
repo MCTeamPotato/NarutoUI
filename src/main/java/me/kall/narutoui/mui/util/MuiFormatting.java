@@ -19,10 +19,16 @@ import java.util.List;
  * Shader packs use color codes in option labels, for example {@code §eBloom§r}. Modern UI's
  * {@code TextView} does not understand those codes, so they would otherwise be rendered as raw
  * {@code §} characters. Formatting codes are removed from the visible text and translated into
- * foreground colors and text styles.
+ * foreground colors and text styles. Besides the 16 legacy colors, the 1.16+ hexadecimal form
+ * {@code §x§R§R§G§G§B§B} is supported.
+ * <p>
+ * {@code §k} (obfuscated) is dropped without randomising the characters: a configuration label must
+ * stay readable and must not change its width on every frame.
  */
 public final class MuiFormatting {
     private static final char SECTION = '\u00a7';
+    /** Number of characters after {@code §x} in a hexadecimal color: six {@code §}-prefixed nibbles. */
+    private static final int HEX_LENGTH = 12;
 
     private MuiFormatting() {}
 
@@ -69,6 +75,18 @@ public final class MuiFormatting {
                     underlined = false;
                     strikethrough = false;
                 }
+                // 1.16+ hexadecimal colors: §x§R§R§G§G§B§B, with every nibble prefixed by §.
+                case 'x' -> {
+                    int hex = legacyHexColor(source, i);
+                    if (hex != 0) {
+                        color = hex;
+                        bold = false;
+                        italic = false;
+                        underlined = false;
+                        strikethrough = false;
+                        i += HEX_LENGTH;
+                    }
+                }
                 case 'l' -> bold = true;
                 case 'o' -> italic = true;
                 case 'n' -> underlined = true;
@@ -81,7 +99,9 @@ public final class MuiFormatting {
                     strikethrough = false;
                 }
                 default -> {
-                    // Unknown/obfuscated code: drop the code and keep the visible text.
+                    // Unknown/obfuscated code: drop the code and keep the visible text. §k is
+                    // intentionally not randomised: a configuration label must stay readable and
+                    // must not change its width on every frame.
                 }
             }
         }
@@ -125,14 +145,7 @@ public final class MuiFormatting {
     }
 
     /**
-     * Removes legacy formatting codes without applying styles. Useful for tooltips and other
-     * single-color surfaces.
-     *
-     * @param text source text
-     * @return text without formatting codes
-     */
-    /**
-     * Returns the single legacy color used by the whole visible text, or {@code -1} when the text
+     * Returns the single legacy color used by the whole visible text, or {@code 0} when the text
      * is uncolored or uses more than one color. Callers can use this to set a plain text color for
      * simple labels such as {@code §eBloom§r}, which is more robust than relying only on spans.
      *
@@ -157,6 +170,12 @@ public final class MuiFormatting {
                 i++;
                 if (code == 'r') {
                     current = 0;
+                } else if (code == 'x') {
+                    int hex = legacyHexColor(source, i);
+                    if (hex != 0) {
+                        current = hex;
+                        i += HEX_LENGTH;
+                    }
                 } else if (code >= '0' && code <= '9' || code >= 'a' && code <= 'f') {
                     current = legacyColor(code);
                 }
@@ -201,6 +220,37 @@ public final class MuiFormatting {
         return result.toString();
     }
 
+    /**
+     * Returns a copy of a formatted text with every explicit foreground color dimmed. Works on the
+     * spans produced by {@link #parse(CharSequence)}; text without spans is returned unchanged and
+     * can be dimmed through {@code TextView#setTextColor(int)} instead.
+     *
+     * @param text   formatted text
+     * @param factor alpha multiplier in the range {@code 0..1}
+     * @return the dimmed text
+     */
+    public static @NotNull CharSequence withAlpha(@NotNull CharSequence text, float factor) {
+        if (!(text instanceof Spanned spanned)) {
+            return text;
+        }
+
+        float alpha = Math.max(0.0F, Math.min(1.0F, factor));
+        SpannableString dimmed = new SpannableString(text.toString());
+        for (Object span : spanned.getSpans(0, spanned.length(), Object.class)) {
+            Object replacement = span instanceof ForegroundColorSpan foreground
+                    ? new ForegroundColorSpan(modulateAlpha(foreground.getForegroundColor(), alpha))
+                    : span;
+            dimmed.setSpan(replacement, spanned.getSpanStart(span), spanned.getSpanEnd(span),
+                    spanned.getSpanFlags(span));
+        }
+        return dimmed;
+    }
+
+    private static int modulateAlpha(int color, float factor) {
+        int alpha = Math.round(((color >>> 24) & 0xFF) * factor);
+        return (alpha << 24) | (color & 0x00FFFFFF);
+    }
+
     private static void addRange(@NotNull List<StyleRange> ranges, int start, int end, int color,
                                  boolean bold, boolean italic, boolean underlined, boolean strikethrough) {
         if (end <= start) {
@@ -210,6 +260,33 @@ public final class MuiFormatting {
             return;
         }
         ranges.add(new StyleRange(start, end, color, bold, italic, underlined, strikethrough));
+    }
+
+    /**
+     * Reads a {@code §x§R§R§G§G§B§B} hexadecimal color.
+     *
+     * @param text source text
+     * @param x    index of the {@code x} character
+     * @return an opaque ARGB color, or {@code 0} when the sequence is malformed
+     */
+    private static int legacyHexColor(@NotNull CharSequence text, int x) {
+        if (x + HEX_LENGTH >= text.length()) {
+            return 0;
+        }
+
+        int rgb = 0;
+        for (int i = 0; i < 6; i++) {
+            int position = x + 1 + i * 2;
+            if (text.charAt(position) != SECTION) {
+                return 0;
+            }
+            int digit = Character.digit(text.charAt(position + 1), 16);
+            if (digit < 0) {
+                return 0;
+            }
+            rgb = (rgb << 4) | digit;
+        }
+        return 0xFF000000 | rgb;
     }
 
     private static int legacyColor(char code) {

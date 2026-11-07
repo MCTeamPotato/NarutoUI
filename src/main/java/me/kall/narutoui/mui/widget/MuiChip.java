@@ -4,7 +4,6 @@ import me.kall.narutoui.mui.layout.MuiControls;
 
 import icyllis.modernui.core.Context;
 import icyllis.modernui.view.Gravity;
-import icyllis.modernui.widget.TextView;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import me.kall.narutoui.mui.shimmer.MuiShimmer;
 import me.kall.narutoui.mui.shimmer.MuiShimmerContainer;
@@ -20,7 +19,7 @@ import org.jetbrains.annotations.Nullable;
  * unselected chips use a light neutral, and the label stays black so it remains readable while the
  * background wave animates.
  */
-public final class MuiChip extends TextView implements MuiShimmerContainer {
+public final class MuiChip extends MuiTextView implements MuiShimmerContainer {
     /** Active visual tokens. */
     private final MuiTheme theme;
     /** Shimmering fill. */
