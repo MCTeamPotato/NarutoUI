@@ -51,3 +51,13 @@
 - Dim per-part span colors when a dropdown header or option row is disabled, instead of keeping the colors at full strength.
 - Skip the parse/layout path when a supplier-backed label is refreshed with unchanged text, so the 100 ms refresh only re-applies the colour.
 - Document that `§k` is rendered as its readable characters instead of per-frame randomisation: configuration labels must stay readable and keep a stable width.
+# 1.9.0
+- Generate the built-in schemes instead of listing them: `MuiColorScheme.of(...)` takes one brand color plus a surface tint, HUD preset and ramp style, and `MuiSchemeGenerator` derives the other 26 values in OKLCH. The six built-ins went from 162 hand-written colors to six brand colors plus one named overlay preset.
+- Add `MuiOklch` and `MuiColorMath`: public OKLCH conversion with sRGB gamut mapping, WCAG contrast, OKLab distance, and a contrast-floor helper that only moves lightness so hue and role survive.
+- Add `MuiSurfaceTint`, `MuiHudPreset` and `MuiRampStyle` so a scheme states its intent instead of spelling out colors.
+- `MuiColorScheme` is no longer a record and no longer has a public constructor; use the `of(...)` factories. `id`, `nameKey`, `theme`, `hud`, `shimmerRamp` and `accent` are unchanged.
+- `MuiColorScheme.of(id, nameKey, brand, tint, hud, ramp, surface)` honours a caller-chosen surface and derives every contrast floor from it, so a light surface gets dark text instead of unreadable light text.
+- Reproduce the signature Naruto shimmer ramp from the HUD status colors ordered bright to deep, instead of a second hand-written array.
+- Add `MuiRampStyle.HUE_SWEEP` and `MuiRampAnchor`: a ramp now spans a highlight anchor to a deep anchor, the way Naruto's own ramp travels from yellow through gold to red, instead of fading into the scheme's own low-chroma divider. The light end is a pale tint because a saturated cyan or lime at high lightness reads as neon, and the deep end keeps full chroma so the trough of the wave stays colored. Jade runs pale water through jade to deep green, Azure pale steel to deep blue, Sakura pale rose to blood red, Graphite pale blue to deep teal.
+- `MuiTheme.modern()` now falls back to the catalog's Naruto palette instead of its own copy of the same nine values, and `MuiShimmerConfig.ramp()` defaults to the Naruto scheme's ramp.
+- `MuiShimmerRamps` and `MuiColorBands` now interpolate in OKLab, so shimmer mid-tones and band previews no longer wash out toward gray.

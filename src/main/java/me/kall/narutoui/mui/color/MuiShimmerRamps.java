@@ -11,6 +11,8 @@ import org.jetbrains.annotations.NotNull;
  * <pre>
  * light2 → light1 → accentLight → accent → deep → accent → accentLight → light1 → light2
  * </pre>
+ * All interpolation happens in OKLab, so the tint stops stay clean instead of washing out toward
+ * gray the way channel-wise sRGB blending does.
  */
 public final class MuiShimmerRamps {
     private static final float[] STOPS = {0.0F, 0.12F, 0.25F, 0.40F, 0.55F, 0.70F, 0.82F, 0.92F, 1.0F};
@@ -24,7 +26,7 @@ public final class MuiShimmerRamps {
      * @return nine ARGB stops
      */
     public static int @NotNull [] rich(int accent) {
-        return rich(accent, mix(accent, 0xFF000000, 0.40D));
+        return rich(accent, MuiColorMath.mix(accent, 0xFF000000, 0.40D));
     }
 
     /**
@@ -35,11 +37,11 @@ public final class MuiShimmerRamps {
      * @return nine ARGB stops
      */
     public static int @NotNull [] rich(int accent, int deep) {
-        int core = MuiColorBands.opaque(accent);
-        int shadow = MuiColorBands.opaque(deep);
-        int light2 = mix(core, 0xFFFFFFFF, 0.75D);
-        int light1 = mix(core, 0xFFFFFFFF, 0.45D);
-        int accentLight = mix(core, 0xFFFFFFFF, 0.20D);
+        int core = MuiColorMath.opaque(accent);
+        int shadow = MuiColorMath.opaque(deep);
+        int light2 = MuiColorMath.mix(core, 0xFFFFFFFF, 0.75D);
+        int light1 = MuiColorMath.mix(core, 0xFFFFFFFF, 0.45D);
+        int accentLight = MuiColorMath.mix(core, 0xFFFFFFFF, 0.20D);
 
         return new int[]{
                 light2,
@@ -79,18 +81,9 @@ public final class MuiShimmerRamps {
             if (value <= STOPS[i]) {
                 float span = STOPS[i] - STOPS[i - 1];
                 float fraction = span <= 0.0F ? 0.0F : (value - STOPS[i - 1]) / span;
-                return mix(ramp[i - 1], ramp[i], fraction);
+                return MuiColorMath.mix(ramp[i - 1], ramp[i], fraction);
             }
         }
         return ramp[ramp.length - 1];
-    }
-
-    private static int mix(int from, int to, double amount) {
-        double a = Math.max(0.0D, Math.min(1.0D, amount));
-        int alpha = (int) Math.round(((from >>> 24) & 0xFF) + (((to >>> 24) & 0xFF) - ((from >>> 24) & 0xFF)) * a);
-        int red = (int) Math.round(((from >> 16) & 0xFF) + (((to >> 16) & 0xFF) - ((from >> 16) & 0xFF)) * a);
-        int green = (int) Math.round(((from >> 8) & 0xFF) + (((to >> 8) & 0xFF) - ((from >> 8) & 0xFF)) * a);
-        int blue = (int) Math.round((from & 0xFF) + ((to & 0xFF) - (from & 0xFF)) * a);
-        return (alpha << 24) | (red << 16) | (green << 8) | blue;
     }
 }

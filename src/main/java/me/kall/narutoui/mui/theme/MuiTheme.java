@@ -3,6 +3,8 @@ package me.kall.narutoui.mui.theme;
 import icyllis.modernui.R;
 import icyllis.modernui.core.Context;
 import icyllis.modernui.resources.TypedValue;
+import me.kall.narutoui.mui.color.MuiColorSchemes;
+import me.kall.narutoui.mui.color.MuiThemePalette;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -25,25 +27,34 @@ import org.jetbrains.annotations.NotNull;
  * @param spacing          page/content spacing in density-independent pixels
  */
 public record MuiTheme(int primary, int onPrimary, int surface, int surfaceLow, int surfaceHigh, int onSurface, int onSurfaceVariant, int outline, int error, int cornerRadius, int spacing) {
+    /** Default corner radius in density-independent pixels. */
+    public static final int DEFAULT_CORNER_RADIUS = 12;
+    /** Default page and content spacing in density-independent pixels. */
+    public static final int DEFAULT_SPACING = 20;
+
     /**
-     * Resolves the current Modern UI theme attributes, falling back to a neutral dark palette.
+     * Resolves the current Modern UI theme attributes, falling back to the catalog's Naruto palette.
+     * <p>
+     * The fallback is not spelled out here: it is the same generated palette every consumer sees,
+     * so a change to the shared scheme cannot leave the resolved theme behind.
      *
      * @param context the screen context
      * @return a theme resolved from {@code context}
      */
     public static @NotNull MuiTheme modern(@NotNull Context context) {
+        MuiThemePalette fallback = MuiColorSchemes.NARUTO.theme();
         return new MuiTheme(
-                attr(context, R.attr.colorPrimary, 0xFFE0A64A),
-                attr(context, R.attr.colorOnPrimary, 0xFF1A1208),
-                attr(context, R.attr.colorSurface, 0xFF101116),
-                attr(context, R.attr.colorSurfaceContainerLow, 0xFF1F2027),
-                attr(context, R.attr.colorSurfaceContainerHighest, 0xFF2A2B34),
-                attr(context, R.attr.colorOnSurface, 0xFFEDEFF3),
-                attr(context, R.attr.colorOnSurfaceVariant, 0xFFA6AAB4),
-                attr(context, R.attr.colorOutlineVariant, 0xFF3A3C48),
-                attr(context, R.attr.colorError, 0xFFFF6B6B),
-                12,
-                20
+                attr(context, R.attr.colorPrimary, fallback.primary()),
+                attr(context, R.attr.colorOnPrimary, fallback.onPrimary()),
+                attr(context, R.attr.colorSurface, fallback.surface()),
+                attr(context, R.attr.colorSurfaceContainerLow, fallback.surfaceLow()),
+                attr(context, R.attr.colorSurfaceContainerHighest, fallback.surfaceHigh()),
+                attr(context, R.attr.colorOnSurface, fallback.onSurface()),
+                attr(context, R.attr.colorOnSurfaceVariant, fallback.onSurfaceVariant()),
+                attr(context, R.attr.colorOutlineVariant, fallback.outline()),
+                attr(context, R.attr.colorError, fallback.error()),
+                DEFAULT_CORNER_RADIUS,
+                DEFAULT_SPACING
         );
     }
 

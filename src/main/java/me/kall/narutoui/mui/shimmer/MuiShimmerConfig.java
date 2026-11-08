@@ -1,5 +1,6 @@
 package me.kall.narutoui.mui.shimmer;
 
+import me.kall.narutoui.mui.color.MuiColorSchemes;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -66,21 +67,14 @@ public interface MuiShimmerConfig {
 
     /**
      * Returns the nine-stop color ramp used by the wave.
+     * <p>
+     * The default is the Naruto scheme's own ramp, so there is one definition of the signature
+     * white/gold/orange/red wave instead of a second copy here.
      *
      * @return an array of nine ARGB colors
      */
     default int[] ramp() {
-        return new int[]{
-                0xFFFFFFFF,
-                0xFFFFD24A,
-                0xFFFFA726,
-                0xFFFF7043,
-                0xFFFF5252,
-                0xFFFF7043,
-                0xFFFFA726,
-                0xFFFFD24A,
-                0xFFFFFFFF
-        };
+        return MuiColorSchemes.NARUTO.shimmerRamp();
     }
 
     /**
