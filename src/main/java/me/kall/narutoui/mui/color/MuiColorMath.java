@@ -36,6 +36,8 @@ public final class MuiColorMath {
     }
 
     /**
+     * Returns the WCAG relative luminance of a color.
+     *
      * @param color ARGB color
      * @return the relative luminance, ignoring alpha
      */
@@ -156,6 +158,8 @@ public final class MuiColorMath {
     }
 
     /**
+     * Converts an 8-bit sRGB channel to linear light.
+     *
      * @param channel channel value in {@code 0..255}
      * @return the linear-light value in {@code 0..1}
      */
@@ -165,6 +169,8 @@ public final class MuiColorMath {
     }
 
     /**
+     * Converts a linear-light channel back to 8-bit sRGB.
+     *
      * @param linear linear-light channel
      * @return the 8-bit sRGB channel
      */
@@ -175,6 +181,8 @@ public final class MuiColorMath {
     }
 
     /**
+     * Clamps a value into a range.
+     *
      * @param value input value
      * @param low   lower bound
      * @param high  upper bound
@@ -185,6 +193,8 @@ public final class MuiColorMath {
     }
 
     /**
+     * Clamps a value into a range.
+     *
      * @param value input value
      * @param low   lower bound
      * @param high  upper bound

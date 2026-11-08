@@ -208,10 +208,10 @@ public final class MuiSchemeGenerator {
     /**
      * Builds the nine-stop shimmer ramp of a scheme.
      *
-     * @param theme  the scheme's UI tokens
-     * @param hud    the scheme's overlay tokens
-     * @param style  how the ramp is produced
-     * @param anchor the hue a {@link MuiRampStyle#HUE_SWEEP} ramp travels toward; ignored otherwise
+     * @param theme the scheme's UI tokens
+     * @param hud   the scheme's overlay tokens
+     * @param style how the ramp is produced
+     * @param deep  the deep end a {@link MuiRampStyle#HUE_SWEEP} ramp travels toward; ignored otherwise
      * @return nine ARGB stops
      */
     public static int @NotNull [] ramp(@NotNull MuiThemePalette theme, @NotNull MuiHudPalette hud,

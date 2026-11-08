@@ -20,6 +20,8 @@ package me.kall.narutoui.mui.color;
 public record MuiHudPalette(int label, int unit, int separator, int normal, int warn, int critical,
                             int backplane, int border, int accent) {
     /**
+     * Tells whether the scheme declares an accent.
+     *
      * @return whether this scheme provides an accent color
      */
     public boolean hasAccent() {

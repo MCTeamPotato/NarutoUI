@@ -183,6 +183,8 @@ public final class MuiColorBandField extends LinearLayout {
     }
 
     /**
+     * Returns the first endpoint.
+     *
      * @return the current first color
      */
     public int firstColor() {
@@ -190,6 +192,8 @@ public final class MuiColorBandField extends LinearLayout {
     }
 
     /**
+     * Returns the second endpoint.
+     *
      * @return the current second color
      */
     public int secondColor() {
@@ -197,6 +201,8 @@ public final class MuiColorBandField extends LinearLayout {
     }
 
     /**
+     * Returns the current band as a value.
+     *
      * @return the current band value
      */
     public @NotNull MuiColorBand band() {
@@ -204,6 +210,8 @@ public final class MuiColorBandField extends LinearLayout {
     }
 
     /**
+     * Returns the ramp the preview draws for the current colors.
+     *
      * @return the nine-stop OKLab ramp for the current colors
      */
     public int @NotNull [] ramp() {

@@ -13,6 +13,9 @@ import org.jetbrains.annotations.NotNull;
  * @param second second endpoint
  */
 public record MuiColorBand(int first, int second) {
+    /**
+     * Forces both endpoints opaque, so a band cannot carry a transparent half.
+     */
     public MuiColorBand {
         first = MuiColorBands.opaque(first);
         second = MuiColorBands.opaque(second);

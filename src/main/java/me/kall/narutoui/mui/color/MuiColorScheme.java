@@ -155,6 +155,8 @@ public final class MuiColorScheme {
     }
 
     /**
+     * Returns the stable id.
+     *
      * @return the stable id, upper-cased
      */
     public @NotNull String id() {
@@ -162,6 +164,8 @@ public final class MuiColorScheme {
     }
 
     /**
+     * Returns the translation key of the display name.
+     *
      * @return the translation key for the display name
      */
     public @NotNull String nameKey() {
@@ -169,6 +173,8 @@ public final class MuiColorScheme {
     }
 
     /**
+     * Returns the UI tokens.
+     *
      * @return the UI tokens
      */
     public @NotNull MuiThemePalette theme() {
@@ -176,6 +182,8 @@ public final class MuiColorScheme {
     }
 
     /**
+     * Returns the overlay tokens.
+     *
      * @return the overlay tokens
      */
     public @NotNull MuiHudPalette hud() {
@@ -183,6 +191,8 @@ public final class MuiColorScheme {
     }
 
     /**
+     * Returns a copy of the shimmer ramp.
+     *
      * @return a copy of the nine ARGB shimmer stops
      */
     public int @NotNull [] shimmerRamp() {
@@ -190,6 +200,8 @@ public final class MuiColorScheme {
     }
 
     /**
+     * Returns the accent color, falling back to the primary color.
+     *
      * @return the accent color used by the scheme's shimmer and HUD accent strip
      */
     public int accent() {

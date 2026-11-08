@@ -100,7 +100,9 @@ public record MuiOklch(double lightness, double chroma, double hue) {
     }
 
     /**
-     * @return the largest chroma this lightness and hue can hold in sRGB
+     * Returns the widest chroma this lightness and hue can hold in sRGB.
+     *
+     * @return the largest in-gamut chroma
      */
     public double maxChroma() {
         double lightness = MuiColorMath.clamp(this.lightness, 0.0D, 1.0D);
@@ -118,6 +120,8 @@ public record MuiOklch(double lightness, double chroma, double hue) {
     }
 
     /**
+     * Returns a copy at a different lightness.
+     *
      * @param value new lightness
      * @return a copy with the given lightness
      */
@@ -126,6 +130,8 @@ public record MuiOklch(double lightness, double chroma, double hue) {
     }
 
     /**
+     * Returns a copy at a different chroma.
+     *
      * @param value new chroma
      * @return a copy with the given chroma
      */
@@ -134,6 +140,8 @@ public record MuiOklch(double lightness, double chroma, double hue) {
     }
 
     /**
+     * Returns a copy at a different hue.
+     *
      * @param value new hue in degrees
      * @return a copy with the given hue
      */

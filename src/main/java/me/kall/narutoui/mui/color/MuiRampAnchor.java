@@ -43,6 +43,8 @@ public enum MuiRampAnchor {
     }
 
     /**
+     * Returns the anchor hue.
+     *
      * @return the anchor hue in degrees
      */
     public double hue() {
