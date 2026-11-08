@@ -1,8 +1,5 @@
 package me.kall.narutoui.mui.widget;
 
-import me.kall.narutoui.mui.layout.MuiLayout;
-import me.kall.narutoui.mui.layout.MuiControls;
-
 import icyllis.modernui.animation.Animator;
 import icyllis.modernui.animation.AnimatorListener;
 import icyllis.modernui.animation.MotionEasingUtils;
@@ -16,6 +13,8 @@ import icyllis.modernui.widget.FrameLayout;
 import icyllis.modernui.widget.LinearLayout;
 import icyllis.modernui.widget.TextView;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
+import me.kall.narutoui.mui.layout.MuiControls;
+import me.kall.narutoui.mui.layout.MuiLayout;
 import me.kall.narutoui.mui.shimmer.MuiShimmer;
 import me.kall.narutoui.mui.shimmer.MuiShimmerContainer;
 import me.kall.narutoui.mui.shimmer.MuiShimmerScope;

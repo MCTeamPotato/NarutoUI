@@ -1,14 +1,13 @@
 package me.kall.narutoui.mui.choice;
 
-import me.kall.narutoui.mui.layout.MuiLayout;
-import me.kall.narutoui.mui.layout.MuiControls;
-
 import icyllis.modernui.core.Context;
 import icyllis.modernui.graphics.drawable.ShapeDrawable;
 import icyllis.modernui.view.View;
 import icyllis.modernui.widget.Button;
 import icyllis.modernui.widget.LinearLayout;
 import icyllis.modernui.widget.TextView;
+import me.kall.narutoui.mui.layout.MuiControls;
+import me.kall.narutoui.mui.layout.MuiLayout;
 import me.kall.narutoui.mui.shimmer.MuiShimmer;
 import me.kall.narutoui.mui.shimmer.MuiShimmerContainer;
 import me.kall.narutoui.mui.shimmer.MuiShimmerScope;

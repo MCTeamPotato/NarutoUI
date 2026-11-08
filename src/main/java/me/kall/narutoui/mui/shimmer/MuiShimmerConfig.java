@@ -84,11 +84,6 @@ public interface MuiShimmerConfig {
      */
     @Contract(value = " -> new", pure = true)
     static @NotNull MuiShimmerConfig defaults() {
-        return new MuiShimmerConfig() {
-            @Override
-            public boolean enabled() {
-                return true;
-            }
-        };
+        return () -> true;
     }
 }

@@ -1,7 +1,5 @@
 package me.kall.narutoui.mui.choice;
 
-import me.kall.narutoui.mui.layout.MuiControls;
-
 import icyllis.modernui.core.Context;
 import icyllis.modernui.view.View;
 import me.kall.narutoui.mui.theme.MuiTheme;

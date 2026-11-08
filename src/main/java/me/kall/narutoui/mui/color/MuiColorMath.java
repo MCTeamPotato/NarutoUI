@@ -189,7 +189,7 @@ public final class MuiColorMath {
      * @return the value clamped to {@code [low, high]}
      */
     public static double clamp(double value, double low, double high) {
-        return value < low ? low : (value > high ? high : value);
+        return value < low ? low : (Math.min(value, high));
     }
 
     /**
@@ -201,6 +201,6 @@ public final class MuiColorMath {
      * @return the value clamped to {@code [low, high]}
      */
     public static int clamp(int value, int low, int high) {
-        return value < low ? low : (value > high ? high : value);
+        return value < low ? low : (Math.min(value, high));
     }
 }

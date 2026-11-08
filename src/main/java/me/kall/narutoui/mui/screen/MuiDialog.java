@@ -51,7 +51,7 @@ public final class MuiDialog {
         MuiLayout card = MuiLayout.card(context, theme).padding(20);
         card.add(MuiControls.heading(context, theme, title, 18, theme.onSurface()), MuiControls.fill());
 
-        if (message.length() > 0) {
+        if (!message.isEmpty()) {
             TextView body = MuiControls.text(context, theme, message, 12, theme.onSurfaceVariant());
             LinearLayout.LayoutParams bodyParams = MuiControls.fill();
             bodyParams.topMargin = MuiControls.dp(context, 10);

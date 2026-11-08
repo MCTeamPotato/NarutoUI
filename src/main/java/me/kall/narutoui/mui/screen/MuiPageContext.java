@@ -5,12 +5,12 @@ import icyllis.modernui.view.View;
 import icyllis.modernui.widget.LinearLayout;
 import icyllis.modernui.widget.TextView;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
-import me.kall.narutoui.mui.theme.MuiTheme;
+import me.kall.narutoui.mui.choice.MuiOption;
 import me.kall.narutoui.mui.layout.MuiControls;
 import me.kall.narutoui.mui.layout.MuiLayout;
-import me.kall.narutoui.mui.choice.MuiOption;
 import me.kall.narutoui.mui.shimmer.MuiShimmerScope;
 import me.kall.narutoui.mui.shimmer.MuiShimmerable;
+import me.kall.narutoui.mui.theme.MuiTheme;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

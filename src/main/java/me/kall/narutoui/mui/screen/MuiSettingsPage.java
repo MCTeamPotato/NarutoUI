@@ -105,13 +105,7 @@ public final class MuiSettingsPage {
         int start = this.context.content().getChildCount();
         MuiLayout card = this.context.untitledSectionLayout();
         body.accept(new MuiSettingsSection(this.context, card));
-
-        MuiShimmerable marker = this.resolve();
-        if (marker != null) {
-            for (int i = start; i < this.context.content().getChildCount(); i++) {
-                MuiShimmerScope.apply(this.context.content().getChildAt(i), marker);
-            }
-        }
+        this.applyToNewChildren(start);
         return this;
     }
 
@@ -126,14 +120,7 @@ public final class MuiSettingsPage {
         int start = this.context.content().getChildCount();
         MuiLayout card = this.context.sectionLayout(title);
         body.accept(new MuiSettingsSection(this.context, card));
-
-        MuiShimmerable marker = this.resolve();
-        if (marker != null) {
-            // sectionLayout adds the heading and the card as siblings; apply to both.
-            for (int i = start; i < this.context.content().getChildCount(); i++) {
-                MuiShimmerScope.apply(this.context.content().getChildAt(i), marker);
-            }
-        }
+        this.applyToNewChildren(start);
         return this;
     }
 
@@ -181,12 +168,7 @@ public final class MuiSettingsPage {
 
         body.accept(new MuiSettingsSection(this.context, card.body()));
 
-        MuiShimmerable marker = this.resolve();
-        if (marker != null) {
-            for (int i = start; i < this.context.content().getChildCount(); i++) {
-                MuiShimmerScope.apply(this.context.content().getChildAt(i), marker);
-            }
-        }
+        this.applyToNewChildren(start);
         return this;
     }
 
@@ -241,6 +223,14 @@ public final class MuiSettingsPage {
         return marker == null ? this.allShimmerable : marker;
     }
 
+    /**
+     * Applies the page's shimmer marker to every view added after {@code start}.
+     * <p>
+     * A section may add more than one sibling (the titled variant adds a heading next to the card),
+     * so the range is walked instead of a single view being marked.
+     *
+     * @param start child index the block started at
+     */
     private void applyToNewChildren(int start) {
         MuiShimmerable marker = this.resolve();
         if (marker == null) return;

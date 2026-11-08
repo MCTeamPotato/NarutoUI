@@ -1,7 +1,5 @@
 package me.kall.narutoui.mui.shimmer;
 
-import org.jetbrains.annotations.NotNull;
-
 /**
  * Color interpolation shared by the shimmer engine and its targets.
  */

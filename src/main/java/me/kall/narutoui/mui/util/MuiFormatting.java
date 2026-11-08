@@ -8,7 +8,6 @@ import icyllis.modernui.text.style.StrikethroughSpan;
 import icyllis.modernui.text.style.StyleSpan;
 import icyllis.modernui.text.style.UnderlineSpan;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +25,7 @@ import java.util.List;
  * stay readable and must not change its width on every frame.
  */
 public final class MuiFormatting {
-    private static final char SECTION = '\u00a7';
+    private static final char SECTION = '§';
     /** Number of characters after {@code §x} in a hexadecimal color: six {@code §}-prefixed nibbles. */
     private static final int HEX_LENGTH = 12;
 

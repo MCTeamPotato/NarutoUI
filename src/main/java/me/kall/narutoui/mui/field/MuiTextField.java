@@ -1,8 +1,5 @@
 package me.kall.narutoui.mui.field;
 
-import me.kall.narutoui.mui.layout.MuiLayout;
-import me.kall.narutoui.mui.layout.MuiControls;
-
 import icyllis.modernui.core.Context;
 import icyllis.modernui.graphics.drawable.ShapeDrawable;
 import icyllis.modernui.text.Editable;
@@ -12,6 +9,8 @@ import icyllis.modernui.util.ColorStateList;
 import icyllis.modernui.view.Gravity;
 import icyllis.modernui.view.View;
 import icyllis.modernui.widget.EditText;
+import me.kall.narutoui.mui.layout.MuiControls;
+import me.kall.narutoui.mui.layout.MuiLayout;
 import me.kall.narutoui.mui.shimmer.MuiShimmer;
 import me.kall.narutoui.mui.shimmer.MuiShimmerProfile;
 import me.kall.narutoui.mui.shimmer.MuiShimmerable;

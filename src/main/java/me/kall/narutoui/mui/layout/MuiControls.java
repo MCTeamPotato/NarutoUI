@@ -1,12 +1,5 @@
 package me.kall.narutoui.mui.layout;
 
-import me.kall.narutoui.mui.field.MuiTextField;
-import me.kall.narutoui.mui.field.MuiNumberField;
-import me.kall.narutoui.mui.field.MuiListEditor;
-import me.kall.narutoui.mui.choice.MuiOption;
-import me.kall.narutoui.mui.choice.MuiDropdown;
-import me.kall.narutoui.mui.choice.MuiChoiceGrid;
-
 import icyllis.modernui.core.Context;
 import icyllis.modernui.graphics.drawable.ColorDrawable;
 import icyllis.modernui.text.TextPaint;
@@ -16,9 +9,15 @@ import icyllis.modernui.view.View;
 import icyllis.modernui.view.ViewGroup;
 import icyllis.modernui.widget.*;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
+import me.kall.narutoui.mui.choice.MuiChoiceGrid;
+import me.kall.narutoui.mui.choice.MuiDropdown;
+import me.kall.narutoui.mui.choice.MuiOption;
+import me.kall.narutoui.mui.factory.MuiWidgetFactory;
+import me.kall.narutoui.mui.field.MuiListEditor;
+import me.kall.narutoui.mui.field.MuiNumberField;
+import me.kall.narutoui.mui.field.MuiTextField;
 import me.kall.narutoui.mui.shimmer.MuiShimmerable;
 import me.kall.narutoui.mui.theme.MuiTheme;
-import me.kall.narutoui.mui.factory.MuiWidgetFactory;
 import me.kall.narutoui.mui.util.MuiFormatting;
 import me.kall.narutoui.mui.util.MuiLocalization;
 import org.jetbrains.annotations.NotNull;
@@ -281,7 +280,7 @@ public final class MuiControls {
      * @param description tooltip text, or {@code null}
      */
     public static void applyTitleTooltip(@NotNull View titleView, @Nullable CharSequence description) {
-        if (description == null || description.length() == 0) {
+        if (description == null || description.isEmpty()) {
             titleView.setTooltipText(null);
             return;
         }

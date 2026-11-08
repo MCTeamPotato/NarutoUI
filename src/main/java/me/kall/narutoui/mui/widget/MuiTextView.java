@@ -55,7 +55,7 @@ public class MuiTextView extends TextView {
     }
 
     @Override
-    public void setText(CharSequence text, BufferType type) {
+    public void setText(@Nullable CharSequence text, @Nullable BufferType type) {
         CharSequence source = text == null ? "" : text;
 
         // Editable buffers keep the exact user input; formatting codes in a text field are data,
@@ -68,7 +68,7 @@ public class MuiTextView extends TextView {
         }
 
         String raw = source.toString();
-        if (getText() != null && type == this.lastType && raw.equals(this.lastSource)) {
+        if (type == this.lastType && raw.equals(this.lastSource)) {
             // Supplier-backed rows refresh their labels about ten times per second. The text did not
             // change, so skip the whole parse/layout path and only re-apply the visible color.
             this.applyResolvedColor();

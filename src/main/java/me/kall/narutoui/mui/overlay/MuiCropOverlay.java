@@ -13,8 +13,8 @@ import icyllis.modernui.widget.Button;
 import icyllis.modernui.widget.FrameLayout;
 import icyllis.modernui.widget.LinearLayout;
 import icyllis.modernui.widget.TextView;
-import me.kall.narutoui.mui.theme.MuiTheme;
 import me.kall.narutoui.mui.layout.MuiControls;
+import me.kall.narutoui.mui.theme.MuiTheme;
 import org.jetbrains.annotations.NotNull;
 
 /**

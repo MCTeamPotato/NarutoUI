@@ -1,12 +1,11 @@
 package me.kall.narutoui.mui.shimmer.drawable;
 
+import icyllis.modernui.graphics.drawable.ShapeDrawable;
+import icyllis.modernui.view.View;
 import me.kall.narutoui.mui.shimmer.MuiShimmer;
 import me.kall.narutoui.mui.shimmer.MuiShimmerProfile;
 import me.kall.narutoui.mui.shimmer.MuiShimmerable;
 import me.kall.narutoui.mui.shimmer.ShimmerTarget;
-
-import icyllis.modernui.graphics.drawable.ShapeDrawable;
-import icyllis.modernui.view.View;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -15,7 +14,7 @@ import org.jetbrains.annotations.NotNull;
 public final class ShimmerCircleDrawable extends ShapeDrawable implements ShimmerTarget {
     private final View host;
     private final MuiShimmerProfile profile;
-    private MuiShimmerable marker = MuiShimmerable.NEVER;
+    private MuiShimmerable marker;
     private int baseColor;
 
     /**

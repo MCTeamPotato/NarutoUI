@@ -13,19 +13,14 @@ import icyllis.modernui.mc.MuiScreen;
 import icyllis.modernui.mc.ScreenCallback;
 import icyllis.modernui.text.TextUtils;
 import icyllis.modernui.util.DataSet;
-import icyllis.modernui.view.Gravity;
-import icyllis.modernui.view.KeyEvent;
-import icyllis.modernui.view.LayoutInflater;
-import icyllis.modernui.view.MeasureSpec;
-import icyllis.modernui.view.View;
-import icyllis.modernui.view.ViewGroup;
+import icyllis.modernui.view.*;
 import icyllis.modernui.widget.*;
+import me.kall.narutoui.mui.layout.MuiControls;
 import me.kall.narutoui.mui.shimmer.MuiShimmerProfile;
 import me.kall.narutoui.mui.shimmer.MuiShimmerScope;
 import me.kall.narutoui.mui.shimmer.MuiShimmerable;
 import me.kall.narutoui.mui.theme.MuiTheme;
 import me.kall.narutoui.mui.util.MuiFormatting;
-import me.kall.narutoui.mui.layout.MuiControls;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import org.jetbrains.annotations.NotNull;
@@ -190,8 +185,7 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost, 
         this.pages.clear();
         this.navItems.clear();
 
-        LinearLayout body = new LinearLayout(context);
-        body.setOrientation(LinearLayout.VERTICAL);
+        LinearLayout body = MuiControls.column(context);
         root.addView(body, new FrameLayout.LayoutParams(MuiControls.MATCH, MuiControls.MATCH));
 
         LinearLayout shell = null;
@@ -385,9 +379,7 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost, 
         if (this.model == null || this.pages.isEmpty()) return;
 
         int index = Math.max(0, this.selected);
-        for (int i = 0; i < this.pages.size(); i++) {
-            this.pages.set(i, null);
-        }
+        this.pages.replaceAll(ignored -> null);
         this.showPage(index, false);
     }
 

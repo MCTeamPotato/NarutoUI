@@ -1,11 +1,10 @@
 package me.kall.narutoui.mui.widget;
 
-import me.kall.narutoui.mui.layout.MuiControls;
-
 import icyllis.modernui.core.Context;
 import icyllis.modernui.view.Gravity;
 import icyllis.modernui.widget.FrameLayout;
 import icyllis.modernui.widget.TextView;
+import me.kall.narutoui.mui.layout.MuiControls;
 import me.kall.narutoui.mui.shimmer.MuiShimmer;
 import me.kall.narutoui.mui.shimmer.MuiShimmerContainer;
 import me.kall.narutoui.mui.shimmer.MuiShimmerScope;
@@ -25,8 +24,6 @@ public final class MuiHintBadge extends FrameLayout implements MuiShimmerContain
     private final TextView text;
     /** Shimmering outline. */
     private final ShimmerHintDrawable outline;
-    /** Marker applied to the text and outline. */
-    private MuiShimmerable shimmerable = MuiShimmerable.NEVER;
 
     /**
      * Creates a hint badge.
@@ -51,7 +48,7 @@ public final class MuiHintBadge extends FrameLayout implements MuiShimmerContain
 
     @Override
     public void setShimmerable(@NotNull MuiShimmerable marker) {
-        this.shimmerable = marker;
+        /** Marker applied to the text and outline. */
         MuiShimmerScope.apply(this.text, marker);
         this.outline.setShimmerable(marker);
         MuiShimmer.refresh();

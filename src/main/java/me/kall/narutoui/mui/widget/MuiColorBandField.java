@@ -1,7 +1,6 @@
 package me.kall.narutoui.mui.widget;
 
 import icyllis.modernui.core.Context;
-import icyllis.modernui.view.View;
 import icyllis.modernui.widget.LinearLayout;
 import icyllis.modernui.widget.TextView;
 import me.kall.narutoui.mui.color.MuiColorBand;
@@ -32,7 +31,6 @@ public final class MuiColorBandField extends LinearLayout {
     private static final String DEFAULT_SECOND_LABEL = "Second color";
     private static final String DEFAULT_PICK_LABEL = "Pick";
 
-    private final Context context;
     private final MuiTheme theme;
     private final TextView title;
     private final MuiColorBandPreview preview;
@@ -51,7 +49,6 @@ public final class MuiColorBandField extends LinearLayout {
     private MuiColorBandField(@NotNull Context context, @NotNull MuiTheme theme,
                               @NotNull CharSequence titleText, int first, int second) {
         super(context);
-        this.context = context;
         this.theme = theme;
         this.firstColor = MuiColorBands.opaque(first);
         this.secondColor = MuiColorBands.opaque(second);

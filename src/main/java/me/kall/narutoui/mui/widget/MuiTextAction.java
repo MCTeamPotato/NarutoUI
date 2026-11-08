@@ -1,11 +1,10 @@
 package me.kall.narutoui.mui.widget;
 
-import me.kall.narutoui.mui.layout.MuiControls;
-
 import icyllis.modernui.core.Context;
 import icyllis.modernui.view.View;
 import icyllis.modernui.widget.FrameLayout;
 import icyllis.modernui.widget.TextView;
+import me.kall.narutoui.mui.layout.MuiControls;
 import me.kall.narutoui.mui.shimmer.MuiShimmer;
 import me.kall.narutoui.mui.shimmer.MuiShimmerProfile;
 import me.kall.narutoui.mui.shimmer.MuiShimmerable;

@@ -1,7 +1,5 @@
 package me.kall.narutoui.mui.choice;
 
-import me.kall.narutoui.mui.layout.MuiControls;
-
 import me.kall.narutoui.mui.util.MuiLocalization;
 import org.jetbrains.annotations.NotNull;
 

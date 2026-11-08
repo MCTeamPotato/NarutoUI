@@ -1,11 +1,10 @@
 package me.kall.narutoui.mui.choice;
 
-import me.kall.narutoui.mui.layout.MuiControls;
-
 import icyllis.modernui.core.Context;
 import icyllis.modernui.graphics.drawable.ShapeDrawable;
 import icyllis.modernui.view.View;
 import icyllis.modernui.widget.LinearLayout;
+import me.kall.narutoui.mui.layout.MuiControls;
 import me.kall.narutoui.mui.theme.MuiTheme;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

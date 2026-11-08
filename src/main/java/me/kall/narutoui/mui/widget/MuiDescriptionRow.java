@@ -1,10 +1,9 @@
 package me.kall.narutoui.mui.widget;
 
-import me.kall.narutoui.mui.layout.MuiControls;
-
 import icyllis.modernui.core.Context;
 import icyllis.modernui.widget.LinearLayout;
 import icyllis.modernui.widget.TextView;
+import me.kall.narutoui.mui.layout.MuiControls;
 import me.kall.narutoui.mui.shimmer.MuiShimmer;
 import me.kall.narutoui.mui.shimmer.MuiShimmerContainer;
 import me.kall.narutoui.mui.shimmer.MuiShimmerScope;
@@ -28,8 +27,6 @@ public final class MuiDescriptionRow extends LinearLayout implements MuiShimmerC
     private final int titleColor;
     /** Default description color. */
     private final int descriptionColor;
-    /** Marker applied to both text lines. */
-    private MuiShimmerable shimmerable = MuiShimmerable.NEVER;
 
     /**
      * Creates a description row.
@@ -58,7 +55,7 @@ public final class MuiDescriptionRow extends LinearLayout implements MuiShimmerC
 
     @Override
     public void setShimmerable(@NotNull MuiShimmerable marker) {
-        this.shimmerable = marker;
+        /** Marker applied to both text lines. */
         MuiShimmerScope.apply(this.titleView, marker);
         MuiShimmerScope.apply(this.descriptionView, marker);
         MuiShimmer.refresh();

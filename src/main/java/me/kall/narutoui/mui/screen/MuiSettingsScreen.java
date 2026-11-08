@@ -3,10 +3,10 @@ package me.kall.narutoui.mui.screen;
 import icyllis.modernui.core.Context;
 import icyllis.modernui.view.View;
 import me.kall.narutoui.mui.background.MuiBackground;
+import me.kall.narutoui.mui.factory.MuiWidgetFactory;
 import me.kall.narutoui.mui.shimmer.MuiShimmerProfile;
 import me.kall.narutoui.mui.shimmer.MuiShimmerable;
 import me.kall.narutoui.mui.theme.MuiTheme;
-import me.kall.narutoui.mui.factory.MuiWidgetFactory;
 import net.minecraft.client.gui.screens.Screen;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -477,7 +477,6 @@ public final class MuiSettingsScreen {
 
         @SuppressWarnings("DataFlowIssue")
         private void applyTo(@NotNull MuiConfigScreen.Builder delegate) {
-            int initialPageIndex = this.resolveInitialPage();
             delegate.subtitle(this.subtitle)
                     .footer(this.footer)
                     .widgetFactory(this.widgetFactory)
@@ -486,7 +485,6 @@ public final class MuiSettingsScreen {
                     .shimmerTitles(this.titlesShimmerable)
                     .contentWidth(this.contentWidth)
                     .background(this.background)
-                    .initialPage(initialPageIndex)
                     .navigation(this.navigation)
                     .railHeader(this.railHeader)
                     .railFooter(this.railFooter)
@@ -496,6 +494,12 @@ public final class MuiSettingsScreen {
                     .onDestroyed(this.onDestroyed)
                     .pageTransition(this.pageTransition);
 
+            // The delegate owns label resolution, so the lookup is not duplicated here.
+            if (this.initialPageLabel != null) {
+                delegate.initialPage(this.initialPageLabel);
+            } else {
+                delegate.initialPage(this.initialPage);
+            }
             if (this.pageTransitionDuration >= 0L) delegate.pageTransitionDuration(this.pageTransitionDuration);
             if (this.singlePage) delegate.singlePage();
             if (this.theme != null) delegate.theme(this.theme);
@@ -508,20 +512,6 @@ public final class MuiSettingsScreen {
                     delegate.page(page.navLabel(), page.title(), page.subtitle(), context -> page.body().accept(new MuiSettingsPage(context)));
                 }
             }
-        }
-
-        /**
-         * Resolves the initial page index from either the numeric index or the navigation label.
-         *
-         * @return the zero-based initial page index
-         */
-        private int resolveInitialPage() {
-            if (this.initialPageLabel == null) return this.initialPage;
-
-            for (int i = 0; i < this.pages.size(); i++) {
-                if (this.pages.get(i).navLabel().equals(this.initialPageLabel)) return i;
-            }
-            throw new IllegalArgumentException("No page with navigation label: " + this.initialPageLabel);
         }
     }
 

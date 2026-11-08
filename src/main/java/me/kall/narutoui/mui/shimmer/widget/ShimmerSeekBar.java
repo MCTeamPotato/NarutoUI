@@ -1,14 +1,13 @@
 package me.kall.narutoui.mui.shimmer.widget;
 
-import me.kall.narutoui.mui.shimmer.MuiShimmer;
-import me.kall.narutoui.mui.shimmer.MuiShimmerProfile;
-import me.kall.narutoui.mui.shimmer.MuiShimmerable;
-import me.kall.narutoui.mui.shimmer.ShimmerTarget;
-
 import icyllis.modernui.core.Context;
 import icyllis.modernui.util.ColorStateList;
 import icyllis.modernui.view.View;
 import icyllis.modernui.widget.SeekBar;
+import me.kall.narutoui.mui.shimmer.MuiShimmer;
+import me.kall.narutoui.mui.shimmer.MuiShimmerProfile;
+import me.kall.narutoui.mui.shimmer.MuiShimmerable;
+import me.kall.narutoui.mui.shimmer.ShimmerTarget;
 import org.jetbrains.annotations.NotNull;
 
 /**

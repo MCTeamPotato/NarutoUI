@@ -1,11 +1,5 @@
 package me.kall.narutoui.mui.shimmer.widget;
 
-import me.kall.narutoui.mui.shimmer.ShimmerColor;
-import me.kall.narutoui.mui.shimmer.MuiShimmer;
-import me.kall.narutoui.mui.shimmer.MuiShimmerProfile;
-import me.kall.narutoui.mui.shimmer.MuiShimmerable;
-import me.kall.narutoui.mui.shimmer.ShimmerTarget;
-
 import icyllis.modernui.core.Context;
 import icyllis.modernui.graphics.drawable.ShapeDrawable;
 import icyllis.modernui.resources.ResourceId;
@@ -13,6 +7,7 @@ import icyllis.modernui.util.AttributeSet;
 import icyllis.modernui.util.ColorStateList;
 import icyllis.modernui.view.View;
 import icyllis.modernui.widget.Button;
+import me.kall.narutoui.mui.shimmer.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

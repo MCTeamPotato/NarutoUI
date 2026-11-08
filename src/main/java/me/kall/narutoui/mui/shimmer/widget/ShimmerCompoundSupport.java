@@ -1,12 +1,10 @@
 package me.kall.narutoui.mui.shimmer.widget;
 
+import icyllis.modernui.util.ColorStateList;
+import icyllis.modernui.widget.CompoundButton;
 import me.kall.narutoui.mui.shimmer.MuiShimmer;
 import me.kall.narutoui.mui.shimmer.MuiShimmerProfile;
 import me.kall.narutoui.mui.shimmer.MuiShimmerable;
-import me.kall.narutoui.mui.shimmer.ShimmerTarget;
-
-import icyllis.modernui.util.ColorStateList;
-import icyllis.modernui.widget.CompoundButton;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
