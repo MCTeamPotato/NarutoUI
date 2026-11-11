@@ -1,6 +1,7 @@
 package me.kall.narutoui.mui.shimmer.widget;
 
 import icyllis.modernui.core.Context;
+import icyllis.modernui.graphics.Color;
 import icyllis.modernui.graphics.drawable.ShapeDrawable;
 import icyllis.modernui.resources.ResourceId;
 import icyllis.modernui.util.AttributeSet;
@@ -114,13 +115,13 @@ public final class ShimmerButton extends Button implements ShimmerTarget {
     @Override
     public void setTextColor(@NotNull ColorStateList colors) {
         this.baseColors = colors;
-        this.baseColor = colors.getDefaultColor();
+        this.baseColor = Color.toArgb(colors.getDefaultColor());
         if (this.getTextColors() == null || !MuiShimmer.isRunning()) super.setTextColor(colors);
     }
 
     @Override
     public int shimmerBaseColor() {
-        return this.baseColors.getColorForState(this.getDrawableState(), this.baseColor);
+        return Color.toArgb(this.baseColors.getColorForState(this.getDrawableState(), Color.pack(this.baseColor)));
     }
 
     @Override

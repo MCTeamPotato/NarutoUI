@@ -1,6 +1,7 @@
 package me.kall.narutoui.mui.widget;
 
 import icyllis.modernui.core.Context;
+import icyllis.modernui.graphics.Color;
 import icyllis.modernui.view.View;
 import icyllis.modernui.widget.FrameLayout;
 import icyllis.modernui.widget.TextView;
@@ -62,7 +63,7 @@ public final class MuiTextAction extends FrameLayout implements ShimmerTarget {
         this.theme = theme;
         this.shimmerProfile = MuiShimmerProfile.current();
         this.text = MuiControls.text(context, theme, label, 12, theme.primary());
-        this.baseTextColor = this.text.getCurrentTextColor();
+        this.baseTextColor = Color.toArgb(this.text.getCurrentTextColor());
         this.text.setPadding(MuiControls.dp(context, 8), MuiControls.dp(context, 4), MuiControls.dp(context, 8), MuiControls.dp(context, 4));
         this.addView(this.text, new FrameLayout.LayoutParams(MuiControls.WRAP, MuiControls.WRAP));
         this.setOnClickListener(view -> {
@@ -186,7 +187,7 @@ public final class MuiTextAction extends FrameLayout implements ShimmerTarget {
     public @NotNull MuiTextAction enabled(boolean enabled) {
         this.setEnabled(enabled);
         this.text.setTextColor(enabled ? this.theme.primary() : MuiControls.alpha(this.theme.primary(), 0.38F));
-        this.baseTextColor = this.text.getCurrentTextColor();
+        this.baseTextColor = Color.toArgb(this.text.getCurrentTextColor());
         return this;
     }
 

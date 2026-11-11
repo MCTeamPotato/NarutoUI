@@ -18,6 +18,6 @@ description = '''
 [[dependencies.narutoui]]
 modId = "modernui"
 type = "required"
-versionRange = "[3.12.0,)"
+versionRange = "[3.13.0,)"
 ordering = "AFTER"
 side = "CLIENT"

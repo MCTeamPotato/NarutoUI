@@ -1,6 +1,7 @@
 package me.kall.narutoui.mui.widget;
 
 import icyllis.modernui.core.Context;
+import icyllis.modernui.graphics.Color;
 import icyllis.modernui.util.AttributeSet;
 import icyllis.modernui.util.ColorStateList;
 import icyllis.modernui.widget.TextView;
@@ -93,7 +94,7 @@ public class MuiTextView extends TextView {
     @Override
     public void setTextColor(@Nullable ColorStateList colors) {
         this.fallbackColors = colors;
-        this.fallbackColor = colors == null ? 0 : colors.getDefaultColor();
+        this.fallbackColor = colors == null ? 0 : Color.toArgb(colors.getDefaultColor());
         this.hasFallbackColor = colors != null;
         this.applyResolvedColor();
     }

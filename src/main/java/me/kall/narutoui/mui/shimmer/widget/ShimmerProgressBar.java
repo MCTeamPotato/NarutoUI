@@ -1,6 +1,7 @@
 package me.kall.narutoui.mui.shimmer.widget;
 
 import icyllis.modernui.core.Context;
+import icyllis.modernui.graphics.Color;
 import icyllis.modernui.util.ColorStateList;
 import icyllis.modernui.view.View;
 import icyllis.modernui.widget.ProgressBar;
@@ -61,7 +62,7 @@ public final class ShimmerProgressBar extends ProgressBar implements ShimmerTarg
         this.baseBackgroundTint = backgroundTint;
         this.baseSecondaryTint = secondaryTint;
         this.baseIndeterminateTint = indeterminateTint;
-        this.baseColor = progressTint == null ? 0xFFFFFFFF : progressTint.getDefaultColor();
+        this.baseColor = progressTint == null ? 0xFFFFFFFF : Color.toArgb(progressTint.getDefaultColor());
         this.bound = true;
         if (!MuiShimmer.isRunning()) this.applyBaseColor();
         return this;

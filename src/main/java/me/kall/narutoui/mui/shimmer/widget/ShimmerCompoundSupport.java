@@ -1,5 +1,6 @@
 package me.kall.narutoui.mui.shimmer.widget;
 
+import icyllis.modernui.graphics.Color;
 import icyllis.modernui.util.ColorStateList;
 import icyllis.modernui.widget.CompoundButton;
 import me.kall.narutoui.mui.shimmer.MuiShimmer;
@@ -80,7 +81,7 @@ final class ShimmerCompoundSupport {
     }
 
     int baseColor() {
-        return this.baseTextColors == null ? 0xFFFFFFFF : this.baseTextColors.getDefaultColor();
+        return this.baseTextColors == null ? 0xFFFFFFFF : Color.toArgb(this.baseTextColors.getDefaultColor());
     }
 
     @NotNull MuiShimmerProfile profile() {

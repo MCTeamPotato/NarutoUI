@@ -1,6 +1,7 @@
 package me.kall.narutoui.mui.field;
 
 import icyllis.modernui.core.Context;
+import icyllis.modernui.graphics.Color;
 import icyllis.modernui.graphics.drawable.ShapeDrawable;
 import icyllis.modernui.text.Editable;
 import icyllis.modernui.text.InputFilter;
@@ -342,7 +343,7 @@ public final class MuiTextField extends EditText implements ShimmerTarget, MuiVa
 
     @Override
     public int shimmerBaseColor() {
-        return this.baseTextColors == null ? this.getCurrentTextColor() : this.baseTextColors.getDefaultColor();
+        return this.baseTextColors == null ? Color.toArgb(this.getCurrentTextColor()) : Color.toArgb(this.baseTextColors.getDefaultColor());
     }
 
     @Override

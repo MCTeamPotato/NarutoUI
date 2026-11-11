@@ -1,6 +1,7 @@
 package me.kall.narutoui.mui.shimmer.widget;
 
 import icyllis.modernui.core.Context;
+import icyllis.modernui.graphics.Color;
 import icyllis.modernui.util.ColorStateList;
 import icyllis.modernui.view.View;
 import me.kall.narutoui.mui.shimmer.MuiShimmer;
@@ -76,7 +77,7 @@ public final class ShimmerTextView extends MuiTextView implements ShimmerTarget 
 
     @Override
     public void setTextColor(@NotNull ColorStateList colors) {
-        this.baseColor = colors.getDefaultColor();
+        this.baseColor = Color.toArgb(colors.getDefaultColor());
         if (this.getTextColors() == null || !MuiShimmer.isRunning()) this.applyRawColorState(colors);
     }
 
