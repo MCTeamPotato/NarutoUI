@@ -37,7 +37,8 @@ import java.util.function.Predicate;
  * <p>
  * An optional {@link #validator(Predicate)} marks invalid input with an error outline. Invalid input
  * never fires {@code onChange} or {@code onCommit}; the last valid text remains available through
- * {@link #text()}.
+ * {@link #text()}. Use {@link #softValidator(Predicate)} when the input should be highlighted but
+ * still reported, so the screen can explain the problem itself.
  */
 public final class MuiTextField extends EditText implements ShimmerTarget, MuiValidatable {
     /** Context used for density conversion. */
@@ -68,6 +69,8 @@ public final class MuiTextField extends EditText implements ShimmerTarget, MuiVa
     private @Nullable Consumer<String> onCommit;
     /** Optional validity predicate. */
     private @Nullable Predicate<String> validator;
+    /** Optional visual-only validity predicate; never blocks the edit callbacks. */
+    private @Nullable Predicate<String> softValidator;
     /** Listeners notified when the validity changes. */
     private final List<Consumer<Boolean>> validityListeners = new ArrayList<>();
 
@@ -99,8 +102,8 @@ public final class MuiTextField extends EditText implements ShimmerTarget, MuiVa
                 if (MuiTextField.this.guard) return;
 
                 String text = s.toString();
-                boolean accepted = MuiTextField.this.validator == null || MuiTextField.this.validator.test(text);
-                MuiTextField.this.setValid(accepted);
+                boolean accepted = MuiTextField.this.accepted(text);
+                MuiTextField.this.setValid(MuiTextField.this.valid(text));
                 if (accepted && MuiTextField.this.onChange != null) MuiTextField.this.onChange.accept(text);
             }
         });
@@ -185,14 +188,51 @@ public final class MuiTextField extends EditText implements ShimmerTarget, MuiVa
      */
     public @NotNull MuiTextField validator(@Nullable Predicate<String> validator) {
         this.validator = validator;
-        this.setValid(validator == null || validator.test(this.getText().toString()));
+        this.setValid(this.valid(this.getText().toString()));
         return this;
+    }
+
+    /**
+     * Sets a visual-only validity predicate. Unlike {@link #validator(Predicate)}, a rejection only
+     * paints the error outline: the text is still reported through {@link #onChange(Consumer)} and
+     * {@link #onCommit(Consumer)}, so a screen can accept the input and explain the problem itself.
+     * <p>
+     * Both predicates contribute to {@link #isValid()} and to the outline; only the hard validator
+     * suppresses the callbacks.
+     *
+     * @param validator predicate returning {@code true} for acceptable text, or {@code null}
+     * @return this field, for chaining
+     */
+    public @NotNull MuiTextField softValidator(@Nullable Predicate<String> validator) {
+        this.softValidator = validator;
+        this.setValid(this.valid(this.getText().toString()));
+        return this;
+    }
+
+    /**
+     * Applies the hard validator, which also gates the edit callbacks.
+     *
+     * @param text the text to check
+     * @return {@code true} when no hard validator is set or it accepts the text
+     */
+    private boolean accepted(@NotNull String text) {
+        return this.validator == null || this.validator.test(text);
+    }
+
+    /**
+     * Applies both validators; used for the outline and {@link #isValid()}.
+     *
+     * @param text the text to check
+     * @return {@code true} when every validator accepts the text
+     */
+    private boolean valid(@NotNull String text) {
+        return this.accepted(text) && (this.softValidator == null || this.softValidator.test(text));
     }
 
     /**
      * Returns whether the text currently shown in the field is valid.
      *
-     * @return {@code true} when no validator is set or the validator accepts the text
+     * @return {@code true} when every configured validator accepts the text
      */
     @Override
     public boolean isValid() {
@@ -279,7 +319,7 @@ public final class MuiTextField extends EditText implements ShimmerTarget, MuiVa
         this.setText(value);
         this.guard = false;
         this.committed = value.toString();
-        this.setValid(this.validator == null || this.validator.test(this.committed));
+        this.setValid(this.valid(this.committed));
         return this;
     }
 
@@ -290,12 +330,12 @@ public final class MuiTextField extends EditText implements ShimmerTarget, MuiVa
      */
     public @NotNull MuiTextField commit() {
         String text = this.getText().toString();
-        if (this.validator != null && !this.validator.test(text)) {
+        if (!this.accepted(text)) {
             this.setValid(false);
             return this;
         }
 
-        this.setValid(true);
+        this.setValid(this.valid(text));
         if (!text.equals(this.committed)) {
             this.committed = text;
             if (this.onCommit != null) this.onCommit.accept(text);

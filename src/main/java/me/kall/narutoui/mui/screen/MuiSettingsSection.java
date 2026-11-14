@@ -7,6 +7,8 @@ import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import me.kall.narutoui.mui.choice.MuiChoiceGrid;
 import me.kall.narutoui.mui.choice.MuiOption;
 import me.kall.narutoui.mui.choice.MuiThemePicker;
+import me.kall.narutoui.mui.field.MuiNumberField;
+import me.kall.narutoui.mui.field.MuiTextField;
 import me.kall.narutoui.mui.layout.MuiControls;
 import me.kall.narutoui.mui.layout.MuiLayout;
 import me.kall.narutoui.mui.shimmer.MuiShimmerScope;
@@ -28,6 +30,10 @@ import java.util.function.*;
  * row's title. Long descriptions therefore no longer make the page taller or mix into the title
  * line. Use {@link #description(CharSequence, CharSequence)} or {@link #note(CharSequence, CharSequence)}
  * for text that should stay visible.
+ * <p>
+ * Sections are not append-only: {@link #addRow(View)} and {@link #clearRows()} let a screen rebuild
+ * a card from live state without replacing the whole page, keeping the same dividers, spacing and
+ * shimmer handling as the field helpers.
  */
 public final class MuiSettingsSection {
     /** Owning page context. */
@@ -86,7 +92,7 @@ public final class MuiSettingsSection {
      * @return this section, for chaining
      */
     public @NotNull MuiSettingsSection toggle(@NotNull CharSequence title, @NotNull BooleanSupplier value, @NotNull BooleanConsumer onChange) {
-        return this.add(MuiControls.switchRow(this.page.context(), this.page.theme(), title, null, value, onChange));
+        return this.addRow(MuiControls.switchRow(this.page.context(), this.page.theme(), title, null, value, onChange));
     }
 
     /**
@@ -99,7 +105,7 @@ public final class MuiSettingsSection {
      * @return this section, for chaining
      */
     public @NotNull MuiSettingsSection toggle(@NotNull CharSequence title, @Nullable CharSequence description, @NotNull BooleanSupplier value, @NotNull BooleanConsumer onChange) {
-        return this.add(MuiControls.switchRow(this.page.context(), this.page.theme(), title, description, value, onChange));
+        return this.addRow(MuiControls.switchRow(this.page.context(), this.page.theme(), title, description, value, onChange));
     }
 
     /**
@@ -111,7 +117,7 @@ public final class MuiSettingsSection {
      * @return this section, for chaining
      */
     public @NotNull MuiSettingsSection toggle(@NotNull CharSequence title, boolean value, @NotNull BooleanConsumer onChange) {
-        return this.add(MuiControls.switchRow(this.page.context(), this.page.theme(), title, null, value, onChange));
+        return this.addRow(MuiControls.switchRow(this.page.context(), this.page.theme(), title, null, value, onChange));
     }
 
     /**
@@ -124,7 +130,7 @@ public final class MuiSettingsSection {
      * @return this section, for chaining
      */
     public @NotNull MuiSettingsSection toggle(@NotNull CharSequence title, @Nullable CharSequence description, boolean value, @NotNull BooleanConsumer onChange) {
-        return this.add(MuiControls.switchRow(this.page.context(), this.page.theme(), title, description, value, onChange));
+        return this.addRow(MuiControls.switchRow(this.page.context(), this.page.theme(), title, description, value, onChange));
     }
 
     /**
@@ -168,7 +174,7 @@ public final class MuiSettingsSection {
      * @return this section, for chaining
      */
     public @NotNull MuiSettingsSection slider(@NotNull CharSequence title, int min, int max, @NotNull IntSupplier value, @NotNull IntConsumer onChange, @NotNull IntFunction<CharSequence> format) {
-        return this.add(MuiControls.sliderRow(this.page.context(), this.page.theme(), title, format, min, max, value, onChange));
+        return this.addRow(MuiControls.sliderRow(this.page.context(), this.page.theme(), title, format, min, max, value, onChange));
     }
 
     /**
@@ -184,7 +190,7 @@ public final class MuiSettingsSection {
      * @return this section, for chaining
      */
     public @NotNull MuiSettingsSection slider(@NotNull CharSequence title, double min, double max, double step, @NotNull DoubleSupplier value, @NotNull DoubleConsumer onChange, @NotNull DoubleFunction<CharSequence> format) {
-        return this.add(MuiControls.sliderRow(this.page.context(), this.page.theme(), title, format, min, max, step, value, onChange));
+        return this.addRow(MuiControls.sliderRow(this.page.context(), this.page.theme(), title, format, min, max, step, value, onChange));
     }
 
     /**
@@ -201,7 +207,7 @@ public final class MuiSettingsSection {
      */
     public @NotNull MuiSettingsSection slider(@NotNull CharSequence title, @Nullable CharSequence description, int min, int max, @NotNull IntSupplier value, @NotNull IntConsumer onChange, @NotNull IntFunction<CharSequence> format) {
         LinearLayout row = MuiControls.sliderRow(this.page.context(), this.page.theme(), title, description, format, min, max, value, onChange);
-        return this.add(row);
+        return this.addRow(row);
     }
 
     /**
@@ -219,7 +225,7 @@ public final class MuiSettingsSection {
      */
     public @NotNull MuiSettingsSection slider(@NotNull CharSequence title, @Nullable CharSequence description, double min, double max, double step, @NotNull DoubleSupplier value, @NotNull DoubleConsumer onChange, @NotNull DoubleFunction<CharSequence> format) {
         LinearLayout row = MuiControls.sliderRow(this.page.context(), this.page.theme(), title, description, format, min, max, step, value, onChange);
-        return this.add(row);
+        return this.addRow(row);
     }
 
     /**
@@ -258,7 +264,22 @@ public final class MuiSettingsSection {
      * @return this section, for chaining
      */
     public @NotNull MuiSettingsSection textField(@NotNull CharSequence title, @Nullable CharSequence description, @NotNull CharSequence value, @NotNull Consumer<String> onCommit) {
-        return this.add(MuiControls.textFieldRow(this.page.context(), this.page.theme(), title, description, value, onCommit));
+        return this.textField(title, description, value, onCommit, null);
+    }
+
+    /**
+     * Adds a text field row with a configurator for the field itself, so a caller can attach a hint,
+     * a validator or a custom width without composing the row by hand.
+     *
+     * @param title       row title
+     * @param description optional description
+     * @param value       initial text
+     * @param onCommit    commit callback
+     * @param configure   optional field configurator, or {@code null}
+     * @return this section, for chaining
+     */
+    public @NotNull MuiSettingsSection textField(@NotNull CharSequence title, @Nullable CharSequence description, @NotNull CharSequence value, @NotNull Consumer<String> onCommit, @Nullable Consumer<MuiTextField> configure) {
+        return this.addRow(MuiControls.textFieldRow(this.page.context(), this.page.theme(), title, description, value, onCommit, configure));
     }
 
     /**
@@ -271,7 +292,21 @@ public final class MuiSettingsSection {
      * @return this section, for chaining
      */
     public @NotNull MuiSettingsSection textField(@NotNull CharSequence title, @Nullable CharSequence description, @NotNull Supplier<String> value, @NotNull Consumer<String> onCommit) {
-        return this.add(MuiControls.textFieldRow(this.page.context(), this.page.theme(), title, description, value, onCommit));
+        return this.textField(title, description, value, onCommit, null);
+    }
+
+    /**
+     * Adds a supplier-backed text field row with a configurator for the field itself.
+     *
+     * @param title       row title
+     * @param description optional description
+     * @param value       live text supplier
+     * @param onCommit    commit callback
+     * @param configure   optional field configurator, or {@code null}
+     * @return this section, for chaining
+     */
+    public @NotNull MuiSettingsSection textField(@NotNull CharSequence title, @Nullable CharSequence description, @NotNull Supplier<String> value, @NotNull Consumer<String> onCommit, @Nullable Consumer<MuiTextField> configure) {
+        return this.addRow(MuiControls.textFieldRow(this.page.context(), this.page.theme(), title, description, value, onCommit, configure));
     }
 
     /**
@@ -300,7 +335,7 @@ public final class MuiSettingsSection {
      * @return this section, for chaining
      */
     public @NotNull MuiSettingsSection number(@NotNull CharSequence title, @Nullable CharSequence description, int min, int max, @NotNull IntSupplier value, @NotNull IntConsumer onChange) {
-        return this.add(MuiControls.numberRow(this.page.context(), this.page.theme(), title, description, min, max, value, onChange));
+        return this.addRow(MuiControls.numberRow(this.page.context(), this.page.theme(), title, description, min, max, value, onChange));
     }
 
     /**
@@ -329,7 +364,7 @@ public final class MuiSettingsSection {
      * @return this section, for chaining
      */
     public @NotNull MuiSettingsSection longNumber(@NotNull CharSequence title, @Nullable CharSequence description, long min, long max, @NotNull LongSupplier value, @NotNull LongConsumer onChange) {
-        return this.add(MuiControls.longNumberRow(this.page.context(), this.page.theme(), title, description, min, max, value, onChange));
+        return this.addRow(MuiControls.longNumberRow(this.page.context(), this.page.theme(), title, description, min, max, value, onChange));
     }
 
     /**
@@ -358,7 +393,25 @@ public final class MuiSettingsSection {
      * @return this section, for chaining
      */
     public @NotNull MuiSettingsSection decimal(@NotNull CharSequence title, @Nullable CharSequence description, double min, double max, @NotNull DoubleSupplier value, @NotNull DoubleConsumer onChange) {
-        return this.add(MuiControls.decimalRow(this.page.context(), this.page.theme(), title, description, min, max, value, onChange));
+        return this.decimal(title, description, min, max, value, onChange, null);
+    }
+
+    /**
+     * Adds a decimal number row with a configurator for the number field itself. Use it to change the
+     * displayed precision with {@link MuiNumberField#scale(int)} when a stored value carries more
+     * digits than the player should see.
+     *
+     * @param title       row title
+     * @param description optional description
+     * @param min         minimum value (inclusive)
+     * @param max         maximum value (inclusive)
+     * @param value       live value supplier
+     * @param onChange    value callback
+     * @param configure   optional field configurator, or {@code null}
+     * @return this section, for chaining
+     */
+    public @NotNull MuiSettingsSection decimal(@NotNull CharSequence title, @Nullable CharSequence description, double min, double max, @NotNull DoubleSupplier value, @NotNull DoubleConsumer onChange, @Nullable Consumer<MuiNumberField> configure) {
+        return this.addRow(MuiControls.decimalRow(this.page.context(), this.page.theme(), title, description, min, max, value, onChange, configure));
     }
 
     /**
@@ -387,7 +440,7 @@ public final class MuiSettingsSection {
      * @return this section, for chaining
      */
     public <T> @NotNull MuiSettingsSection dropdown(@NotNull CharSequence title, @Nullable CharSequence description, @NotNull List<MuiOption<T>> options, @Nullable T selected, @NotNull Consumer<T> onSelected) {
-        return this.add(MuiControls.dropdownRow(this.page.context(), this.page.theme(), title, description, options, selected, onSelected));
+        return this.addRow(MuiControls.dropdownRow(this.page.context(), this.page.theme(), title, description, options, selected, onSelected));
     }
 
     /**
@@ -416,7 +469,7 @@ public final class MuiSettingsSection {
      * @return this section, for chaining
      */
     public <T> @NotNull MuiSettingsSection dropdownBound(@NotNull CharSequence title, @Nullable CharSequence description, @NotNull List<MuiOption<T>> options, @NotNull Supplier<T> selected, @NotNull Consumer<T> onSelected) {
-        return this.add(MuiControls.dropdownRowBound(this.page.context(), this.page.theme(), title, description, options, selected, onSelected));
+        return this.addRow(MuiControls.dropdownRowBound(this.page.context(), this.page.theme(), title, description, options, selected, onSelected));
     }
 
     /**
@@ -445,7 +498,7 @@ public final class MuiSettingsSection {
      * @return this section, for chaining
      */
     public <T> @NotNull MuiSettingsSection choiceGrid(@NotNull CharSequence title, @Nullable CharSequence description, @NotNull List<MuiOption<T>> options, @Nullable T selected, @NotNull Consumer<T> onSelected) {
-        return this.add(MuiControls.choiceGridRow(this.page.context(), this.page.theme(), title, description, options, selected, onSelected));
+        return this.addRow(MuiControls.choiceGridRow(this.page.context(), this.page.theme(), title, description, options, selected, onSelected));
     }
 
     /**
@@ -475,7 +528,7 @@ public final class MuiSettingsSection {
      * @return this section, for chaining
      */
     public <T> @NotNull MuiSettingsSection choiceGridBound(@NotNull CharSequence title, @Nullable CharSequence description, @NotNull List<MuiOption<T>> options, @NotNull Supplier<T> selected, @NotNull Consumer<T> onSelected) {
-        return this.add(MuiControls.choiceGridRowBound(this.page.context(), this.page.theme(), title, description, options, selected, onSelected));
+        return this.addRow(MuiControls.choiceGridRowBound(this.page.context(), this.page.theme(), title, description, options, selected, onSelected));
     }
 
     /**
@@ -500,7 +553,7 @@ public final class MuiSettingsSection {
      * @return this section, for chaining
      */
     public @NotNull MuiSettingsSection list(@NotNull CharSequence title, @Nullable CharSequence description, @NotNull List<String> values, @NotNull Consumer<List<String>> onChanged) {
-        return this.add(MuiControls.listRow(this.page.context(), this.page.theme(), title, description, values, onChanged));
+        return this.addRow(MuiControls.listRow(this.page.context(), this.page.theme(), title, description, values, onChanged));
     }
 
     /**
@@ -511,7 +564,7 @@ public final class MuiSettingsSection {
      * @return this section, for chaining
      */
     public @NotNull MuiSettingsSection value(@NotNull CharSequence title, @NotNull CharSequence value) {
-        return this.add(MuiControls.valueRow(this.page.context(), this.page.theme(), title, value));
+        return this.addRow(MuiControls.valueRow(this.page.context(), this.page.theme(), title, value));
     }
 
     /**
@@ -522,7 +575,7 @@ public final class MuiSettingsSection {
      * @return this section, for chaining
      */
     public @NotNull MuiSettingsSection value(@NotNull CharSequence title, @NotNull IntSupplier value) {
-        return this.add(MuiControls.valueRow(this.page.context(), this.page.theme(), title, value));
+        return this.addRow(MuiControls.valueRow(this.page.context(), this.page.theme(), title, value));
     }
 
     /**
@@ -533,7 +586,7 @@ public final class MuiSettingsSection {
      * @return this section, for chaining
      */
     public @NotNull MuiSettingsSection value(@NotNull CharSequence title, @NotNull DoubleSupplier value) {
-        return this.add(MuiControls.valueRow(this.page.context(), this.page.theme(), title, value));
+        return this.addRow(MuiControls.valueRow(this.page.context(), this.page.theme(), title, value));
     }
 
     /**
@@ -544,7 +597,7 @@ public final class MuiSettingsSection {
      * @return this section, for chaining
      */
     public @NotNull MuiSettingsSection value(@NotNull CharSequence title, @NotNull LongSupplier value) {
-        return this.add(MuiControls.valueRow(this.page.context(), this.page.theme(), title, value));
+        return this.addRow(MuiControls.valueRow(this.page.context(), this.page.theme(), title, value));
     }
 
     /**
@@ -556,7 +609,7 @@ public final class MuiSettingsSection {
      * @return this section, for chaining
      */
     public @NotNull MuiSettingsSection value(@NotNull CharSequence title, @NotNull IntFunction<CharSequence> format, @NotNull IntSupplier value) {
-        return this.add(MuiControls.valueRow(this.page.context(), this.page.theme(), title, format, value));
+        return this.addRow(MuiControls.valueRow(this.page.context(), this.page.theme(), title, format, value));
     }
 
     /**
@@ -566,7 +619,7 @@ public final class MuiSettingsSection {
      * @return this section, for chaining
      */
     public @NotNull MuiSettingsSection text(@NotNull CharSequence text) {
-        return this.add(MuiControls.text(this.page.context(), this.page.theme(), text, 12, this.page.theme().onSurfaceVariant()));
+        return this.addRow(MuiControls.text(this.page.context(), this.page.theme(), text, 12, this.page.theme().onSurfaceVariant()));
     }
 
     /**
@@ -588,7 +641,7 @@ public final class MuiSettingsSection {
      * @return this section, for chaining
      */
     public @NotNull MuiSettingsSection description(@NotNull CharSequence title, @Nullable CharSequence description) {
-        return this.add(MuiDescriptionRow.create(this.page.context(), this.page.theme(), title, description));
+        return this.addRow(MuiDescriptionRow.create(this.page.context(), this.page.theme(), title, description));
     }
 
     /**
@@ -629,7 +682,7 @@ public final class MuiSettingsSection {
             block.add(row, MuiControls.fill());
 
             MuiShimmerable marker = this.nextShimmerable == null ? MuiShimmerable.NEVER : this.nextShimmerable;
-            this.add(block);
+            this.addRow(block);
             this.noteBlock = block;
             this.noteShimmerable = marker;
         } else {
@@ -664,7 +717,7 @@ public final class MuiSettingsSection {
     public @NotNull MuiSettingsSection themePicker(@NotNull List<MuiThemePicker.Choice> choices, @NotNull CharSequence inUse, @NotNull Consumer<MuiTheme> selected) {
         MuiChoiceGrid<MuiThemePicker.Choice> grid = MuiThemePicker.create(this.page.context(), this.page.theme(), choices, inUse);
         grid.onSelected(choice -> selected.accept(choice.theme()));
-        return this.add(grid);
+        return this.addRow(grid);
     }
 
     /**
@@ -688,7 +741,7 @@ public final class MuiSettingsSection {
      */
     public @NotNull MuiSettingsSection button(@NotNull CharSequence label, boolean outlined, @NotNull Runnable action) {
         Button button = MuiControls.button(this.page.context(), this.page.theme(), label, outlined, view -> action.run());
-        return this.add(button);
+        return this.addRow(button);
     }
 
     /**
@@ -725,7 +778,7 @@ public final class MuiSettingsSection {
      * @return this section, for chaining
      */
     public @NotNull MuiSettingsSection custom(@NotNull View view) {
-        return this.add(view);
+        return this.addRow(view);
     }
 
     /**
@@ -764,7 +817,7 @@ public final class MuiSettingsSection {
     public @NotNull MuiSettingsSection collapsible(@NotNull CharSequence title, @Nullable CharSequence summary, boolean expanded, @NotNull Consumer<MuiSettingsSection> body) {
         MuiCollapsibleCard card = MuiCollapsibleCard.card(
                 this.page.context(), this.page.theme(), title, summary, expanded);
-        this.add(card);
+        this.addRow(card);
 
         MuiSettingsSection nested = new MuiSettingsSection(this.page, card.body());
         body.accept(nested);
@@ -780,7 +833,7 @@ public final class MuiSettingsSection {
     public @NotNull MuiSettingsSection customLayout(@NotNull Consumer<MuiLayout> body) {
         MuiLayout row = MuiLayout.column(this.page.context(), this.page.theme());
         body.accept(row);
-        return this.add(row);
+        return this.addRow(row);
     }
 
     /**
@@ -808,12 +861,14 @@ public final class MuiSettingsSection {
     }
 
     /**
-     * Appends a row, inserting a divider before every row after the first.
+     * Appends a row, inserting the same divider and spacing the field helpers use. Call this for
+     * rows you compose yourself so a card keeps one visual rhythm, and combine it with
+     * {@link #clearRows()} to rebuild dynamic content without dropping out of the card.
      *
      * @param row row view
      * @return this section, for chaining
      */
-    private @NotNull MuiSettingsSection add(@NotNull View row) {
+    public @NotNull MuiSettingsSection addRow(@NotNull View row) {
         this.noteBlock = null;
 
         MuiShimmerable marker = this.nextShimmerable;
@@ -823,18 +878,53 @@ public final class MuiSettingsSection {
         boolean first = this.fields == 0;
         if (!first) {
             LinearLayout.LayoutParams dividerParams = MuiControls.fill();
-            dividerParams.topMargin = MuiControls.dp(this.page.context(), 10);
+            dividerParams.topMargin = MuiControls.rowGap(this.page.context());
             this.card.addView(MuiControls.divider(this.page.context(), this.page.theme()), dividerParams);
         }
         this.fields++;
 
         LinearLayout.LayoutParams params = MuiControls.fill();
         if (!first) {
-            params.topMargin = MuiControls.dp(this.page.context(), 10);
+            params.topMargin = MuiControls.rowGap(this.page.context());
         }
         this.card.addView(row, params);
         this.lastRow = row;
         return this;
+    }
+
+    /**
+     * Removes every row from the card and resets the divider state, so the next {@link #addRow(View)}
+     * or field helper starts a fresh card body. Use this to rebuild content that depends on live
+     * state without replacing the whole page (which would drop focus and scroll position).
+     *
+     * @return this section, for chaining
+     */
+    public @NotNull MuiSettingsSection clearRows() {
+        this.card.removeAllViews();
+        this.fields = 0;
+        this.noteBlock = null;
+        this.lastRow = null;
+        this.nextShimmerable = null;
+        this.noteShimmerable = MuiShimmerable.NEVER;
+        return this;
+    }
+
+    /**
+     * Returns how many rows were added since the last {@link #clearRows()}.
+     *
+     * @return the row count
+     */
+    public int rowCount() {
+        return this.fields;
+    }
+
+    /**
+     * Returns the most recently added row, for callers that need to tweak it after the fact.
+     *
+     * @return the last row, or {@code null}
+     */
+    public @Nullable View lastRow() {
+        return this.lastRow;
     }
 
     /**

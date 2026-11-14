@@ -8,6 +8,7 @@ import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import me.kall.narutoui.mui.choice.MuiOption;
 import me.kall.narutoui.mui.layout.MuiControls;
 import me.kall.narutoui.mui.layout.MuiLayout;
+import me.kall.narutoui.mui.shimmer.MuiShimmerProfile;
 import me.kall.narutoui.mui.shimmer.MuiShimmerScope;
 import me.kall.narutoui.mui.shimmer.MuiShimmerable;
 import me.kall.narutoui.mui.theme.MuiTheme;
@@ -33,6 +34,10 @@ public final class MuiPageContext {
     private final MuiTheme theme;
     /** Vertical content column that receives page children. */
     private final MuiLayout content;
+    /** Owning shell, used to reload the page from a late callback, or {@code null}. */
+    private final @Nullable MuiScreenHost host;
+    /** Shimmer profile active while this page was built. */
+    private final MuiShimmerProfile profile;
     /** Page title view, or {@code null}. */
     private @Nullable TextView headerTitle;
     /** Page subtitle view, or {@code null}. */
@@ -48,11 +53,37 @@ public final class MuiPageContext {
      * @param context the screen context
      * @param theme   active theme
      * @param content the page content column
+     * @param host    owning shell, or {@code null} when the page is built outside a screen
+     * @param profile shimmer profile active while the page is built
      */
-    MuiPageContext(@NotNull Context context, @NotNull MuiTheme theme, @NotNull MuiLayout content) {
+    MuiPageContext(@NotNull Context context, @NotNull MuiTheme theme, @NotNull MuiLayout content, @Nullable MuiScreenHost host, @NotNull MuiShimmerProfile profile) {
         this.context = context;
         this.theme = theme;
         this.content = content;
+        this.host = host;
+        this.profile = profile;
+    }
+
+    /**
+     * Returns the shell that owns this page, so late callbacks can reload it without the caller
+     * keeping a static host reference.
+     *
+     * @return the owning shell, or {@code null} when the page was built outside a screen
+     */
+    public @Nullable MuiScreenHost host() {
+        return this.host;
+    }
+
+    /**
+     * Returns the shimmer profile that was active while this page was built. Widgets created after
+     * the page body (for example when a section is rebuilt) should be built inside
+     * {@link MuiShimmerProfile#withCurrent(MuiShimmerProfile, java.util.function.Supplier)} with this
+     * profile so they keep the screen's shimmer settings.
+     *
+     * @return the page's shimmer profile
+     */
+    public @NotNull MuiShimmerProfile profile() {
+        return this.profile;
     }
 
     /**

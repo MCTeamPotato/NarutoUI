@@ -9,11 +9,13 @@ NarutoUI 是一个面向 Minecraft 客户端模组的 **Modern UI 配置界面�
 ## 提供什么
 
 - 声明式页面 / section / 字段 DSL
+- 动态 section：`addRow(View)` / `clearRows()` / `rowCount()` 就地重建一张卡片，不丢滚动位置和输入焦点
 - 可链式构建的 `MuiLayout` 与 `MuiControls`
 - 常用控件：开关、整数/小数滑杆、文本输入、整数/长整数/小数输入、下拉框、卡片选择、列表编辑、按钮、只读值
-- 外壳能力：固定底部 action bar、关闭守卫（未保存确认）、可滚动导航栏、按需构建页面、`MuiPageContext#searchable` 过滤原语
+- 字段 configurator：`textField(...)` / `decimal(...)` 可在声明行时追加 hint、validator、宽度、显示精度，不必自己拼行
+- 外壳能力：固定底部 action bar、关闭守卫（未保存确认）、可滚动导航栏、按需构建页面、`MuiPageContext#searchable` 过滤原语、`MuiPageContext#host()` 直接取外壳
 - 页面切换过渡：默认淡入淡出，另有上滑 / 下滑 / 按页序自动；`pageTransitionDuration(0)` 可关闭，时长可调
-- 输入校验：数值字段支持外部 `Predicate<BigDecimal>`，列表编辑器支持逐项 `Predicate<String>`，`MuiValidationHint` 显示错误文案
+- 输入校验：数值字段支持外部 `Predicate<BigDecimal>`，列表编辑器支持逐项 `Predicate<String>`；文本字段区分阻断式 `validator` 与只标红、仍然提交的 `softValidator`，`MuiValidationHint` 显示错误文案
 - 通用组件：`MuiChip`、`MuiTextAction`、`MuiLogo`、`MuiHintBadge`、`MuiValidationHint`、`MuiColorField`、`MuiColorBandField`、`MuiColorBandPreview`、`MuiDescriptionRow`、`MuiCollapsibleCard`
 - 双色带取色：`MuiColorBand` / `MuiColorBands` 用 OKLab 在多色标之间生成平滑色带
 - 可配置主题：强调色、背景色、圆角、间距、内容宽度
@@ -57,7 +59,7 @@ build/libs/narutoui-xxx-xxx-common.jar  仅 me/kall/narutoui/mui/**
 
 ## 设计边界
 
-- 页面在第一次切换到时构建，之后保留；页面 body 在首次打开时执行，不要依赖它在 screen 创建时产生副作用。需要重建当前页时使用 `MuiScreenHost.reloadCurrentPage()`。
+- 页面在第一次切换到时构建，之后保留；页面 body 在首次打开时执行，不要依赖它在 screen 创建时产生副作用。只想刷新一张卡片时用 `section.clearRows()` + `addRow(...)`；需要重建整页时使用 `MuiScreenHost.reloadCurrentPage()`（也可以从 `MuiPageContext#host()` 直接拿）。
 - `toggle` / `slider` / `value` 的 supplier 每 100 ms 轮询一次，不是事件推送。
 - 文本输入保持焦点时暂停 supplier 轮询；`textField` 只在 Enter 或失焦时提交。
 - `MuiDropdown` 是页面内展开面板，不是弹窗；选项很多时建议改用独立搜索页面。

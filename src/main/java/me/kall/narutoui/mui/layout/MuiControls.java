@@ -41,6 +41,11 @@ public final class MuiControls {
     public static final int MATCH = ViewGroup.LayoutParams.MATCH_PARENT;
     /** Alias for {@link ViewGroup.LayoutParams#WRAP_CONTENT}. */
     public static final int WRAP = ViewGroup.LayoutParams.WRAP_CONTENT;
+    /**
+     * Vertical gap between two rows of a section card, in density-independent pixels. Exposed so
+     * callers that compose their own rows can keep the same rhythm as the section DSL.
+     */
+    public static final int ROW_GAP_DP = 10;
 
     /** Active widget factory, replaceable through {@link #setWidgetFactory(MuiWidgetFactory)}. */
     private static volatile MuiWidgetFactory widgetFactory = MuiWidgetFactory.modern();
@@ -48,6 +53,16 @@ public final class MuiControls {
     private static final ThreadLocal<Deque<MuiWidgetFactory>> FACTORY_STACK = ThreadLocal.withInitial(ArrayDeque::new);
 
     private MuiControls() {}
+
+    /**
+     * Returns {@link #ROW_GAP_DP} in pixels for the given context.
+     *
+     * @param context the screen context
+     * @return the row gap in pixels
+     */
+    public static int rowGap(@NotNull Context context) {
+        return dp(context, ROW_GAP_DP);
+    }
 
     /**
      * Replaces the fallback widget factory. Prefer a per-screen factory via the screen builder;
@@ -629,10 +644,31 @@ public final class MuiControls {
      * @return the composed row
      */
     public static @NotNull LinearLayout textFieldRow(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence title, @Nullable CharSequence description, @NotNull CharSequence value, @NotNull Consumer<String> onCommit) {
+        return textFieldRow(context, theme, title, description, value, onCommit, null);
+    }
+
+    /**
+     * Creates a text field row with a static initial value and a configurator for the field itself.
+     * <p>
+     * The configurator runs after the row has applied its own defaults, so it can add a hint, a
+     * validator or a different width without the caller rebuilding the row by hand.
+     *
+     * @param context     the screen context
+     * @param theme       active theme
+     * @param title       row title
+     * @param description optional description
+     * @param value       initial text
+     * @param onCommit    commit callback
+     * @param configure   optional field configurator, or {@code null}
+     * @return the composed row
+     */
+    public static @NotNull LinearLayout textFieldRow(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence title, @Nullable CharSequence description, @NotNull CharSequence value, @NotNull Consumer<String> onCommit, @Nullable Consumer<MuiTextField> configure) {
         LinearLayout block = column(context);
         block.addView(labelBlock(context, theme, title, description), fill());
 
         MuiTextField field = textField(context, theme, value).onCommit(onCommit);
+        if (configure != null) configure.accept(field);
+
         LinearLayout.LayoutParams params = fill();
         params.topMargin = dp(context, 6);
         block.addView(field, params);
@@ -652,10 +688,28 @@ public final class MuiControls {
      * @return the composed row
      */
     public static @NotNull LinearLayout textFieldRow(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence title, @Nullable CharSequence description, @NotNull Supplier<String> value, @NotNull Consumer<String> onCommit) {
+        return textFieldRow(context, theme, title, description, value, onCommit, null);
+    }
+
+    /**
+     * A supplier-backed text field row with a configurator for the field itself.
+     *
+     * @param context     the screen context
+     * @param theme       active theme
+     * @param title       row title
+     * @param description optional description
+     * @param value       live text supplier
+     * @param onCommit    commit callback
+     * @param configure   optional field configurator, or {@code null}
+     * @return the composed row
+     */
+    public static @NotNull LinearLayout textFieldRow(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence title, @Nullable CharSequence description, @NotNull Supplier<String> value, @NotNull Consumer<String> onCommit, @Nullable Consumer<MuiTextField> configure) {
         LinearLayout block = column(context);
         block.addView(labelBlock(context, theme, title, description), fill());
 
         MuiTextField field = textField(context, theme, value.get()).onCommit(onCommit);
+        if (configure != null) configure.accept(field);
+
         LinearLayout.LayoutParams params = fill();
         params.topMargin = dp(context, 6);
         block.addView(field, params);
@@ -830,10 +884,33 @@ public final class MuiControls {
      * @return the composed row
      */
     public static @NotNull LinearLayout decimalRow(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence title, @Nullable CharSequence description, double min, double max, @NotNull DoubleSupplier value, @NotNull DoubleConsumer onChange) {
+        return decimalRow(context, theme, title, description, min, max, value, onChange, null);
+    }
+
+    /**
+     * Creates a decimal number row with a configurator for the number field itself.
+     * <p>
+     * The configurator runs after the row has applied its defaults, so it can change the displayed
+     * precision ({@link MuiNumberField#scale(int)}), the width or an extra validator without the
+     * caller rebuilding the row.
+     *
+     * @param context     the screen context
+     * @param theme       active theme
+     * @param title       row title
+     * @param description optional description
+     * @param min         minimum value (inclusive)
+     * @param max         maximum value (inclusive)
+     * @param value       live value supplier
+     * @param onChange    value callback
+     * @param configure   optional field configurator, or {@code null}
+     * @return the composed row
+     */
+    public static @NotNull LinearLayout decimalRow(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence title, @Nullable CharSequence description, double min, double max, @NotNull DoubleSupplier value, @NotNull DoubleConsumer onChange, @Nullable Consumer<MuiNumberField> configure) {
         LinearLayout row = row(context);
         row.addView(labelBlock(context, theme, title, description), weight());
 
         MuiNumberField field = MuiNumberField.create(context, theme, value.getAsDouble(), -1).bounds(min, max).width(96).onChangeDouble(onChange);
+        if (configure != null) configure.accept(field);
 
         LinearLayout.LayoutParams params = wrap();
         params.setMargins(dp(context, 16), 0, 0, 0);

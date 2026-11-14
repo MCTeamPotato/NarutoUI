@@ -139,6 +139,8 @@ MuiSettingsScreen.builder("My Mod")
 
 所有行级方法都提供不传 `description` 的重载；`description` 是可选的标题 tooltip，不需要时直接省略。
 
+`textField` / `decimal` 还多一个接收字段 configurator 的重载，用来追加 hint、validator、宽度、显示精度；见第 4 节。
+
 ### 开关
 
 ```java
@@ -229,6 +231,25 @@ MuiValidationHint hint = MuiValidationHint.create(
 
 `MuiValidationHint` 观察 `MuiValidatable`（`MuiTextField` / `MuiNumberField` 都实现了它），字段有效时自动隐藏。
 
+### 校验：阻断还是只提示
+
+`validator(...)` 不只是画红框：不通过时它同时会阻止 `onChange` / `onCommit`，适合“不合法就不要写进配置”。
+
+如果想让玩家照样输入、由界面自己解释错误（例如“未知实体 ID”），用 `softValidator(...)`：
+
+```java
+.section("Entity", section -> section
+        .textField("Entity ID", null, draft.id(), draft::setId, field -> field
+                .hint("minecraft:zombie")
+                .validator(MyIds::isResourceLocation)   // 语法不合法就拦住
+                .softValidator(MyIds::isKnownEntity)    // 只画红框，仍然提交
+                .onChange(draft::preview)))
+```
+
+`textField` / `decimal` 的最后一个参数是字段 configurator，在行应用完默认值之后执行，所以 `.hint()` / `.width()` / `.validator()` / `.softValidator()` / `.scale()` 都能覆盖默认。直接拼行时，`MuiControls.textFieldRow` / `MuiControls.decimalRow` 有同名重载。
+
+两个 validator 都参与 `isValid()` 和描边，只有硬 validator 会吞掉回调。
+
 ### 数字
 
 ```java
@@ -252,6 +273,15 @@ MuiNumberField field = MuiControls.numberField(ctx, theme, MyConfig.width())
 ```
 
 `validator` 在解析和上下限之后执行；不通过时输入框显示主题错误色，且不会触发 `onChange`。提交时非法文本会回到上一个有效值。
+
+`decimal(...)` 的 configurator 还能改显示精度。存储值带浮点噪声（例如 `0.699999988079071`）时用 `.scale(4)`，显示就是 `0.7`：
+
+```java
+.decimal("Multiplier", null, 0.0D, 10.0D,
+        MyConfig::factor,
+        MyConfig::setFactor,
+        field -> field.scale(4))
+```
 
 ### 字符串列表
 
@@ -415,6 +445,8 @@ MuiSettingsScreen.builder("My Mod")
 - `MuiScreenHost#close()` 直接关闭，用于确认框里“放弃修改”；
 - 守卫运行在 UI 线程，可以安全调用 `showOverlay`。
 
+如果 host 只在页面内部使用，不必自己存数组：`MuiPageContext#host()` 就是当前外壳，`page.context().host()` / `section.page().host()` 都能拿到（脱离 screen 构建的页面返回 `null`）。`onCreated` 更适合页面之外的场景，例如 action bar 工厂。
+
 ### supplier 的刷新
 
 `toggle` / `slider` / `value` 的 supplier 默认每 **100 ms** 轮询一次，不是事件推送。
@@ -440,7 +472,9 @@ MuiSettingsScreen.builder("My Mod")
 })
 ```
 
-`section.custom(View)` 会像普通字段行一样插入分隔线。
+`section.custom(View)` 会像普通字段行一样插入分隔线；它和 `section.addRow(View)` 是同一个东西。
+
+`section.page()` 返回的是 `MuiPageContext`（页面级上下文），不是 `MuiSettingsPage`；它提供 `context()` / `theme()` / `host()` / `profile()`。页面回调里也可以直接用 `page.context()` / `page.theme()`。
 
 ### 直接往 section 卡片里加
 
@@ -456,6 +490,43 @@ MuiSettingsScreen.builder("My Mod")
 ```
 
 `customLayout` 拿到的是 section 的卡片内容列。
+
+### 动态重建一张卡片
+
+`MuiSettingsSection` 不是只能写一次的。`clearRows()` 清空卡片并重置分隔线计数，`addRow(View)` 用和字段行完全相同的分隔线、间距、shimmer 处理再加回来：
+
+```java
+private MuiSettingsSection entrySection;
+
+// 建页面时记住 section
+.section("Entries", section -> {
+    this.entrySection = section;
+    this.rebuildEntries();
+})
+
+private void rebuildEntries() {
+    MuiSettingsSection section = this.entrySection;
+    if (section == null) return;
+
+    section.clearRows();
+    if (this.draft.entries().isEmpty()) {
+        section.text("还没有条目");
+        return;
+    }
+
+    for (Entry entry : this.draft.entries()) {
+        section.textField(entry.name(), null, entry.value(), entry::setValue);
+    }
+}
+```
+
+这比 `reloadCurrentPage()` 轻得多：只重建这一张卡片，页面滚动位置、其他卡片里的输入焦点都不会丢。
+
+- `rowCount()` 返回自上次 `clearRows()` 之后加了多少行
+- `lastRow()` 返回最后一行，需要事后微调时用
+- 自己拼的行请用 `addRow(View)` 加，不要直接 `card().addView(...)`，否则分隔线和间距会和其他行对不上
+
+行间距常量也从这里取：`MuiControls.ROW_GAP_DP` 是 DP 值，`MuiControls.rowGap(context)` 是像素值。
 
 ### 自定义页面内容
 
@@ -746,6 +817,19 @@ MuiShimmerable.when(MyConfig::glowEnabled)
 
 `MuiListEditor` 同时是 `MuiShimmerContainer`，所以之后点击 Add 新建的行也会继承当前行的 marker，不会只让初始行闪光。
 
+### 晚创建的控件
+
+`MuiTextField` / `MuiNumberField` 在构造时捕获当前的 `MuiShimmerProfile`。如果在页面 body 之外创建控件（例如卡片重建的回调里），用 `MuiShimmerProfile.withCurrent(page.profile(), ...)` 包一层，否则会退到默认 profile：
+
+```java
+MuiShimmerProfile.withCurrent(section.page().profile(), () -> {
+    section.clearRows();
+    // 重新添加行
+});
+```
+
+这只保住 profile。`shimmerAll()` 的 marker 不会自动应用到之后新增的行，需要的话在 `addRow` 前用 `section.shimmerNext()` 显式标记。
+
 ---
 
 ## 11. 我想选文件、选颜色、裁剪图片
@@ -892,13 +976,22 @@ supplier 默认 100 ms 轮询；文本输入框聚焦时会暂停。不是事件
 
 ### 页面内容不会自动刷新
 
-页面在第一次切换到时构建，之后保留。需要重新构建当前页面时：
+页面在第一次切换到时构建，之后保留。按粒度选：
+
+- 只重建一张卡片：`section.clearRows()` + 重新添加行（见第 6 节），不丢滚动位置和焦点
+- 重建整个当前页：
 
 ```java
 .onCreated(fragment -> ...) // 保存 fragment 引用
 // 之后
 fragment.reloadCurrentPage();
 ```
+
+页面内部也可以直接用 `page.context().host().reloadCurrentPage()`，不必保存引用。
+
+### 输入了非法内容，回调却没触发
+
+`validator(...)` 不通过时会同时阻止 `onChange` / `onCommit`。如果只是想让输入框标红、仍然拿到输入自己判断，换成 `softValidator(...)`。
 
 ### `shimmerNext()` 影响到了后面的行
 
