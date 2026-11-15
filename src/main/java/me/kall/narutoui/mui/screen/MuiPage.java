@@ -7,6 +7,7 @@ import icyllis.modernui.widget.FrameLayout;
 import icyllis.modernui.widget.ScrollView;
 import me.kall.narutoui.mui.layout.MuiControls;
 import me.kall.narutoui.mui.layout.MuiLayout;
+import me.kall.narutoui.mui.shimmer.MuiShimmerProfile;
 import me.kall.narutoui.mui.theme.MuiTheme;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -32,9 +33,10 @@ final class MuiPage {
      * @param contentWidth maximum content width in DP, or {@code <= 0} for no cap
      * @param title        optional page title; when empty no header is added
      * @param subtitle     optional subtitle shown below the title
+     * @param host         owning shell, or {@code null} when the page is built outside a screen
      * @param body         page content callback
      */
-    MuiPage(@NotNull Context context, @NotNull MuiTheme theme, int contentWidth, @Nullable CharSequence title, @Nullable CharSequence subtitle, @NotNull Consumer<MuiPageContext> body) {
+    MuiPage(@NotNull Context context, @NotNull MuiTheme theme, int contentWidth, @Nullable CharSequence title, @Nullable CharSequence subtitle, @Nullable MuiScreenHost host, @NotNull Consumer<MuiPageContext> body) {
         int maxWidth = contentWidth <= 0 ? 0 : MuiControls.dp(context, contentWidth);
         this.root = new CenteredScrollView(context, maxWidth);
         this.root.setClipToPadding(false);
@@ -46,7 +48,7 @@ final class MuiPage {
 
         this.root.addView(content, new FrameLayout.LayoutParams(MuiControls.MATCH, MuiControls.WRAP));
 
-        MuiPageContext page = new MuiPageContext(context, theme, content);
+        MuiPageContext page = new MuiPageContext(context, theme, content, host, MuiShimmerProfile.current());
         if (title != null && !title.isEmpty()) page.header(title, subtitle);
         body.accept(page);
     }

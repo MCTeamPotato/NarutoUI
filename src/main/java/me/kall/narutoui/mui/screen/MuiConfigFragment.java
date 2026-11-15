@@ -340,7 +340,7 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost, 
     private @NotNull View createPage(@NotNull Context context, @NotNull MuiConfigScreen.PageSpec spec) {
         return MuiShimmerProfile.withCurrent(this.model.shimmerProfile(), () -> MuiControls.withFactory(this.model.widgetFactory(), () -> {
                     if (spec.viewFactory() != null) return spec.viewFactory().apply(context);
-                    return new MuiPage(context, this.theme, this.model.contentWidth(), spec.title(), spec.subtitle(), spec.body()).root();
+                    return new MuiPage(context, this.theme, this.model.contentWidth(), spec.title(), spec.subtitle(), this, spec.body()).root();
                 }));
     }
 

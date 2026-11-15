@@ -5,6 +5,7 @@ import me.kall.narutoui.mui.layout.MuiControls;
 import me.kall.narutoui.mui.layout.MuiLayout;
 import me.kall.narutoui.mui.shimmer.MuiShimmerScope;
 import me.kall.narutoui.mui.shimmer.MuiShimmerable;
+import me.kall.narutoui.mui.theme.MuiTheme;
 import me.kall.narutoui.mui.widget.MuiCollapsibleCard;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -25,6 +26,25 @@ public final class MuiSettingsPage {
 
     MuiSettingsPage(@NotNull MuiPageContext context) {
         this.context = context;
+    }
+
+    /**
+     * Returns the underlying page context, which also exposes the owning shell and the shimmer
+     * profile of this page.
+     *
+     * @return the page context
+     */
+    public @NotNull MuiPageContext context() {
+        return this.context;
+    }
+
+    /**
+     * Returns the theme used by this page.
+     *
+     * @return the active theme
+     */
+    public @NotNull MuiTheme theme() {
+        return this.context.theme();
     }
 
     /**
