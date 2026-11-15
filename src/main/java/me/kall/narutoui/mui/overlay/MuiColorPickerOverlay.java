@@ -18,6 +18,7 @@ import icyllis.modernui.widget.LinearLayout;
 import icyllis.modernui.widget.TextView;
 import me.kall.narutoui.mui.layout.MuiControls;
 import me.kall.narutoui.mui.theme.MuiTheme;
+import me.kall.narutoui.mui.util.MuiLocalization;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -29,7 +30,8 @@ import java.util.Locale;
  */
 public final class MuiColorPickerOverlay extends FrameLayout {
     /**
-     * Localized labels.
+     * Localized labels. Use {@link #builder()} when only some labels differ from the defaults;
+     * the positional constructor is kept for callers that already have every string.
      *
      * @param title      picker title
      * @param brightness brightness label
@@ -37,7 +39,99 @@ public final class MuiColorPickerOverlay extends FrameLayout {
      * @param apply      apply button
      * @param cancel     cancel button
      */
-    public record Labels(CharSequence title, CharSequence brightness, CharSequence alpha, CharSequence apply, CharSequence cancel) {}
+    public record Labels(CharSequence title, CharSequence brightness, CharSequence alpha, CharSequence apply, CharSequence cancel) {
+        /**
+         * Starts a label builder with English defaults.
+         *
+         * @return a new builder
+         */
+        public static @NotNull Builder builder() {
+            return new Builder();
+        }
+
+        /**
+         * Mutable label builder. Every setter accepts a translation key or literal text and returns
+         * {@code this}; the keys are resolved by {@link #build()}.
+         */
+        public static final class Builder {
+            private CharSequence title = "Color";
+            private CharSequence brightness = "Brightness";
+            private CharSequence alpha = "Alpha";
+            private CharSequence apply = "Apply";
+            private CharSequence cancel = "Cancel";
+
+            private Builder() {}
+
+            /**
+             * Sets the picker title.
+             *
+             * @param title title or translation key
+             * @return this builder
+             */
+            public @NotNull Builder title(@NotNull CharSequence title) {
+                this.title = title;
+                return this;
+            }
+
+            /**
+             * Sets the brightness label.
+             *
+             * @param brightness label or translation key
+             * @return this builder
+             */
+            public @NotNull Builder brightness(@NotNull CharSequence brightness) {
+                this.brightness = brightness;
+                return this;
+            }
+
+            /**
+             * Sets the alpha label.
+             *
+             * @param alpha label or translation key
+             * @return this builder
+             */
+            public @NotNull Builder alpha(@NotNull CharSequence alpha) {
+                this.alpha = alpha;
+                return this;
+            }
+
+            /**
+             * Sets the apply button label.
+             *
+             * @param apply label or translation key
+             * @return this builder
+             */
+            public @NotNull Builder apply(@NotNull CharSequence apply) {
+                this.apply = apply;
+                return this;
+            }
+
+            /**
+             * Sets the cancel button label.
+             *
+             * @param cancel label or translation key
+             * @return this builder
+             */
+            public @NotNull Builder cancel(@NotNull CharSequence cancel) {
+                this.cancel = cancel;
+                return this;
+            }
+
+            /**
+             * Resolves every label through the current language table.
+             *
+             * @return the labels
+             */
+            public @NotNull Labels build() {
+                return new Labels(
+                        MuiLocalization.resolve(this.title),
+                        MuiLocalization.resolve(this.brightness),
+                        MuiLocalization.resolve(this.alpha),
+                        MuiLocalization.resolve(this.apply),
+                        MuiLocalization.resolve(this.cancel));
+            }
+        }
+    }
 
     /**
      * Receives the selected color.

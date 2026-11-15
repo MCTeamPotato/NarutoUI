@@ -59,7 +59,7 @@ build/libs/narutoui-xxx-xxx-common.jar  仅 me/kall/narutoui/mui/**
 
 ## 设计边界
 
-- 页面在第一次切换到时构建，之后保留；页面 body 在首次打开时执行，不要依赖它在 screen 创建时产生副作用。只想刷新一张卡片时用 `section.clearRows()` + `addRow(...)`；需要重建整页时使用 `MuiScreenHost.reloadCurrentPage()`（也可以从 `MuiPageContext#host()` 直接拿）。
+- 页面在第一次切换到时构建，之后保留；页面 body 在首次打开时执行，不要依赖它在 screen 创建时产生副作用。只想刷新一张卡片时用 `section.rebuild(...)`；需要重建整页时使用 `MuiScreenHost.reloadCurrentPage()`（也可以从 `MuiPageContext#host()` 直接拿），它会保留滚动位置，带 state key 的折叠卡片也会恢复展开状态。
 - `toggle` / `slider` / `value` 的 supplier 每 100 ms 轮询一次，不是事件推送。
 - 文本输入保持焦点时暂停 supplier 轮询；`textField` 只在 Enter 或失焦时提交。
 - `MuiDropdown` 是页面内展开面板，不是弹窗；选项很多时建议改用独立搜索页面。

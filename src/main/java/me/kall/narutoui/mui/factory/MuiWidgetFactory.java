@@ -23,6 +23,7 @@ import me.kall.narutoui.mui.widget.MuiTextView;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * Creates the concrete widgets used by {@link MuiControls}. The screen API works with this factory
@@ -226,6 +227,125 @@ public interface MuiWidgetFactory {
      */
     static @NotNull MuiWidgetFactory shimmer() {
         return MuiShimmerFactory.instance();
+    }
+
+    /**
+     * Wraps a factory so every control is built with a mapped theme. This is the one-line way to
+     * inject an accent into a factory that has no theme provider of its own, instead of writing a
+     * forwarding implementation of this interface:
+     * <pre>{@code
+     * MuiWidgetFactory.withTheme(theme -> theme.withPrimary(accent), MuiWidgetFactory.shimmer())
+     * }</pre>
+     * <p>
+     * A mapper that returns {@code null} keeps the original theme.
+     *
+     * @param mapper   theme mapper
+     * @param delegate factory that creates the controls
+     * @return a factory that forwards to {@code delegate} with the mapped theme
+     */
+    static @NotNull MuiWidgetFactory withTheme(@NotNull Function<MuiTheme, MuiTheme> mapper, @NotNull MuiWidgetFactory delegate) {
+        return new Themed(mapper, delegate);
+    }
+
+    /**
+     * Theme-mapping decorator returned by {@link #withTheme}. Only the theme argument is changed;
+     * every other argument is forwarded unchanged.
+     */
+    final class Themed implements MuiWidgetFactory {
+        /** Theme mapper. */
+        private final Function<MuiTheme, MuiTheme> mapper;
+        /** Factory that creates the controls. */
+        private final MuiWidgetFactory delegate;
+
+        private Themed(@NotNull Function<MuiTheme, MuiTheme> mapper, @NotNull MuiWidgetFactory delegate) {
+            this.mapper = mapper;
+            this.delegate = delegate;
+        }
+
+        private @NotNull MuiTheme map(@NotNull MuiTheme theme) {
+            MuiTheme mapped = this.mapper.apply(theme);
+            return mapped == null ? theme : mapped;
+        }
+
+        @Override
+        public @NotNull TextView text(@NotNull Context context, @NotNull CharSequence text, float size, int color) {
+            return this.delegate.text(context, text, size, color);
+        }
+
+        @Override
+        public @NotNull TextView text(@NotNull Context context, @NotNull CharSequence text, float size, int color, @NotNull MuiShimmerable marker) {
+            return this.delegate.text(context, text, size, color, marker);
+        }
+
+        @Override
+        public @NotNull Switch switchControl(@NotNull Context context, @NotNull MuiTheme theme) {
+            return this.delegate.switchControl(context, this.map(theme));
+        }
+
+        @Override
+        public @NotNull Switch switchControl(@NotNull Context context, @NotNull MuiTheme theme, @NotNull MuiShimmerable marker) {
+            return this.delegate.switchControl(context, this.map(theme), marker);
+        }
+
+        @Override
+        public @NotNull SeekBar slider(@NotNull Context context, @NotNull MuiTheme theme, int max, int progress) {
+            return this.delegate.slider(context, this.map(theme), max, progress);
+        }
+
+        @Override
+        public @NotNull SeekBar slider(@NotNull Context context, @NotNull MuiTheme theme, int max, int progress, @NotNull MuiShimmerable marker) {
+            return this.delegate.slider(context, this.map(theme), max, progress, marker);
+        }
+
+        @Override
+        public @NotNull Button button(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence label, boolean outlined, @NotNull View.OnClickListener onClick) {
+            return this.delegate.button(context, this.map(theme), label, outlined, onClick);
+        }
+
+        @Override
+        public @NotNull Button button(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence label, boolean outlined, @NotNull View.OnClickListener onClick, @NotNull MuiShimmerable marker) {
+            return this.delegate.button(context, this.map(theme), label, outlined, onClick, marker);
+        }
+
+        @Override
+        public @NotNull CheckBox checkBox(@NotNull Context context, @NotNull MuiTheme theme, @NotNull MuiShimmerable marker) {
+            return this.delegate.checkBox(context, this.map(theme), marker);
+        }
+
+        @Override
+        public @NotNull RadioButton radioButton(@NotNull Context context, @NotNull MuiTheme theme, @NotNull MuiShimmerable marker) {
+            return this.delegate.radioButton(context, this.map(theme), marker);
+        }
+
+        @Override
+        public @NotNull ProgressBar progressBar(@NotNull Context context, @NotNull MuiTheme theme, @NotNull MuiShimmerable marker) {
+            return this.delegate.progressBar(context, this.map(theme), marker);
+        }
+
+        @Override
+        public @NotNull MuiTextField textField(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence text) {
+            return this.delegate.textField(context, this.map(theme), text);
+        }
+
+        @Override
+        public @NotNull MuiNumberField numberField(@NotNull Context context, @NotNull MuiTheme theme, long value) {
+            return this.delegate.numberField(context, this.map(theme), value);
+        }
+
+        @Override
+        public <T> @NotNull MuiDropdown<T> dropdown(@NotNull Context context, @NotNull MuiTheme theme, @NotNull List<MuiOption<T>> options) {
+            return this.delegate.dropdown(context, this.map(theme), options);
+        }
+
+        @Override
+        public <T> @NotNull MuiChoiceGrid<T> choiceGrid(@NotNull Context context, @NotNull MuiTheme theme, @NotNull List<MuiOption<T>> options) {
+            return this.delegate.choiceGrid(context, this.map(theme), options);
+        }
+
+        @Override
+        public @NotNull MuiListEditor listEditor(@NotNull Context context, @NotNull MuiTheme theme, @NotNull List<String> values) {
+            return this.delegate.listEditor(context, this.map(theme), values);
+        }
     }
 
     /**

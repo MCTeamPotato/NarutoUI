@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.function.BiFunction;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -102,9 +103,9 @@ public final class MuiConfigScreen {
         /** Initial page navigation label, or {@code null} when {@link #initialPage} is used. */
         private String initialPageLabel;
         /** Optional custom rail header factory. */
-        private Function<Context, View> railHeader;
+        private BiFunction<Context, MuiTheme, View> railHeader;
         /** Optional custom rail footer factory. */
-        private Function<Context, View> railFooter;
+        private BiFunction<Context, MuiTheme, View> railFooter;
         /** Optional fixed bottom action bar factory. */
         private Function<Context, View> actionBar;
         /** Optional creation callback. */
@@ -356,6 +357,19 @@ public final class MuiConfigScreen {
          * @return this builder
          */
         public @NotNull Builder railHeader(@Nullable Function<Context, View> factory) {
+            this.railHeader = factory == null ? null : (context, theme) -> factory.apply(context);
+            return this;
+        }
+
+        /**
+         * Replaces the default title/subtitle block with a factory that also receives the resolved
+         * theme, so a custom logo or badge can use the screen accent without rebuilding
+         * {@link MuiTheme#modern(Context)} by hand.
+         *
+         * @param factory header factory, or {@code null} for the default
+         * @return this builder
+         */
+        public @NotNull Builder railHeader(@Nullable BiFunction<Context, MuiTheme, View> factory) {
             this.railHeader = factory;
             return this;
         }
@@ -367,6 +381,17 @@ public final class MuiConfigScreen {
          * @return this builder
          */
         public @NotNull Builder railFooter(@Nullable Function<Context, View> factory) {
+            this.railFooter = factory == null ? null : (context, theme) -> factory.apply(context);
+            return this;
+        }
+
+        /**
+         * Replaces the default footer text with a factory that also receives the resolved theme.
+         *
+         * @param factory footer factory, or {@code null} for the default
+         * @return this builder
+         */
+        public @NotNull Builder railFooter(@Nullable BiFunction<Context, MuiTheme, View> factory) {
             this.railFooter = factory;
             return this;
         }
@@ -618,7 +643,7 @@ public final class MuiConfigScreen {
      * @param closeGuard  optional guard consulted before a user-initiated close
      * @param themeProvider optional context-aware theme provider
      */
-    record Model(String title, String subtitle, String footer, boolean singlePage, MuiNavigation navigation, MuiPageTransition pageTransition, long pageTransitionDuration, @Nullable MuiTheme theme, MuiWidgetFactory widgetFactory, MuiShimmerProfile shimmerProfile, MuiShimmerable navigationShimmerable, MuiShimmerable titlesShimmerable, int contentWidth, MuiBackground background, List<PageSpec> pages, int initialPage, @Nullable Function<Context, View> railHeader, @Nullable Function<Context, View> railFooter, @Nullable Function<Context, View> actionBar, @Nullable Consumer<MuiConfigFragment> onCreated, @Nullable Consumer<MuiConfigFragment> onDestroyed, @Nullable BooleanSupplier closeGuard, @Nullable Function<Context, MuiTheme> themeProvider) {}
+    record Model(String title, String subtitle, String footer, boolean singlePage, MuiNavigation navigation, MuiPageTransition pageTransition, long pageTransitionDuration, @Nullable MuiTheme theme, MuiWidgetFactory widgetFactory, MuiShimmerProfile shimmerProfile, MuiShimmerable navigationShimmerable, MuiShimmerable titlesShimmerable, int contentWidth, MuiBackground background, List<PageSpec> pages, int initialPage, @Nullable BiFunction<Context, MuiTheme, View> railHeader, @Nullable BiFunction<Context, MuiTheme, View> railFooter, @Nullable Function<Context, View> actionBar, @Nullable Consumer<MuiConfigFragment> onCreated, @Nullable Consumer<MuiConfigFragment> onDestroyed, @Nullable BooleanSupplier closeGuard, @Nullable Function<Context, MuiTheme> themeProvider) {}
 
     /**
      * One page entry, either a low-level body callback or a custom root-view factory.

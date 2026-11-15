@@ -24,6 +24,8 @@ import me.kall.narutoui.mui.util.MuiLocalization;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 /**
@@ -35,12 +37,22 @@ import java.util.function.Consumer;
  * {@link MuiLayout}, so callers can compose it with {@link MuiControls} or with an internal
  * {@link me.kall.narutoui.mui.screen.MuiSettingsSection}.
  * <p>
+ * A card created with a state key remembers whether it was expanded. Rebuilding the page then
+ * restores the previous state instead of collapsing every card, which is what makes
+ * {@link me.kall.narutoui.mui.screen.MuiScreenHost#reloadCurrentPage()} safe for a page made of
+ * collapsible cards.
+ * <p>
  * This is the generic card used directly by NarutoOverlay's Cards page; it is also useful for any
  * long settings page that should start with a compact overview.
  */
 public final class MuiCollapsibleCard extends LinearLayout implements MuiShimmerContainer {
     /** Expand/collapse animation duration in milliseconds. */
     private static final long ANIMATION_DURATION = 190L;
+    /**
+     * Process-local expansion state keyed by the caller's state key. It is intentionally not
+     * cleared on page reload; use {@link #forgetState(String)} when a key is retired.
+     */
+    private static final Map<String, Boolean> EXPANSION_STATE = new ConcurrentHashMap<>();
 
     /** Active visual tokens. */
     private final MuiTheme theme;
@@ -57,6 +69,8 @@ public final class MuiCollapsibleCard extends LinearLayout implements MuiShimmer
 
     /** Whether the body is currently expanded. */
     private boolean expanded;
+    /** Optional key used to remember the expansion state across page rebuilds. */
+    private @Nullable String stateKey;
     /** Optional expansion listener. */
     private @Nullable BooleanConsumer onExpandedChanged;
     /** Currently running reveal animation. */
@@ -67,7 +81,7 @@ public final class MuiCollapsibleCard extends LinearLayout implements MuiShimmer
     private MuiShimmerable shimmerable = MuiShimmerable.NEVER;
 
     /**
-     * Creates a collapsible card.
+     * Creates a collapsible card without a state key.
      *
      * @param context  the screen context
      * @param theme    active theme
@@ -76,8 +90,28 @@ public final class MuiCollapsibleCard extends LinearLayout implements MuiShimmer
      * @param expanded whether the body starts expanded
      */
     public MuiCollapsibleCard(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence title, @Nullable CharSequence summary, boolean expanded) {
+        this(context, theme, null, title, summary, expanded);
+    }
+
+    /**
+     * Creates a collapsible card that remembers its expansion state under {@code stateKey}. When the
+     * key was seen before, the stored state wins over {@code expanded}.
+     *
+     * @param context  the screen context
+     * @param theme    active theme
+     * @param stateKey key used to remember the expansion state, or {@code null} to disable it
+     * @param title    card title
+     * @param summary  optional summary; empty hides the summary line
+     * @param expanded whether the body starts expanded when no state is stored
+     */
+    public MuiCollapsibleCard(@NotNull Context context, @NotNull MuiTheme theme, @Nullable String stateKey, @NotNull CharSequence title, @Nullable CharSequence summary, boolean expanded) {
         super(context);
         this.theme = theme;
+        this.stateKey = stateKey;
+
+        Boolean stored = stateKey == null ? null : EXPANSION_STATE.get(stateKey);
+        if (stored != null) expanded = stored;
+
         this.expanded = expanded;
         this.setOrientation(VERTICAL);
         MuiLayout.applyCardStyle(this, context, theme);
@@ -125,6 +159,43 @@ public final class MuiCollapsibleCard extends LinearLayout implements MuiShimmer
      */
     public static @NotNull MuiCollapsibleCard card(@NotNull Context context, @NotNull MuiTheme theme, @NotNull CharSequence title, @Nullable CharSequence summary, boolean expanded) {
         return new MuiCollapsibleCard(context, theme, title, summary, expanded);
+    }
+
+    /**
+     * Creates a collapsible card that remembers its expansion state under {@code stateKey}.
+     *
+     * @param context  the screen context
+     * @param theme    active theme
+     * @param stateKey key used to remember the expansion state, or {@code null} to disable it
+     * @param title    card title
+     * @param summary  optional summary; empty hides the summary line
+     * @param expanded whether the body starts expanded when no state is stored
+     * @return the card
+     */
+    public static @NotNull MuiCollapsibleCard card(@NotNull Context context, @NotNull MuiTheme theme, @Nullable String stateKey, @NotNull CharSequence title, @Nullable CharSequence summary, boolean expanded) {
+        return new MuiCollapsibleCard(context, theme, stateKey, title, summary, expanded);
+    }
+
+    /**
+     * Assigns the key used to remember the expansion state and applies a previously stored value.
+     *
+     * @param key the state key
+     * @return this card, for chaining
+     */
+    public @NotNull MuiCollapsibleCard stateKey(@NotNull String key) {
+        this.stateKey = key;
+        Boolean stored = EXPANSION_STATE.get(key);
+        if (stored != null) this.setExpanded(stored, false);
+        return this;
+    }
+
+    /**
+     * Drops a remembered expansion state, for example when the card it belonged to is removed.
+     *
+     * @param key the state key, or {@code null}
+     */
+    public static void forgetState(@Nullable String key) {
+        if (key != null) EXPANSION_STATE.remove(key);
     }
 
     /**
@@ -233,6 +304,7 @@ public final class MuiCollapsibleCard extends LinearLayout implements MuiShimmer
         if (this.expanded == expanded) return this;
 
         this.expanded = expanded;
+        if (this.stateKey != null) EXPANSION_STATE.put(this.stateKey, expanded);
         this.chevron.setText(expanded ? "-" : "+");
         if (this.onExpandedChanged != null) this.onExpandedChanged.accept(expanded);
         this.animateReveal(expanded, animate);

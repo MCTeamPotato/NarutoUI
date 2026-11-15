@@ -15,6 +15,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.BiFunction;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -93,9 +94,9 @@ public final class MuiSettingsScreen {
         /** Initial page navigation label, or {@code null} when {@link #initialPage} is used. */
         private String initialPageLabel;
         /** Optional custom rail header factory. */
-        private Function<Context, View> railHeader;
+        private BiFunction<Context, MuiTheme, View> railHeader;
         /** Optional custom rail footer factory. */
-        private Function<Context, View> railFooter;
+        private BiFunction<Context, MuiTheme, View> railFooter;
         /** Optional fixed bottom action bar factory. */
         private Function<Context, View> actionBar;
         /** Optional creation callback. */
@@ -343,6 +344,18 @@ public final class MuiSettingsScreen {
          * @return this builder
          */
         public @NotNull Builder railHeader(@Nullable Function<Context, View> factory) {
+            this.railHeader = factory == null ? null : (context, theme) -> factory.apply(context);
+            return this;
+        }
+
+        /**
+         * Replaces the default rail title/subtitle block with a factory that also receives the
+         * resolved theme, so a custom logo or badge can use the screen accent directly.
+         *
+         * @param factory header view factory, or {@code null} for the default
+         * @return this builder
+         */
+        public @NotNull Builder railHeader(@Nullable BiFunction<Context, MuiTheme, View> factory) {
             this.railHeader = factory;
             return this;
         }
@@ -354,6 +367,17 @@ public final class MuiSettingsScreen {
          * @return this builder
          */
         public @NotNull Builder railFooter(@Nullable Function<Context, View> factory) {
+            this.railFooter = factory == null ? null : (context, theme) -> factory.apply(context);
+            return this;
+        }
+
+        /**
+         * Replaces the default rail footer with a factory that also receives the resolved theme.
+         *
+         * @param factory footer view factory, or {@code null} for the default
+         * @return this builder
+         */
+        public @NotNull Builder railFooter(@Nullable BiFunction<Context, MuiTheme, View> factory) {
             this.railFooter = factory;
             return this;
         }
