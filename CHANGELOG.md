@@ -61,3 +61,12 @@
 - Add `MuiRampStyle.HUE_SWEEP` and `MuiRampAnchor`: a ramp now spans a highlight anchor to a deep anchor, the way Naruto's own ramp travels from yellow through gold to red, instead of fading into the scheme's own low-chroma divider. The light end is a pale tint because a saturated cyan or lime at high lightness reads as neon, and the deep end keeps full chroma so the trough of the wave stays colored. Jade runs pale water through jade to deep green, Azure pale steel to deep blue, Sakura pale rose to blood red, Graphite pale blue to deep teal.
 - `MuiTheme.modern()` now falls back to the catalog's Naruto palette instead of its own copy of the same nine values, and `MuiShimmerConfig.ramp()` defaults to the Naruto scheme's ramp.
 - `MuiShimmerRamps` and `MuiColorBands` now interpolate in OKLab, so shimmer mid-tones and band previews no longer wash out toward gray.
+# 1.10.0
+- Add `MuiScreenHost#theme()`, `shimmerProfile()`, `widgetFactory()` and `build(Function)`. Overlays built through `showOverlay(Function)`, `colorPicker(...)` / `colorPickerView(...)` and `crop(...)` / `cropView(...)` inherit all three, so a late picker no longer has to re-enter the shimmer and factory stacks by hand.
+- `reloadCurrentPage()` now restores the page scroll position, and `MuiCollapsibleCard` remembers its expanded state when created with a state key, so a full-page refresh no longer collapses every card.
+- Add `MuiSettingsSection#rebuild(Consumer)`, `rows()` and `enabledWhenAll(BooleanSupplier)`; a section can now be refreshed or disabled as a whole without walking `card()`.
+- Add `MuiSettingsPage#collapsibleCard(...)`, which returns the nested section so a page made of dynamic cards can rebuild one card at a time.
+- Add `MuiWidgetFactory.withTheme(Function, MuiWidgetFactory)`, a forwarding decorator for injecting a theme without writing the whole interface.
+- Add builders for `MuiBackgroundLabels`, `MuiColorPickerOverlay.Labels` and `MuiCropOverlay.Labels`; add `MuiColorField#value(...)` for a secondary value text.
+- `railHeader` / `railFooter` also accept `BiFunction<Context, MuiTheme, View>`, so a custom logo can use the resolved screen theme directly.
+- Add a host-aware `MuiCropOverlayFactory#create` overload; the default factory follows the screen theme, shimmer profile and widget factory.

@@ -19,6 +19,7 @@ import me.kall.narutoui.mui.widget.MuiDescriptionRow;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.*;
 
@@ -42,12 +43,16 @@ public final class MuiSettingsSection {
     private final MuiLayout card;
     /** Number of fields added, used for automatic dividers. */
     private int fields;
+    /** Rows added since the last {@link #clearRows()}, excluding dividers. */
+    private final List<View> rows = new ArrayList<>();
     /** Open note block that collects consecutive notes, or {@code null}. */
     private @Nullable MuiLayout noteBlock;
     /** Marker applied to the next row, consumed by {@link #add(View)}. */
     private @Nullable MuiShimmerable nextShimmerable;
     /** Marker applied to rows added to the current note block. */
     private MuiShimmerable noteShimmerable = MuiShimmerable.NEVER;
+    /** Default marker applied to every row, including rows added after {@link #clearRows()}. */
+    private @Nullable MuiShimmerable rowShimmer;
     /** Most recently added row, used by {@link #enabledWhen(BooleanSupplier)}. */
     private @Nullable View lastRow;
 
@@ -66,7 +71,8 @@ public final class MuiSettingsSection {
     }
 
     /**
-     * Returns the card body. Prefer {@link #customLayout(Consumer)} over direct manipulation.
+     * Returns the card body. Direct manipulation is supported; use {@link #addRow(View)} for rows
+     * you compose yourself so they keep the same dividers and spacing as the field helpers.
      *
      * @return the card layout
      */
@@ -689,7 +695,11 @@ public final class MuiSettingsSection {
             MuiShimmerable marker = this.nextShimmerable;
             this.nextShimmerable = null;
             block.add(row, MuiControls.fill());
-            MuiShimmerScope.apply(row, marker == null ? this.noteShimmerable : marker);
+
+            MuiShimmerable effective = marker != null
+                    ? marker
+                    : this.noteShimmerable != MuiShimmerable.NEVER ? this.noteShimmerable : this.rowShimmer;
+            if (effective != null) MuiShimmerScope.apply(row, effective);
         }
 
         return this;
@@ -761,6 +771,44 @@ public final class MuiSettingsSection {
     }
 
     /**
+     * Keeps the whole section enabled or disabled from an external predicate. Unlike
+     * {@link #enabledWhen(BooleanSupplier)} this applies to every row of the card, including rows
+     * added later, so a section that is unavailable as a whole no longer needs the caller to walk
+     * {@link #card()} and disable its children by hand.
+     *
+     * @param enabled availability predicate
+     * @return this section, for chaining
+     */
+    public @NotNull MuiSettingsSection enabledWhenAll(@NotNull BooleanSupplier enabled) {
+        MuiControls.enabledWhen(this.card, enabled);
+        return this;
+    }
+
+    /**
+     * Returns the rows added since the last {@link #clearRows()}, without the inserted dividers.
+     * The list is an immutable snapshot; later rows are not reflected.
+     *
+     * @return the current rows
+     */
+    public @NotNull List<View> rows() {
+        return List.copyOf(this.rows);
+    }
+
+    /**
+     * Rebuilds the card body from a recipe: {@link #clearRows()} followed by the callback. Use this
+     * instead of reloading the whole page when only one section depends on the changed state; the
+     * page keeps its scroll position and the other sections keep their focus.
+     *
+     * @param body section body callback
+     * @return this section, for chaining
+     */
+    public @NotNull MuiSettingsSection rebuild(@NotNull Consumer<MuiSettingsSection> body) {
+        this.clearRows();
+        body.accept(this);
+        return this;
+    }
+
+    /**
      * Adds an explicit divider. Automatic dividers are normally sufficient.
      *
      * @return this section, for chaining
@@ -815,11 +863,53 @@ public final class MuiSettingsSection {
      * @return the nested section
      */
     public @NotNull MuiSettingsSection collapsible(@NotNull CharSequence title, @Nullable CharSequence summary, boolean expanded, @NotNull Consumer<MuiSettingsSection> body) {
+        return this.collapsibleCard(null, title, summary, expanded, body);
+    }
+
+    /**
+     * Adds a nested collapsible card as one row and exposes its body as another field section. This
+     * is the dynamic-list variant of {@link #collapsible(CharSequence, CharSequence, boolean,
+     * Consumer)}: the returned section can be rebuilt on its own, and the card remembers its
+     * expanded state when a state key is supplied.
+     *
+     * @param title card title
+     * @param body  nested section body
+     * @return the nested section
+     */
+    public @NotNull MuiSettingsSection collapsibleCard(@NotNull CharSequence title, @NotNull Consumer<MuiSettingsSection> body) {
+        return this.collapsibleCard(null, title, null, true, body);
+    }
+
+    /**
+     * Adds a nested collapsible card as one row.
+     *
+     * @param title    card title
+     * @param summary  optional summary; empty hides it
+     * @param expanded whether the nested card starts expanded
+     * @param body     nested section body
+     * @return the nested section
+     */
+    public @NotNull MuiSettingsSection collapsibleCard(@NotNull CharSequence title, @Nullable CharSequence summary, boolean expanded, @NotNull Consumer<MuiSettingsSection> body) {
+        return this.collapsibleCard(null, title, summary, expanded, body);
+    }
+
+    /**
+     * Adds a nested collapsible card that remembers its expanded state under {@code stateKey}.
+     *
+     * @param stateKey key used to remember the expansion state, or {@code null} to disable it
+     * @param title    card title
+     * @param summary  optional summary; empty hides it
+     * @param expanded whether the nested card starts expanded when no state is stored
+     * @param body     nested section body
+     * @return the nested section
+     */
+    public @NotNull MuiSettingsSection collapsibleCard(@Nullable String stateKey, @NotNull CharSequence title, @Nullable CharSequence summary, boolean expanded, @NotNull Consumer<MuiSettingsSection> body) {
         MuiCollapsibleCard card = MuiCollapsibleCard.card(
-                this.page.context(), this.page.theme(), title, summary, expanded);
+                this.page.context(), this.page.theme(), stateKey, title, summary, expanded);
         this.addRow(card);
 
         MuiSettingsSection nested = new MuiSettingsSection(this.page, card.body());
+        if (this.rowShimmer != null) nested.shimmerRows(this.rowShimmer);
         body.accept(nested);
         return nested;
     }
@@ -861,6 +951,22 @@ public final class MuiSettingsSection {
     }
 
     /**
+     * Sets the default shimmer marker for every row of this section. Unlike {@link #shimmerNext()}
+     * it is not consumed by one row: it also applies to rows added later, so
+     * {@link #rebuild(Consumer)} keeps the section's shimmer after a refresh.
+     *
+     * @param marker the marker, or {@code null} to clear it
+     * @return this section, for chaining
+     */
+    public @NotNull MuiSettingsSection shimmerRows(@Nullable MuiShimmerable marker) {
+        this.rowShimmer = marker;
+        if (marker != null) {
+            for (View row : this.rows) MuiShimmerScope.apply(row, marker);
+        }
+        return this;
+    }
+
+    /**
      * Appends a row, inserting the same divider and spacing the field helpers use. Call this for
      * rows you compose yourself so a card keeps one visual rhythm, and combine it with
      * {@link #clearRows()} to rebuild dynamic content without dropping out of the card.
@@ -870,6 +976,8 @@ public final class MuiSettingsSection {
      */
     public @NotNull MuiSettingsSection addRow(@NotNull View row) {
         this.noteBlock = null;
+
+        if (this.rowShimmer != null) MuiShimmerScope.apply(row, this.rowShimmer);
 
         MuiShimmerable marker = this.nextShimmerable;
         this.nextShimmerable = null;
@@ -888,6 +996,7 @@ public final class MuiSettingsSection {
             params.topMargin = MuiControls.rowGap(this.page.context());
         }
         this.card.addView(row, params);
+        this.rows.add(row);
         this.lastRow = row;
         return this;
     }
@@ -902,6 +1011,7 @@ public final class MuiSettingsSection {
     public @NotNull MuiSettingsSection clearRows() {
         this.card.removeAllViews();
         this.fields = 0;
+        this.rows.clear();
         this.noteBlock = null;
         this.lastRow = null;
         this.nextShimmerable = null;

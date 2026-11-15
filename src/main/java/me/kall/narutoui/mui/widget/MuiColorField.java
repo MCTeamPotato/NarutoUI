@@ -11,6 +11,7 @@ import me.kall.narutoui.mui.layout.MuiControls;
 import me.kall.narutoui.mui.theme.MuiTheme;
 import me.kall.narutoui.mui.util.MuiLocalization;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * A compact color field: rounded swatch, label, and a pick action.
@@ -25,6 +26,8 @@ public final class MuiColorField extends LinearLayout {
     private final View swatch;
     /** Field label. */
     private final TextView labelView;
+    /** Optional value text shown between the label and the pick button. */
+    private final TextView valueView;
     /** Pick button. */
     private final Button pick;
     /** Current ARGB color. */
@@ -53,6 +56,12 @@ public final class MuiColorField extends LinearLayout {
 
         this.labelView = MuiControls.text(context, theme, label, 13, theme.onSurface());
         this.addView(this.labelView, MuiControls.weight());
+
+        this.valueView = MuiControls.text(context, theme, "", 12, theme.onSurfaceVariant());
+        this.valueView.setVisibility(GONE);
+        LinearLayout.LayoutParams valueParams = MuiControls.wrap();
+        valueParams.setMargins(MuiControls.dp(context, 8), 0, MuiControls.dp(context, 8), 0);
+        this.addView(this.valueView, valueParams);
 
         this.pick = MuiControls.button(context, theme, "Pick color", true, view -> {});
         this.addView(this.pick, MuiControls.wrap());
@@ -83,6 +92,21 @@ public final class MuiColorField extends LinearLayout {
         this.pick.setEnabled(enabled);
         this.labelView.setTextColor(enabled ? this.theme.onSurface() : MuiControls.alpha(this.theme.onSurface(), 0.38F));
         this.setSwatchColor(this.getContext(), this.color);
+        return this;
+    }
+
+    /**
+     * Sets a secondary value text shown next to the label, for example the current color as
+     * {@code #AARRGGBB}. This keeps the label a plain translation key instead of forcing the caller
+     * to concatenate the formatted value into it.
+     *
+     * @param value value text or translation key; {@code null} or empty hides it
+     * @return this field, for chaining
+     */
+    public @NotNull MuiColorField value(@Nullable CharSequence value) {
+        String text = value == null ? "" : MuiLocalization.resolve(value);
+        this.valueView.setText(text);
+        this.valueView.setVisibility(text.isEmpty() ? GONE : VISIBLE);
         return this;
     }
 

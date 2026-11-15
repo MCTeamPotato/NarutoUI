@@ -356,7 +356,7 @@ public final class MuiConfigurableBackground implements MuiBackground, MuiBackgr
             }
         };
 
-        holder[0] = this.cropFactory.create(context, preview, imageWidth, imageHeight, target, this.labels.crop(), listener);
+        holder[0] = this.cropFactory.create(current, preview, imageWidth, imageHeight, target, this.labels.crop(), listener);
         current.showOverlay(holder[0]);
     }
 

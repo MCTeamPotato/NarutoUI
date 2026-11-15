@@ -15,6 +15,7 @@ import icyllis.modernui.widget.LinearLayout;
 import icyllis.modernui.widget.TextView;
 import me.kall.narutoui.mui.layout.MuiControls;
 import me.kall.narutoui.mui.theme.MuiTheme;
+import me.kall.narutoui.mui.util.MuiLocalization;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -22,14 +23,94 @@ import org.jetbrains.annotations.NotNull;
  */
 public final class MuiCropOverlay extends FrameLayout {
     /**
-     * Localized labels.
+     * Localized labels. Use {@link #builder()} when only some labels differ from the defaults; the
+     * positional constructor is kept for callers that already have every string.
      *
      * @param title   title
      * @param hint    hint text
      * @param confirm confirm button
      * @param cancel  cancel button
      */
-    public record Labels(CharSequence title, CharSequence hint, CharSequence confirm, CharSequence cancel) {}
+    public record Labels(CharSequence title, CharSequence hint, CharSequence confirm, CharSequence cancel) {
+        /**
+         * Starts a label builder with English defaults.
+         *
+         * @return a new builder
+         */
+        public static @NotNull Builder builder() {
+            return new Builder();
+        }
+
+        /**
+         * Mutable label builder. Every setter accepts a translation key or literal text and returns
+         * {@code this}; the keys are resolved by {@link #build()}.
+         */
+        public static final class Builder {
+            private CharSequence title = "Crop";
+            private CharSequence hint = "Drag to move, use the corners to resize";
+            private CharSequence confirm = "Apply";
+            private CharSequence cancel = "Cancel";
+
+            private Builder() {}
+
+            /**
+             * Sets the overlay title.
+             *
+             * @param title title or translation key
+             * @return this builder
+             */
+            public @NotNull Builder title(@NotNull CharSequence title) {
+                this.title = title;
+                return this;
+            }
+
+            /**
+             * Sets the hint text.
+             *
+             * @param hint hint or translation key
+             * @return this builder
+             */
+            public @NotNull Builder hint(@NotNull CharSequence hint) {
+                this.hint = hint;
+                return this;
+            }
+
+            /**
+             * Sets the confirm button label.
+             *
+             * @param confirm label or translation key
+             * @return this builder
+             */
+            public @NotNull Builder confirm(@NotNull CharSequence confirm) {
+                this.confirm = confirm;
+                return this;
+            }
+
+            /**
+             * Sets the cancel button label.
+             *
+             * @param cancel label or translation key
+             * @return this builder
+             */
+            public @NotNull Builder cancel(@NotNull CharSequence cancel) {
+                this.cancel = cancel;
+                return this;
+            }
+
+            /**
+             * Resolves every label through the current language table.
+             *
+             * @return the labels
+             */
+            public @NotNull Labels build() {
+                return new Labels(
+                        MuiLocalization.resolve(this.title),
+                        MuiLocalization.resolve(this.hint),
+                        MuiLocalization.resolve(this.confirm),
+                        MuiLocalization.resolve(this.cancel));
+            }
+        }
+    }
 
     /**
      * Receives the crop result.

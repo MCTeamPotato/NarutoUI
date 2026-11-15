@@ -124,8 +124,9 @@ public final class MuiSettingsPage {
     public @NotNull MuiSettingsPage section(@NotNull Consumer<MuiSettingsSection> body) {
         int start = this.context.content().getChildCount();
         MuiLayout card = this.context.untitledSectionLayout();
-        body.accept(new MuiSettingsSection(this.context, card));
-        this.applyToNewChildren(start);
+        MuiSettingsSection section = new MuiSettingsSection(this.context, card);
+        body.accept(section);
+        this.applyToSection(section, start);
         return this;
     }
 
@@ -139,8 +140,9 @@ public final class MuiSettingsPage {
     public @NotNull MuiSettingsPage section(@NotNull CharSequence title, @NotNull Consumer<MuiSettingsSection> body) {
         int start = this.context.content().getChildCount();
         MuiLayout card = this.context.sectionLayout(title);
-        body.accept(new MuiSettingsSection(this.context, card));
-        this.applyToNewChildren(start);
+        MuiSettingsSection section = new MuiSettingsSection(this.context, card);
+        body.accept(section);
+        this.applyToSection(section, start);
         return this;
     }
 
@@ -178,18 +180,65 @@ public final class MuiSettingsPage {
      * @return this page, for chaining
      */
     public @NotNull MuiSettingsPage collapsibleSection(@NotNull CharSequence title, @Nullable CharSequence summary, boolean expanded, @NotNull Consumer<MuiSettingsSection> body) {
+        this.collapsibleCard(null, title, summary, expanded, null, body);
+        return this;
+    }
+
+    /**
+     * Adds a collapsible card and returns its body as a section, so a page made of dynamic cards can
+     * keep one reference per card and rebuild only that card with
+     * {@link MuiSettingsSection#rebuild(Consumer)}.
+     *
+     * @param title card title
+     * @param body  section field callback
+     * @return the nested section
+     */
+    public @NotNull MuiSettingsSection collapsibleCard(@NotNull CharSequence title, @NotNull Consumer<MuiSettingsSection> body) {
+        return this.collapsibleCard(null, title, null, true, null, body);
+    }
+
+    /**
+     * Adds a collapsible card and returns its body as a section.
+     *
+     * @param title    card title
+     * @param summary  optional summary; empty hides it
+     * @param expanded whether the card starts expanded
+     * @param body     section field callback
+     * @return the nested section
+     */
+    public @NotNull MuiSettingsSection collapsibleCard(@NotNull CharSequence title, @Nullable CharSequence summary, boolean expanded, @NotNull Consumer<MuiSettingsSection> body) {
+        return this.collapsibleCard(null, title, summary, expanded, null, body);
+    }
+
+    /**
+     * Adds a collapsible card that remembers its expanded state under {@code stateKey}, lets the
+     * caller configure the card itself (for example with a trailing switch), and returns the body
+     * as a section.
+     *
+     * @param stateKey  key used to remember the expansion state, or {@code null} to disable it
+     * @param title     card title
+     * @param summary   optional summary; empty hides it
+     * @param expanded  whether the card starts expanded when no state is stored
+     * @param configure optional callback receiving the card before its body is built, or {@code null}
+     * @param body      section field callback
+     * @return the nested section
+     */
+    public @NotNull MuiSettingsSection collapsibleCard(@Nullable String stateKey, @NotNull CharSequence title, @Nullable CharSequence summary, boolean expanded, @Nullable Consumer<MuiCollapsibleCard> configure, @NotNull Consumer<MuiSettingsSection> body) {
         int start = this.context.content().getChildCount();
 
         MuiCollapsibleCard card = MuiCollapsibleCard.card(
-                this.context.context(), this.context.theme(), title, summary, expanded);
-        icyllis.modernui.widget.LinearLayout.LayoutParams params = MuiControls.fill();
-        params.topMargin = MuiControls.dp(this.context.context(), 12);
-        this.context.content().addView(card, params);
+                this.context.context(), this.context.theme(), stateKey, title, summary, expanded);
+        if (configure != null) configure.accept(card);
 
-        body.accept(new MuiSettingsSection(this.context, card.body()));
+        icyllis.modernui.widget.LinearLayout.LayoutParams cardParams = MuiControls.fill();
+        cardParams.topMargin = MuiControls.dp(this.context.context(), 12);
+        this.context.content().addView(card, cardParams);
 
-        this.applyToNewChildren(start);
-        return this;
+        MuiSettingsSection section = new MuiSettingsSection(this.context, card.body());
+        body.accept(section);
+
+        this.applyToSection(section, start);
+        return section;
     }
 
     /**
@@ -244,18 +293,32 @@ public final class MuiSettingsPage {
     }
 
     /**
+     * Applies the block's shimmer marker to a section and remembers it as the section's row
+     * default, so a later {@link MuiSettingsSection#rebuild(Consumer)} keeps the shimmer.
+     *
+     * @param section the section that was just built
+     * @param start   child index the block started at
+     */
+    private void applyToSection(@NotNull MuiSettingsSection section, int start) {
+        MuiShimmerable marker = this.applyToNewChildren(start);
+        if (marker != null) section.shimmerRows(marker);
+    }
+
+    /**
      * Applies the page's shimmer marker to every view added after {@code start}.
      * <p>
      * A section may add more than one sibling (the titled variant adds a heading next to the card),
      * so the range is walked instead of a single view being marked.
      *
      * @param start child index the block started at
+     * @return the marker that was applied, or {@code null}
      */
-    private void applyToNewChildren(int start) {
+    private @Nullable MuiShimmerable applyToNewChildren(int start) {
         MuiShimmerable marker = this.resolve();
-        if (marker == null) return;
+        if (marker == null) return null;
         for (int i = start; i < this.context.content().getChildCount(); i++) {
             MuiShimmerScope.apply(this.context.content().getChildAt(i), marker);
         }
+        return marker;
     }
 }

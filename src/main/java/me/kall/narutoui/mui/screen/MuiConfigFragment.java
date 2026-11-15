@@ -15,6 +15,7 @@ import icyllis.modernui.text.TextUtils;
 import icyllis.modernui.util.DataSet;
 import icyllis.modernui.view.*;
 import icyllis.modernui.widget.*;
+import me.kall.narutoui.mui.factory.MuiWidgetFactory;
 import me.kall.narutoui.mui.layout.MuiControls;
 import me.kall.narutoui.mui.shimmer.MuiShimmerProfile;
 import me.kall.narutoui.mui.shimmer.MuiShimmerScope;
@@ -254,6 +255,9 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost, 
         }
 
         int page = Math.max(0, this.selected);
+        View previous = page < this.pages.size() ? this.pages.get(page) : null;
+        int scroll = previous == null ? 0 : previous.getScrollY();
+
         Context context = this.requireContext();
         this.theme = this.resolveTheme(context);
         this.cancelPageTransition();
@@ -263,6 +267,8 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost, 
         this.selected = -1;
         this.model.background().attach(this, current);
         this.buildShell(context, current, page);
+
+        if (page < this.pages.size()) restoreScroll(this.pages.get(page), scroll);
     }
 
     /**
@@ -277,6 +283,41 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost, 
             return;
         }
         this.rebuildForResize();
+    }
+
+    /**
+     * Returns the theme this shell renders with, including the accent supplied by a
+     * {@code themeProvider}. Overlays built through {@link MuiScreenHost#colorPickerView} and
+     * {@link MuiScreenHost#cropView} therefore match the screen.
+     *
+     * @return the resolved theme
+     */
+    @Override
+    public @NotNull MuiTheme theme() {
+        MuiTheme resolved = this.theme;
+        return resolved == null ? MuiTheme.modern(this.requireContext()) : resolved;
+    }
+
+    /**
+     * Returns the screen's shimmer profile so late overlays keep its settings.
+     *
+     * @return the shimmer profile
+     */
+    @Override
+    public @NotNull MuiShimmerProfile shimmerProfile() {
+        MuiConfigScreen.Model current = this.model;
+        return current == null ? MuiShimmerProfile.defaultProfile() : current.shimmerProfile();
+    }
+
+    /**
+     * Returns the screen's widget factory so late overlays keep its control style.
+     *
+     * @return the widget factory
+     */
+    @Override
+    public @NotNull MuiWidgetFactory widgetFactory() {
+        MuiConfigScreen.Model current = this.model;
+        return current == null ? MuiWidgetFactory.modern() : current.widgetFactory();
     }
 
     private @NotNull MuiTheme resolveTheme(@NotNull Context context) {
@@ -360,14 +401,22 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost, 
     /**
      * Rebuilds the currently visible page from its original factory/body. Custom pages can use
      * this after a theme change or a config-dependent layout change.
+     * <p>
+     * The scroll position is restored after the rebuild. Collapsible cards keep their expanded
+     * state when they were created with a state key, so a refresh no longer folds the whole page.
      */
     @Override
     public void reloadCurrentPage() {
         if (this.model == null || this.selected < 0 || this.selected >= this.pages.size()) return;
 
         int index = this.selected;
-        this.pages.set(index, this.createPage(this.requireContext(), this.model.pages().get(index)));
+        View previous = this.pages.get(index);
+        int scroll = previous == null ? 0 : previous.getScrollY();
+
+        View page = this.createPage(this.requireContext(), this.model.pages().get(index));
+        this.pages.set(index, page);
         this.showPage(index, false);
+        restoreScroll(page, scroll);
     }
 
     /**
@@ -379,8 +428,24 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost, 
         if (this.model == null || this.pages.isEmpty()) return;
 
         int index = Math.max(0, this.selected);
+        View previous = index < this.pages.size() ? this.pages.get(index) : null;
+        int scroll = previous == null ? 0 : previous.getScrollY();
+
         this.pages.replaceAll(ignored -> null);
         this.showPage(index, false);
+
+        if (index < this.pages.size()) restoreScroll(this.pages.get(index), scroll);
+    }
+
+    /**
+     * Restores a page's vertical scroll offset after it has been re-added to the content frame.
+     *
+     * @param page   the rebuilt page, or {@code null}
+     * @param scroll the previous scroll offset in pixels
+     */
+    private static void restoreScroll(@Nullable View page, int scroll) {
+        if (page == null || scroll <= 0) return;
+        page.post(() -> page.scrollTo(0, scroll));
     }
 
     /**
@@ -524,7 +589,7 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost, 
         rail.setBackground(new ColorDrawable(MuiControls.alpha(theme.surface(), 0.96F)));
 
         if (this.model.railHeader() != null) {
-            View header = this.model.railHeader().apply(context);
+            View header = this.model.railHeader().apply(context, theme);
             if (header != null) {
                 if (this.model.titlesShimmerable() != MuiShimmerable.NEVER) MuiShimmerScope.apply(header, this.model.titlesShimmerable());
                 rail.addView(header, MuiControls.fill());
@@ -561,7 +626,7 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost, 
         rail.addView(scroll, new LinearLayout.LayoutParams(MuiControls.MATCH, 0, 1.0F));
 
         if (this.model.railFooter() != null) {
-            View footer = this.model.railFooter().apply(context);
+            View footer = this.model.railFooter().apply(context, theme);
             if (footer != null) {
                 if (this.model.titlesShimmerable() != MuiShimmerable.NEVER) MuiShimmerScope.apply(footer, this.model.titlesShimmerable());
                 rail.addView(footer, MuiControls.fill());
@@ -589,7 +654,7 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost, 
         bar.setBackground(new ColorDrawable(MuiControls.alpha(theme.surface(), 0.96F)));
 
         if (this.model.railHeader() != null) {
-            View header = this.model.railHeader().apply(context);
+            View header = this.model.railHeader().apply(context, theme);
             if (header != null) {
                 if (this.model.titlesShimmerable() != MuiShimmerable.NEVER) MuiShimmerScope.apply(header, this.model.titlesShimmerable());
                 bar.addView(header, MuiControls.wrap());
@@ -629,7 +694,7 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost, 
         bar.addView(scroll, new LinearLayout.LayoutParams(0, MuiControls.WRAP, 1.0F));
 
         if (this.model.railFooter() != null) {
-            View footer = this.model.railFooter().apply(context);
+            View footer = this.model.railFooter().apply(context, theme);
             if (footer != null) {
                 if (this.model.titlesShimmerable() != MuiShimmerable.NEVER) MuiShimmerScope.apply(footer, this.model.titlesShimmerable());
                 LinearLayout.LayoutParams params = MuiControls.wrap();

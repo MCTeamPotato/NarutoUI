@@ -447,6 +447,30 @@ MuiSettingsScreen.builder("My Mod")
 
 如果 host 只在页面内部使用，不必自己存数组：`MuiPageContext#host()` 就是当前外壳，`page.context().host()` / `section.page().host()` 都能拿到（脱离 screen 构建的页面返回 `null`）。`onCreated` 更适合页面之外的场景，例如 action bar 工厂。
 
+> `MuiPageContext#host()` 自 1.9.1 起提供。1.9.0 及更早的 jar 里没有这个方法，升级后不需要再自己维护静态 `HOST`。
+
+### 浮层：颜色选择器和裁剪
+
+host 同时持有当前屏幕的 theme、shimmer profile 和 widget factory，浮层不必再手动 `withCurrent` / `withFactory` 压栈：
+
+```java
+MuiScreenHost host = section.page().host();
+if (host == null) return;
+
+host.colorPicker(currentColor, MuiColorPickerOverlay.Labels.builder()
+        .title("mymod.color.title")
+        .build(), argb -> {
+    // argb 是选中的 ARGB
+});
+```
+
+- `colorPicker(...)` / `crop(...)` 直接构建并显示；
+- `colorPickerView(...)` / `cropView(...)` 只构建，由调用方决定何时 `showOverlay`；
+- `showOverlay(ctx -> new MyOverlay(ctx, ...))` 同样继承这三件套；
+- 标签 builder 只写和默认值不同的项，其余保持英文默认值；传 key 或成品文本都可以。
+
+`MuiCropOverlayFactory.modern()` 走同一条路径，所以 `MuiConfigurableBackground` 的裁剪浮层会自动跟随屏幕主题，不需要再写自定义工厂。
+
 ### supplier 的刷新
 
 `toggle` / `slider` / `value` 的 supplier 默认每 **100 ms** 轮询一次，不是事件推送。
@@ -493,7 +517,7 @@ MuiSettingsScreen.builder("My Mod")
 
 ### 动态重建一张卡片
 
-`MuiSettingsSection` 不是只能写一次的。`clearRows()` 清空卡片并重置分隔线计数，`addRow(View)` 用和字段行完全相同的分隔线、间距、shimmer 处理再加回来：
+`MuiSettingsSection` 不是只能写一次的。`rebuild(...)` 清空卡片并按 recipe 重建，`clearRows()` + `addRow(View)` 是它的分步版本：
 
 ```java
 private MuiSettingsSection entrySection;
@@ -508,15 +532,15 @@ private void rebuildEntries() {
     MuiSettingsSection section = this.entrySection;
     if (section == null) return;
 
-    section.clearRows();
-    if (this.draft.entries().isEmpty()) {
-        section.text("还没有条目");
-        return;
-    }
-
-    for (Entry entry : this.draft.entries()) {
-        section.textField(entry.name(), null, entry.value(), entry::setValue);
-    }
+    section.rebuild(body -> {
+        if (this.draft.entries().isEmpty()) {
+            body.text("还没有条目");
+            return;
+        }
+        for (Entry entry : this.draft.entries()) {
+            body.textField(entry.name(), null, entry.value(), entry::setValue);
+        }
+    });
 }
 ```
 
@@ -527,6 +551,20 @@ private void rebuildEntries() {
 - 自己拼的行请用 `addRow(View)` 加，不要直接 `card().addView(...)`，否则分隔线和间距会和其他行对不上
 
 行间距常量也从这里取：`MuiControls.ROW_GAP_DP` 是 DP 值，`MuiControls.rowGap(context)` 是像素值。
+
+### 禁用一行 / 整段
+
+- `section.enabledWhen(predicate)` 作用于**最后一行**，写在该行之后；
+- `section.enabledWhenAll(predicate)` 作用于**整张卡片**，包括之后才加的行；
+- 两者都每 100 ms 轮询一次，适合“依赖别的 mod / 硬件能力”的选项。
+
+```java
+.section("Shimmer", section -> section
+        .slider("Speed", 0.2D, 3.0D, 0.1D, cfg::speed, cfg::setSpeed, value -> "%.1f".formatted(value))
+        .enabledWhenAll(() -> cfg.hasAccent()));
+```
+
+需要按行处理时，`section.rows()` 返回当前所有行（不含分隔线）的只读快照。
 
 ### 自定义页面内容
 
@@ -978,7 +1016,7 @@ supplier 默认 100 ms 轮询；文本输入框聚焦时会暂停。不是事件
 
 页面在第一次切换到时构建，之后保留。按粒度选：
 
-- 只重建一张卡片：`section.clearRows()` + 重新添加行（见第 6 节），不丢滚动位置和焦点
+- 只重建一张卡片：`section.rebuild(...)`（见第 6 节），不丢滚动位置和焦点
 - 重建整个当前页：
 
 ```java
@@ -987,7 +1025,7 @@ supplier 默认 100 ms 轮询；文本输入框聚焦时会暂停。不是事件
 fragment.reloadCurrentPage();
 ```
 
-页面内部也可以直接用 `page.context().host().reloadCurrentPage()`，不必保存引用。
+`reloadCurrentPage()` 会恢复页面滚动位置；用 `collapsibleCard(stateKey, ...)` 创建的卡片会按 key 记住展开状态，所以整页重建也不会把卡片全部折叠。页面内部也可以直接用 `page.context().host().reloadCurrentPage()`，不必保存引用。
 
 ### 输入了非法内容，回调却没触发
 
@@ -1008,6 +1046,15 @@ fragment.reloadCurrentPage();
 ### 自定义 `MuiWidgetFactory`
 
 `MuiWidgetFactory` 的所有方法都是 abstract，不再提供“返回默认组件”的 fallback。自定义工厂需要实现完整接口；如果只是想换某几种控件，可以写一个委托包装器，把大部分方法转发给 `MuiWidgetFactory.modern()` 或 `MuiWidgetFactory.shimmer()` 的实例，再覆盖需要改的方法。
+
+只想给工厂换主题（例如注入 accent）时不用写包装器：
+
+```java
+.widgetFactory(MuiWidgetFactory.withTheme(
+        theme -> theme.withPrimary(accent), MuiWidgetFactory.shimmer()))
+```
+
+如果 accent 已经由 `themeProvider` 提供，这一步也省了：`themeProvider` 生效后页面主题本身已经带 accent。
 
 ---
 
