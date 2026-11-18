@@ -170,6 +170,17 @@ public interface MuiScreenHost {
     }
 
     /**
+     * Selects a page by index. Hosts that do not own a multi-page shell may leave this
+     * unsupported.
+     *
+     * @param index zero-based page index
+     * @throws UnsupportedOperationException when the host cannot select pages
+     */
+    default void selectPage(int index) {
+        throw new UnsupportedOperationException("This MuiScreenHost does not support page selection");
+    }
+
+    /**
      * Asks the host to close through the normal back path. The close guard registered with
      * {@link MuiConfigScreen.Builder#onCloseRequested} runs first and may keep the screen open.
      * <p>
