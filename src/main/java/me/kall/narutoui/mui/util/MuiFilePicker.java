@@ -16,7 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
- * Generic image/folder picker backed by the native TinyFileDialogs dialog with AWT/Swing fallback.
+ * Generic file/folder picker backed by the native TinyFileDialogs dialog with AWT/Swing fallback.
  * Titles and filter labels are supplied by the caller, so the utility is not tied to a mod.
  */
 public final class MuiFilePicker {
@@ -93,6 +93,37 @@ public final class MuiFilePicker {
         }
     }
 
+    /**
+     * Opens a file dialog starting in the game directory.
+     *
+     * @param title       dialog title
+     * @param filterLabel native filter label
+     * @param callback    selection callback
+     * @param patterns    glob patterns such as {@code "*.exe"}; none accepts every file
+     */
+    public static void openFile(@NotNull String title, @NotNull String filterLabel, @NotNull Callback callback, @NotNull String... patterns) {
+        openFile(null, title, filterLabel, callback, patterns);
+    }
+
+    /**
+     * Opens a file dialog that only offers the given glob patterns.
+     *
+     * @param initial     initial folder, or {@code null} for the game directory
+     * @param title       dialog title
+     * @param filterLabel native filter label
+     * @param callback    selection callback
+     * @param patterns    glob patterns such as {@code "*.exe"}; none accepts every file
+     */
+    public static void openFile(@Nullable Path initial, @NotNull String title, @NotNull String filterLabel, @NotNull Callback callback, @NotNull String... patterns) {
+        String[] copy = patterns.clone();
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.isSameThread()) {
+            openFileNow(initial, title, filterLabel, copy, callback);
+        } else {
+            minecraft.execute(() -> openFileNow(initial, title, filterLabel, copy, callback));
+        }
+    }
+
     private static void openImageNow(@NotNull String title, @NotNull String filterLabel, @NotNull Callback callback) {
         try {
             String picked = openNativeImage(title, filterLabel);
@@ -103,6 +134,73 @@ public final class MuiFilePicker {
             LOGGER.warn("Native image dialog failed, falling back to AWT", error);
             openAwtImage(title, callback);
         }
+    }
+
+    private static void openFileNow(@Nullable Path initial, @NotNull String title, @NotNull String filterLabel, String @NotNull [] patterns, @NotNull Callback callback) {
+        try {
+            String picked = openNativeFile(initial, title, filterLabel, patterns);
+            if (picked == null || picked.isBlank()) return;
+            Path path = Path.of(picked);
+            MuiModApi.postToUiThread(() -> callback.onPicked(path));
+        } catch (Throwable error) {
+            LOGGER.warn("Native file dialog failed, falling back to AWT", error);
+            openAwtFile(title, patterns, callback);
+        }
+    }
+
+    private static @Nullable String openNativeFile(@Nullable Path initial, @NotNull String title, @NotNull String filterLabel, String @NotNull [] patterns) {
+        String defaultPath = initial != null ? initial.toString() : Minecraft.getInstance().gameDirectory.getAbsolutePath();
+        if (patterns.length == 0) return TinyFileDialogs.tinyfd_openFileDialog(title, defaultPath, null, null, false);
+
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            PointerBuffer filters = stack.mallocPointer(patterns.length);
+            for (String pattern : patterns) filters.put(stack.UTF8(pattern));
+            filters.flip();
+            return TinyFileDialogs.tinyfd_openFileDialog(title, defaultPath, filters, filterLabel, false);
+        }
+    }
+
+    private static void openAwtFile(@NotNull String title, String @NotNull [] patterns, @NotNull Callback callback) {
+        Thread thread = new Thread(() -> {
+            try {
+                if (GraphicsEnvironment.isHeadless()) {
+                    MuiModApi.postToUiThread(callback::onFailed);
+                    return;
+                }
+
+                FileDialog dialog = new FileDialog((Frame) null, title, FileDialog.LOAD);
+                dialog.setAlwaysOnTop(true);
+                dialog.setMultipleMode(false);
+                if (patterns.length > 0) {
+                    dialog.setFilenameFilter((dir, name) -> matches(name, patterns));
+                    dialog.setFile(String.join(";", patterns));
+                }
+                dialog.setVisible(true);
+
+                String file = dialog.getFile();
+                String directory = dialog.getDirectory();
+                dialog.dispose();
+                if (file == null || directory == null) return;
+
+                Path path = Path.of(directory, file);
+                MuiModApi.postToUiThread(() -> callback.onPicked(path));
+            } catch (Throwable error) {
+                LOGGER.error("Could not open the file picker", error);
+                MuiModApi.postToUiThread(callback::onFailed);
+            }
+        }, "Mui-FilePicker");
+        thread.setDaemon(true);
+        thread.start();
+    }
+
+    private static boolean matches(@NotNull String name, String @NotNull [] patterns) {
+        String lower = name.toLowerCase(java.util.Locale.ROOT);
+        for (String pattern : patterns) {
+            String glob = pattern.toLowerCase(java.util.Locale.ROOT);
+            if (glob.startsWith("*.") ? lower.endsWith(glob.substring(1)) : lower.equals(glob)) return true;
+        }
+
+        return false;
     }
 
     private static void openFolderNow(@Nullable Path initial, @NotNull String title, @NotNull Callback callback) {
