@@ -420,6 +420,17 @@ public final class MuiConfigFragment extends Fragment implements MuiScreenHost, 
     }
 
     /**
+     * Selects a page by index. Out-of-range indices are clamped by the shell.
+     *
+     * @param index zero-based page index
+     */
+    @Override
+    public void selectPage(int index) {
+        if (this.model == null || this.pages.isEmpty()) return;
+        this.showPage(index, true);
+    }
+
+    /**
      * Rebuilds every page. The current page is rebuilt immediately; other pages are rebuilt lazily
      * on their next visit.
      */
